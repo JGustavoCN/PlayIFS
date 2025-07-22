@@ -7,18 +7,15 @@ import br.edu.ifs.playifs.entities.Role;
 import br.edu.ifs.playifs.entities.User;
 import br.edu.ifs.playifs.repositories.AthleteRepository;
 import br.edu.ifs.playifs.repositories.RoleRepository;
-import br.edu.ifs.playifs.services.exceptions.DatabaseException;
+import br.edu.ifs.playifs.services.exceptions.BusinessException;
 import br.edu.ifs.playifs.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AthleteService {
@@ -29,15 +26,15 @@ public class AthleteService {
 
     @Transactional(readOnly = true)
     public AthleteDTO findById(Long id) {
-        Athlete athlete = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Recurso não encontrado"));
-        return new AthleteDTO(athlete);
+        Athlete entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Atleta não encontrado com o ID: " + id));
+        return new AthleteDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public List<AthleteDTO> findAll() {
-        List<Athlete> list = repository.findAll();
-        return list.stream().map(AthleteDTO::new).collect(Collectors.toList());
+    public Page<AthleteDTO> findAll(String name, Pageable pageable) {
+        Page<Athlete> page = repository.findByFullNameContainingIgnoreCase(name, pageable);
+        return page.map(AthleteDTO::new);
     }
 
     @Transactional
@@ -46,8 +43,7 @@ public class AthleteService {
         user.setRegistration(dto.getRegistration());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        // Supondo que ID 1 = ROLE_ATHLETE, conforme nosso seeder
-        Role athleteRole = roleRepository.getReferenceById(1L);
+        Role athleteRole = roleRepository.findByAuthority("ROLE_ATHLETE");
         user.getRoles().add(athleteRole);
 
         Athlete entity = new Athlete();
@@ -62,31 +58,29 @@ public class AthleteService {
     public AthleteDTO update(Long id, AthleteDTO dto) {
         try {
             Athlete entity = repository.getReferenceById(id);
-            // Atualiza os dados do perfil do Atleta
             entity.setFullName(dto.getFullName());
             entity.setNickname(dto.getNickname());
             entity.setPhone(dto.getPhone());
             entity.setEmail(dto.getEmail());
-            // Atualiza os dados de login no User associado
             entity.getUser().setRegistration(dto.getRegistration());
 
             entity = repository.save(entity);
             return new AthleteDTO(entity);
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
-        try {
-            repository.deleteById(id);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
+        Athlete athlete = repository.findById(id).get();
+        if (!athlete.getTeams().isEmpty()) {
+            throw new BusinessException("Não é possível apagar um atleta que já está inscrito em uma ou mais equipas.");
         }
+        repository.deleteById(id);
     }
 
     private void copyDtoToEntity(AthleteInsertDTO dto, Athlete entity) {

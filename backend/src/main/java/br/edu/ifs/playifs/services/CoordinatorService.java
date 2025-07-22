@@ -7,18 +7,15 @@ import br.edu.ifs.playifs.entities.Role;
 import br.edu.ifs.playifs.entities.User;
 import br.edu.ifs.playifs.repositories.CoordinatorRepository;
 import br.edu.ifs.playifs.repositories.RoleRepository;
-import br.edu.ifs.playifs.services.exceptions.DatabaseException;
+import br.edu.ifs.playifs.services.exceptions.BusinessException;
 import br.edu.ifs.playifs.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CoordinatorService {
@@ -28,16 +25,16 @@ public class CoordinatorService {
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public List<CoordinatorDTO> findAll() {
-        List<Coordinator> list = repository.findAll();
-        return list.stream().map(CoordinatorDTO::new).collect(Collectors.toList());
+    public CoordinatorDTO findById(Long id) {
+        Coordinator entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Coordenador não encontrado com o ID: " + id));
+        return new CoordinatorDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public CoordinatorDTO findById(Long id) {
-        Coordinator entity = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Recurso não encontrado"));
-        return new CoordinatorDTO(entity);
+    public Page<CoordinatorDTO> findAll(String name, Pageable pageable) {
+        Page<Coordinator> page = repository.findByNameContainingIgnoreCase(name, pageable);
+        return page.map(CoordinatorDTO::new);
     }
 
     @Transactional
@@ -46,7 +43,7 @@ public class CoordinatorService {
         user.setRegistration(dto.getRegistration());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        Role coordinatorRole = roleRepository.findByAuthority("COORDINATOR");
+        Role coordinatorRole = roleRepository.findByAuthority("ROLE_COORDINATOR");
         user.getRoles().add(coordinatorRole);
 
         Coordinator entity = new Coordinator();
@@ -62,29 +59,27 @@ public class CoordinatorService {
     public CoordinatorDTO update(Long id, CoordinatorDTO dto) {
         try {
             Coordinator entity = repository.getReferenceById(id);
-            copyDtoToEntity(dto, entity);
+            entity.setName(dto.getName());
+            entity.setEmail(dto.getEmail());
+            entity.getUser().setRegistration(dto.getRegistration());
             entity = repository.save(entity);
             return new CoordinatorDTO(entity);
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public void delete(Long id) {
+    @Transactional
+    public void delete(Long id, User loggedUser) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
-        try {
-            repository.deleteById(id);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
-        }
-    }
 
-    private void copyDtoToEntity(CoordinatorDTO dto, Coordinator entity) {
-        entity.setName(dto.getName());
-        entity.getUser().setRegistration(dto.getRegistration());
-        entity.setEmail(dto.getEmail());
+        Coordinator coordinatorToDelete = repository.findById(id).get();
+        if (coordinatorToDelete.getUser().getId().equals(loggedUser.getId())) {
+            throw new BusinessException("Ação não permitida: um coordenador não pode apagar a sua própria conta.");
+        }
+
+        repository.deleteById(id);
     }
 }

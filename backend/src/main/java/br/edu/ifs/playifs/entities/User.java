@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +25,10 @@ public class User implements UserDetails {
     private String registration;
     private String password;
 
+    @Column(columnDefinition = "TEXT")
+    private String refreshToken;
+    private Instant refreshTokenExpiryDate;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -31,15 +36,9 @@ public class User implements UserDetails {
     private Set<Role> roles = new HashSet<>();
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
-    }
-
+    public Collection<? extends GrantedAuthority> getAuthorities() { return roles; }
     @Override
-    public String getUsername() {
-        return registration;
-    }
-
+    public String getUsername() { return registration; }
     @Override
     public boolean isAccountNonExpired() { return true; }
     @Override

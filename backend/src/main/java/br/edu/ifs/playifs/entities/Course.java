@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "tb_course")
 @Data
@@ -24,4 +27,7 @@ public class Course {
     @ManyToOne
     @JoinColumn(name = "campus_id")
     private Campus campus;
+
+    @OneToMany(mappedBy = "course")
+    private Set<Team> teams = new HashSet<>();
 }

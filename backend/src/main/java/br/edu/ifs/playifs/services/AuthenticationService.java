@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements UserDetailsService {
 
     @Autowired
-    private UserRepository repository; // Apenas o UserRepository é necessário
+    private UserRepository repository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

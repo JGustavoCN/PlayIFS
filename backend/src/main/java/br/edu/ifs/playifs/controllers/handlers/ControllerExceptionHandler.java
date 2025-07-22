@@ -44,4 +44,12 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(status).body(err);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<CustomError> runtimeException(RuntimeException e, HttpServletRequest request) {
+        // Para a exceção do refresh token, um 403 Forbidden é mais apropriado.
+        HttpStatus status = HttpStatus.FORBIDDEN;
+        CustomError err = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
 }

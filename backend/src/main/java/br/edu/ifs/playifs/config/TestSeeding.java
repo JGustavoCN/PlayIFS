@@ -13,28 +13,33 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 
 @Configuration
 @Profile("test")
 public class TestSeeding implements CommandLineRunner {
 
-    @Autowired private RoleRepository roleRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private CoordinatorRepository coordinatorRepository;
-    @Autowired private AthleteRepository athleteRepository;
-    @Autowired private CampusRepository campusRepository;
-    @Autowired private CourseRepository courseRepository;
-    @Autowired private SportRepository sportRepository;
-    @Autowired private CompetitionRepository competitionRepository;
     @Autowired private TeamRepository teamRepository;
     @Autowired private DesignatedCoachRepository designatedCoachRepository;
+    @Autowired private AthleteRepository athleteRepository;
+    @Autowired private CoordinatorRepository coordinatorRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private RoleRepository roleRepository;
+    @Autowired private CompetitionRepository competitionRepository;
+    @Autowired private CourseRepository courseRepository;
+    @Autowired private SportRepository sportRepository;
+    @Autowired private CampusRepository campusRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        cleanDatabase();
+        createRolesAndUsers();
+        createCompetitionInfrastructureAndTeams();
+    }
 
-        // 1. LIMPEZA COMPLETA
+    private void cleanDatabase() {
         teamRepository.deleteAll();
         designatedCoachRepository.deleteAll();
         athleteRepository.deleteAll();
@@ -45,82 +50,96 @@ public class TestSeeding implements CommandLineRunner {
         courseRepository.deleteAll();
         sportRepository.deleteAll();
         campusRepository.deleteAll();
+    }
 
-        // 2. CRIAR ROLES
+    private void createRolesAndUsers() {
         Role roleAthlete = new Role(null, "ROLE_ATHLETE");
         Role roleCoordinator = new Role(null, "ROLE_COORDINATOR");
         roleRepository.saveAll(Arrays.asList(roleAthlete, roleCoordinator));
 
-        // 3. CRIAR USUÁRIOS E PERFIS
-        User userCoord1 = new User(null, "coord01", passwordEncoder.encode("123456"), new HashSet<>());
+        String coordinatorHashedPass = passwordEncoder.encode("123456");
+
+        User userCoord1 = new User(null, "coord01", coordinatorHashedPass, null, null, new HashSet<>());
         userCoord1.getRoles().add(roleCoordinator);
         userRepository.save(userCoord1);
         Coordinator coord1 = new Coordinator(null, "Prof. Nelio Alves", "nelio@ifs.edu.br", userCoord1);
         coordinatorRepository.save(coord1);
 
-        // --- ATLETAS ---
-        User u1 = new User(null, "202301", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u2 = new User(null, "202302", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u3 = new User(null, "202303", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u4 = new User(null, "202304", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u5 = new User(null, "202305", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u6 = new User(null, "202306", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u7 = new User(null, "202307", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u8 = new User(null, "202308", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u9 = new User(null, "202309", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u10 = new User(null, "202310", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u11 = new User(null, "202311", passwordEncoder.encode("pass123"), new HashSet<>());
-        User u12 = new User(null, "202312", passwordEncoder.encode("pass123"), new HashSet<>());
-        List<User> users = Arrays.asList(u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12);
-        users.forEach(u -> u.getRoles().add(roleAthlete));
-        userRepository.saveAll(users);
+        for (int i = 1; i <= 20; i++) {
+            String registration = "2023" + String.format("%02d", i);
+            User user = new User(null, registration, passwordEncoder.encode("pass123"), null, null, new HashSet<>());
+            user.getRoles().add(roleAthlete);
+            userRepository.save(user);
+            String email = "atleta" + i + "@ifs.edu.br";
+            Athlete athlete = new Athlete(null, "Atleta " + i, "Apelido" + i, "9999999" + i, email, new HashSet<>(), user);
+            athleteRepository.save(athlete);
+        }
+    }
 
-        Athlete a1 = new Athlete(null, "João da Silva", "João", "79911111111", "joao@ifs.edu.br", new HashSet<>(), u1);
-        Athlete a2 = new Athlete(null, "Maria Oliveira", "Maria", "79922222222", "maria@ifs.edu.br", new HashSet<>(), u2);
-        Athlete a3 = new Athlete(null, "Carlos Pereira", "Carlinhos", "79933333333", "carlos@ifs.edu.br", new HashSet<>(), u3);
-        Athlete a4 = new Athlete(null, "Pedro Martins", "Pedro", "79944444444", "pedro@ifs.edu.br", new HashSet<>(), u4);
-        Athlete a5 = new Athlete(null, "Lucas Souza", "Lucas", "79955555555", "lucas@ifs.edu.br", new HashSet<>(), u5);
-        Athlete a6 = new Athlete(null, "Ana Costa", "Ana", "79966666666", "ana@ifs.edu.br", new HashSet<>(), u6);
-        Athlete a7 = new Athlete(null, "Mariana Santos", "Mari", "79977777777", "mariana@ifs.edu.br", new HashSet<>(), u7);
-        Athlete a8 = new Athlete(null, "Fernanda Lima", "Fê", "79988888888", "fernanda@ifs.edu.br", new HashSet<>(), u8);
-        Athlete a9 = new Athlete(null, "Ricardo Almeida", "Ricardo", "79999999999", "ricardo@ifs.edu.br", new HashSet<>(), u9);
-        Athlete a10 = new Athlete(null, "Bruno Gomes", "Bruninho", "79910101010", "bruno@ifs.edu.br", new HashSet<>(), u10);
-        Athlete a11 = new Athlete(null, "Juliana Rocha", "Ju", "79911111112", "juliana@ifs.edu.br", new HashSet<>(), u11);
-        Athlete a12 = new Athlete(null, "Gabriel Ferreira", "Gabriel", "79912121212", "gabriel@ifs.edu.br", new HashSet<>(), u12);
-        athleteRepository.saveAll(Arrays.asList(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12));
+    private void createCompetitionInfrastructureAndTeams() {
+        // --- USANDO SETTERS PARA EVITAR ERROS DE CONSTRUTOR ---
 
-        // 4. DADOS DA COMPETIÇÃO
-        Campus c1 = new Campus(null, "Campus Aracaju");
+        Campus c1 = new Campus();
+        c1.setName("Campus Aracaju");
         campusRepository.save(c1);
-        Course co1 = new Course(null, "Informática para Internet", CourseLevel.INTEGRADO, c1);
-        Course co2 = new Course(null, "Edificações", CourseLevel.INTEGRADO, c1);
-        courseRepository.saveAll(Arrays.asList(co1, co2));
-        Sport s1 = new Sport(null, "Futsal", 5, 10);
-        Sport s2 = new Sport(null, "Voleibol", 6, 12);
+
+        Course co1 = new Course();
+        co1.setName("Informática");
+        co1.setLevel(CourseLevel.INTEGRADO);
+        co1.setCampus(c1);
+
+        Course co2 = new Course();
+        co2.setName("Edificações");
+        co2.setLevel(CourseLevel.INTEGRADO);
+        co2.setCampus(c1);
+
+        Course co3 = new Course();
+        co3.setName("Física");
+        co3.setLevel(CourseLevel.INTEGRADO);
+        co3.setCampus(c1);
+        courseRepository.saveAll(Arrays.asList(co1, co2, co3));
+
+        Sport s1 = new Sport();
+        s1.setName("Futsal");
+        s1.setMinAthletes(5);
+        s1.setMaxAthletes(10);
+
+        Sport s2 = new Sport();
+        s2.setName("Voleibol");
+        s2.setMinAthletes(6);
+        s2.setMaxAthletes(12);
         sportRepository.saveAll(Arrays.asList(s1, s2));
-        Competition comp1 = new Competition(null, "Jogos do Integrado 2025", CourseLevel.INTEGRADO, new HashSet<>());
+
+        Competition comp1 = new Competition();
+        comp1.setName("Jogos do Integrado 2025");
+        comp1.setLevel(CourseLevel.INTEGRADO);
         competitionRepository.save(comp1);
 
-        // 5. EQUIPAS PRÉ-CADASTRADAS
-        DesignatedCoach dc1 = new DesignatedCoach(null, comp1, s1, co1, a1);
-        DesignatedCoach dc2 = new DesignatedCoach(null, comp1, s1, co2, a6);
+        // Buscar dados para associações
+        List<Athlete> athletes = athleteRepository.findAll();
+
+        // Designar os técnicos
+        DesignatedCoach dc1 = new DesignatedCoach(null, comp1, s1, co1, athletes.get(0)); // Atleta 1 (ID 1) é técnico de Futsal/Info
+        DesignatedCoach dc2 = new DesignatedCoach(null, comp1, s1, co2, athletes.get(5)); // Atleta 6 (ID 6) é técnico de Futsal/Edif
         designatedCoachRepository.saveAll(Arrays.asList(dc1, dc2));
 
+        // Criar Equipa 1 (Info Futsal PRO)
         Team t1 = new Team();
         t1.setName("Info Futsal PRO");
         t1.setCourse(co1);
         t1.setSport(s1);
         t1.setCompetition(comp1);
-        t1.setCoach(a1);
-        t1.getAthletes().addAll(Arrays.asList(a1, a2, a3, a4, a5));
+        t1.setCoach(athletes.get(0)); // Atleta 1
+        t1.getAthletes().addAll(Arrays.asList(athletes.get(0), athletes.get(1), athletes.get(2), athletes.get(3), athletes.get(4)));
 
+        // Criar Equipa 2 (Edificações FC)
         Team t2 = new Team();
         t2.setName("Edificações FC");
         t2.setCourse(co2);
         t2.setSport(s1);
         t2.setCompetition(comp1);
-        t2.setCoach(a6);
-        t2.getAthletes().addAll(Arrays.asList(a6, a7, a8, a9, a10));
+        t2.setCoach(athletes.get(5)); // Atleta 6
+        t2.getAthletes().addAll(Arrays.asList(athletes.get(5), athletes.get(6), athletes.get(7), athletes.get(8), athletes.get(9)));
 
         teamRepository.saveAll(Arrays.asList(t1, t2));
     }

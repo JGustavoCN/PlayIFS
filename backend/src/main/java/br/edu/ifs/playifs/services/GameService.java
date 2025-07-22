@@ -2,13 +2,17 @@ package br.edu.ifs.playifs.services;
 
 import br.edu.ifs.playifs.dto.GameDTO;
 import br.edu.ifs.playifs.dto.GameResultDTO;
+import br.edu.ifs.playifs.dto.GameUpdateDTO;
 import br.edu.ifs.playifs.dto.GameWoDTO;
 import br.edu.ifs.playifs.entities.Game;
 import br.edu.ifs.playifs.entities.enums.GameStatus;
 import br.edu.ifs.playifs.repositories.GameRepository;
 import br.edu.ifs.playifs.services.exceptions.BusinessException;
 import br.edu.ifs.playifs.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +21,51 @@ public class GameService {
 
     @Autowired
     private GameRepository repository;
+
+    @Transactional(readOnly = true)
+    public Page<GameDTO> findAll(Long teamId, Pageable pageable) {
+        Page<Game> page;
+        if (teamId != null && teamId > 0) {
+            page = repository.findByTeam(teamId, pageable);
+        } else {
+            page = repository.findAll(pageable);
+        }
+        return page.map(GameDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public GameDTO findById(Long id) {
+        Game entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Jogo não encontrado com o ID: " + id));
+        return new GameDTO(entity);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
+        }
+
+        Game game = repository.findById(id).get();
+        if (game.getStatus() != GameStatus.SCHEDULED) {
+            throw new BusinessException("Não é possível apagar um jogo que não está com o status 'Agendado'.");
+        }
+
+        repository.deleteById(id);
+    }
+
+    @Transactional
+    public GameDTO update(Long id, GameUpdateDTO dto) {
+        try {
+            Game entity = repository.getReferenceById(id);
+            entity.setDateTime(dto.getDateTime());
+            entity = repository.save(entity);
+            return new GameDTO(entity);
+        }
+        catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
+        }
+    }
 
     @Transactional
     public GameDTO updateResult(Long id, GameResultDTO dto) {

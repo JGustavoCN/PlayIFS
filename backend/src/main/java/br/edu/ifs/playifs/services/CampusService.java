@@ -3,17 +3,14 @@ package br.edu.ifs.playifs.services;
 import br.edu.ifs.playifs.dto.CampusDTO;
 import br.edu.ifs.playifs.entities.Campus;
 import br.edu.ifs.playifs.repositories.CampusRepository;
-import br.edu.ifs.playifs.services.exceptions.DatabaseException;
+import br.edu.ifs.playifs.services.exceptions.BusinessException;
 import br.edu.ifs.playifs.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CampusService {
@@ -23,15 +20,15 @@ public class CampusService {
 
     @Transactional(readOnly = true)
     public CampusDTO findById(Long id) {
-        Campus campus = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Recurso não encontrado"));
-        return new CampusDTO(campus);
+        Campus entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Campus não encontrado com o ID: " + id));
+        return new CampusDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public List<CampusDTO> findAll() {
-        List<Campus> list = repository.findAll();
-        return list.stream().map(CampusDTO::new).collect(Collectors.toList());
+    public Page<CampusDTO> findAll(String name, Pageable pageable) {
+        Page<Campus> page = repository.findByNameContainingIgnoreCase(name, pageable);
+        return page.map(CampusDTO::new);
     }
 
     @Transactional
@@ -50,19 +47,19 @@ public class CampusService {
             entity = repository.save(entity);
             return new CampusDTO(entity);
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
-        try {
-            repository.deleteById(id);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
+        Campus campus = repository.findById(id).get();
+        if (!campus.getCourses().isEmpty()) {
+            throw new BusinessException("Não é possível apagar um campus que já possui cursos associados.");
         }
+        repository.deleteById(id);
     }
 }

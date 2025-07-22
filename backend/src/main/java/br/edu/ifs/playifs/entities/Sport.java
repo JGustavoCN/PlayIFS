@@ -3,6 +3,9 @@ package br.edu.ifs.playifs.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "tb_sport")
 @Data
@@ -16,4 +19,8 @@ public class Sport {
     private String name;
     private Integer minAthletes; // Mapeia o "número mínimo de cada atleta"
     private Integer maxAthletes; // Mapeia o "número máximo de cada atleta"
+
+    @OneToMany(mappedBy = "sport")
+    private Set<Team> teams = new HashSet<>();
+
 }

@@ -1,5 +1,6 @@
 package br.edu.ifs.playifs.services;
 
+import br.edu.ifs.playifs.dto.CompetitionDTO;
 import br.edu.ifs.playifs.dto.DesignatedCoachDTO;
 import br.edu.ifs.playifs.dto.GameDTO;
 import br.edu.ifs.playifs.entities.*;
@@ -7,8 +8,12 @@ import br.edu.ifs.playifs.entities.enums.GamePhase;
 import br.edu.ifs.playifs.entities.enums.GameStatus;
 import br.edu.ifs.playifs.repositories.*;
 import br.edu.ifs.playifs.services.exceptions.BusinessException;
+import br.edu.ifs.playifs.services.exceptions.ResourceNotFoundException;
 import br.edu.ifs.playifs.services.util.TeamStanding;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,27 +37,70 @@ public class CompetitionService {
     @Autowired private CourseRepository courseRepository;
     @Autowired private AthleteRepository athleteRepository;
 
-    @Transactional
-    public void defineCoach(Long competitionId, DesignatedCoachDTO dto) {
-        if (designatedCoachRepository.existsByCompetitionIdAndSportIdAndCourseId(competitionId, dto.getSportId(), dto.getCourseId())) {
-            throw new BusinessException("Já existe um técnico definido para este esporte e curso nesta competição.");
-        }
+    // --- MÉTODOS DE CRUD PARA COMPETITION ---
 
-        Competition competition = repository.getReferenceById(competitionId);
-        Sport sport = sportRepository.getReferenceById(dto.getSportId());
-        Course course = courseRepository.getReferenceById(dto.getCourseId());
-        Athlete coach = athleteRepository.getReferenceById(dto.getAthleteId());
+    @Transactional(readOnly = true)
+    public Page<CompetitionDTO> findAll(String name, Pageable pageable) {
+        Page<Competition> page = repository.findByNameContainingIgnoreCase(name, pageable);
+        return page.map(CompetitionDTO::new);
+    }
 
-        DesignatedCoach designatedCoach = new DesignatedCoach(null, competition, sport, course, coach);
-        designatedCoachRepository.save(designatedCoach);
+    @Transactional(readOnly = true)
+    public CompetitionDTO findById(Long id) {
+        Competition entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Competição não encontrada com o ID: " + id));
+        return new CompetitionDTO(entity);
     }
 
     @Transactional
-    public List<GameDTO> generateGroupStage(Long competitionId) {
+    public CompetitionDTO insert(CompetitionDTO dto) {
+        Competition entity = new Competition();
+        entity.setName(dto.getName());
+        entity.setLevel(dto.getLevel());
+        entity = repository.save(entity);
+        return new CompetitionDTO(entity);
+    }
+
+    @Transactional
+    public CompetitionDTO update(Long id, CompetitionDTO dto) {
+        try {
+            Competition entity = repository.getReferenceById(id);
+            entity.setName(dto.getName());
+            entity.setLevel(dto.getLevel());
+            entity = repository.save(entity);
+            return new CompetitionDTO(entity);
+        }
+        catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
+        }
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
+        }
+        Competition competition = repository.findById(id).get();
+        if (!competition.getTeams().isEmpty()) {
+            throw new BusinessException("Não é possível apagar uma competição que já possui equipas inscritas.");
+        }
+        repository.deleteById(id);
+    }
+
+
+    @Transactional
+    public List<GameDTO> generateGroupStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
                 .orElseThrow(() -> new BusinessException("Competição não encontrada."));
 
-        List<Team> teams = new ArrayList<>(competition.getTeams());
+        List<Team> teams = competition.getTeams().stream()
+                .filter(team -> team.getSport().getId().equals(sportId))
+                .collect(Collectors.toList());
+
+        boolean groupsAlreadyExist = teams.stream().anyMatch(team -> team.getGameGroup() != null);
+        if (groupsAlreadyExist) {
+            throw new BusinessException("A fase de grupos para este desporto já foi gerada.");
+        }
 
         if (teams.size() < 3) {
             throw new BusinessException("São necessárias no mínimo 3 equipes para gerar a fase de grupos.");
@@ -71,7 +119,7 @@ public class CompetitionService {
         for (int i = 0; i < groupSizes.size(); i++) {
             int size = groupSizes.get(i);
             GameGroup group = new GameGroup();
-            group.setName("Grupo " + (char) ('A' + i) + " - " + competition.getName());
+            group.setName("Grupo " + (char) ('A' + i) + " - " + competition.getName() + " (" + teams.get(0).getSport().getName() + ")");
             group = groupRepository.save(group);
 
             List<Team> groupTeams = new ArrayList<>();
@@ -91,12 +139,15 @@ public class CompetitionService {
     }
 
     @Transactional
-    public List<GameDTO> generateEliminationStage(Long competitionId) {
+    public List<GameDTO> generateEliminationStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
                 .orElseThrow(() -> new BusinessException("Competição não encontrada."));
 
-        // Validação 1: O torneio já terminou?
-        boolean isTournamentFinished = competition.getTeams().stream()
+        List<Team> teamsOfSport = competition.getTeams().stream()
+                .filter(team -> team.getSport().getId().equals(sportId))
+                .toList();
+
+        boolean isTournamentFinished = teamsOfSport.stream()
                 .flatMap(team -> team.getGamesAsTeamA().stream())
                 .anyMatch(game -> game.getPhase() == GamePhase.FINAL && game.getStatus() != GameStatus.SCHEDULED);
 
@@ -104,19 +155,17 @@ public class CompetitionService {
             throw new BusinessException("Este torneio já foi finalizado e não pode gerar novas fases.");
         }
 
-        // Validação 2: A fase de grupos terminou?
-        boolean allGroupGamesFinished = competition.getTeams().stream()
+        boolean allGroupGamesFinished = teamsOfSport.stream()
                 .filter(team -> team.getGameGroup() != null)
                 .flatMap(team -> team.getGameGroup().getGames().stream())
                 .allMatch(game -> game.getStatus() == GameStatus.FINISHED || game.getStatus() == GameStatus.WO);
 
         if (!allGroupGamesFinished) {
-            throw new BusinessException("Ainda existem jogos pendentes na fase de grupos.");
+            throw new BusinessException("Ainda existem jogos pendentes na fase de grupos para este esporte.");
         }
 
-        // Calcular a classificação
         List<Team> qualifiedTeams = new ArrayList<>();
-        List<GameGroup> groups = competition.getTeams().stream()
+        List<GameGroup> groups = teamsOfSport.stream()
                 .map(Team::getGameGroup)
                 .filter(java.util.Objects::nonNull)
                 .distinct()
@@ -179,13 +228,15 @@ public class CompetitionService {
         if (numberOfTeams <= 2) return GamePhase.FINAL;
         if (numberOfTeams <= 4) return GamePhase.SEMI_FINALS;
         if (numberOfTeams <= 8) return GamePhase.QUARTER_FINALS;
-        return GamePhase.FINAL; // Fallback para casos maiores
+        return GamePhase.FINAL; // Fallback
     }
 
     private List<Integer> calculateGroupSizes(int totalTeams) {
-        List<Integer> sizes = new ArrayList<>();
-        if (totalTeams < 3) return sizes;
+        if (totalTeams < 3) {
+            return new ArrayList<>();
+        }
 
+        List<Integer> sizes = new ArrayList<>();
         int numGroupsOf4 = 0;
         int numGroupsOf3 = 0;
 
