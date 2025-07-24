@@ -1,8 +1,26 @@
 package br.edu.ifs.playifs.config;
 
-import br.edu.ifs.playifs.entities.*;
-import br.edu.ifs.playifs.entities.enums.CourseLevel;
-import br.edu.ifs.playifs.repositories.*;
+import br.edu.ifs.playifs.competition.CompetitionRepository;
+import br.edu.ifs.playifs.competition.DesignatedCoachRepository;
+import br.edu.ifs.playifs.competition.model.Competition;
+import br.edu.ifs.playifs.competition.model.DesignatedCoach;
+import br.edu.ifs.playifs.data.campus.CampusRepository;
+import br.edu.ifs.playifs.data.campus.model.Campus;
+import br.edu.ifs.playifs.data.course.CourseRepository;
+import br.edu.ifs.playifs.data.course.model.Course;
+import br.edu.ifs.playifs.data.sport.SportRepository;
+import br.edu.ifs.playifs.data.sport.model.Sport;
+import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
+import br.edu.ifs.playifs.team.TeamRepository;
+import br.edu.ifs.playifs.team.model.Team;
+import br.edu.ifs.playifs.user.repository.AthleteRepository;
+import br.edu.ifs.playifs.user.repository.CoordinatorRepository;
+import br.edu.ifs.playifs.user.model.Athlete;
+import br.edu.ifs.playifs.user.model.Coordinator;
+import br.edu.ifs.playifs.user.model.Role;
+import br.edu.ifs.playifs.user.model.User;
+import br.edu.ifs.playifs.user.repository.RoleRepository;
+import br.edu.ifs.playifs.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
 
 @Configuration
 @Profile("test")
@@ -121,7 +138,8 @@ public class TestSeeding implements CommandLineRunner {
         // Designar os técnicos
         DesignatedCoach dc1 = new DesignatedCoach(null, comp1, s1, co1, athletes.get(0)); // Atleta 1 (ID 1) é técnico de Futsal/Info
         DesignatedCoach dc2 = new DesignatedCoach(null, comp1, s1, co2, athletes.get(5)); // Atleta 6 (ID 6) é técnico de Futsal/Edif
-        designatedCoachRepository.saveAll(Arrays.asList(dc1, dc2));
+        DesignatedCoach dc3 = new DesignatedCoach(null, comp1, s2, co1, athletes.get(1));
+        designatedCoachRepository.saveAll(Arrays.asList(dc1, dc2, dc3));
 
         // Criar Equipa 1 (Info Futsal PRO)
         Team t1 = new Team();
@@ -130,7 +148,7 @@ public class TestSeeding implements CommandLineRunner {
         t1.setSport(s1);
         t1.setCompetition(comp1);
         t1.setCoach(athletes.get(0)); // Atleta 1
-        t1.getAthletes().addAll(Arrays.asList(athletes.get(0), athletes.get(1), athletes.get(2), athletes.get(3), athletes.get(4)));
+        t1.getAthletes().addAll(Arrays.asList(athletes.get(0), athletes.get(1), athletes.get(2), athletes.get(3), athletes.get(4), athletes.get(10)));
 
         // Criar Equipa 2 (Edificações FC)
         Team t2 = new Team();
@@ -141,6 +159,15 @@ public class TestSeeding implements CommandLineRunner {
         t2.setCoach(athletes.get(5)); // Atleta 6
         t2.getAthletes().addAll(Arrays.asList(athletes.get(5), athletes.get(6), athletes.get(7), athletes.get(8), athletes.get(9)));
 
-        teamRepository.saveAll(Arrays.asList(t1, t2));
+        Team t3 = new Team();
+        t3.setName("Info Volei");
+        t3.setCourse(co1);
+        t3.setSport(s2);
+        t3.setCompetition(comp1);
+        t3.setCoach(athletes.get(1)); // Atleta 2
+        t3.getAthletes().addAll(Arrays.asList(athletes.get(0), athletes.get(1), athletes.get(2), athletes.get(3), athletes.get(4)));
+
+
+        teamRepository.saveAll(Arrays.asList(t1, t2, t3));
     }
 }

@@ -1,6 +1,6 @@
 package br.edu.ifs.playifs.config;
 
-
+import br.edu.ifs.playifs.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// Importar a nossa nova classe de constantes
+import static br.edu.ifs.playifs.config.SecurityConstants.*;
 
 @Configuration
 @EnableWebSecurity
@@ -38,9 +40,9 @@ public class SecurityConfig {
                         // =================================================================
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login", "/login/refresh-token").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/athletes").permitAll() // Auto-registo de atletas
-                        .requestMatchers(HttpMethod.GET, "/reports/**").permitAll() // Relatórios são públicos
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/athletes").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/reports/**").permitAll()
 
                         // =================================================================
                         // 2. ENDPOINTS DE LEITURA (qualquer utilizador autenticado)
@@ -53,30 +55,28 @@ public class SecurityConfig {
                         // =================================================================
                         // 3. ENDPOINTS DE AÇÕES PARA ATLETAS
                         // =================================================================
-                        .requestMatchers(HttpMethod.POST, "/teams").hasRole("ATHLETE")
-                        .requestMatchers(HttpMethod.PUT, "/teams/{id}").hasRole("ATHLETE") // Atleta (capitão) edita sua equipa
-                        .requestMatchers("/teams/{id}/athletes/**").hasRole("ATHLETE") // Atleta (capitão) gere sua equipa
+                        .requestMatchers(HttpMethod.GET, "/dashboard/athlete").hasRole(ROLE_ATHLETE)
+                        .requestMatchers(HttpMethod.POST, "/teams").hasRole(ROLE_ATHLETE)
+                        .requestMatchers(HttpMethod.PUT, "/teams/{id}").hasRole(ROLE_ATHLETE)
+                        .requestMatchers("/teams/{id}/athletes/**").hasRole(ROLE_ATHLETE)
 
                         // =================================================================
                         // 4. ENDPOINTS DE ADMINISTRAÇÃO PARA COORDENADORES
                         // =================================================================
-                        // Gestão completa de competições
-                        .requestMatchers("/competitions/**").hasRole("COORDINATOR")
-                        // Gestão de resultados, agendamento e cancelamento de jogos
-                        .requestMatchers("/games/**").hasRole("COORDINATOR")
-                        // Gestão administrativa de equipas (ex: apagar)
-                        .requestMatchers(HttpMethod.DELETE, "/teams/{id}").hasRole("COORDINATOR")
-                        // Gestão de todos os perfis de utilizador
-                        .requestMatchers("/athletes/**", "/coordinators/**").hasRole("COORDINATOR")
-                        // Gestão de dados base do sistema
-                        .requestMatchers("/campuses/**", "/courses/**", "/sports/**").hasRole("COORDINATOR")
-                        // Gestão de técnicos designados
-                        .requestMatchers("/designated-coaches/**").hasRole("COORDINATOR")
+                        .requestMatchers(HttpMethod.GET, "/dashboard/coordinator").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers("/competitions/**").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers("/games/**").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers(HttpMethod.DELETE, "/teams/{id}").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers(HttpMethod.PUT, "/athletes/{id}").hasAnyRole(ROLE_ATHLETE, ROLE_COORDINATOR)
+                        .requestMatchers("/athletes/**").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers("/coordinators/**").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers("/campuses/**", "/courses/**", "/sports/**").hasRole(ROLE_COORDINATOR)
+                        .requestMatchers("/designated-coaches/**").hasRole(ROLE_COORDINATOR)
 
                         // =================================================================
                         // 5. REGRA FINAL (fallback)
                         // =================================================================
-                        .anyRequest().denyAll() // Nega qualquer outra requisição não mapeada acima
+                        .anyRequest().denyAll()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -91,5 +91,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
