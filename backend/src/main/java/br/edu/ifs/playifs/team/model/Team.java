@@ -19,6 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id") // Usando a forma correta e mais simples
+@ToString
 public class Team {
 
     @Id

@@ -15,6 +15,9 @@ import java.util.Optional;
 
 public interface GameRepository extends JpaRepository<Game, Long> {
 
+    @Query("SELECT g FROM Game g WHERE g.teamA.competition.id = :competitionId AND g.teamA.sport.id = :sportId AND g.phase <> 'GROUP_STAGE'")
+    List<Game> findAllEliminationGamesByCompetitionAndSport(Long competitionId, Long sportId);
+
     @Query("SELECT obj FROM Game obj WHERE (:teamId IS NULL OR obj.teamA.id = :teamId OR obj.teamB.id = :teamId)")
     Page<Game> findByTeam(Long teamId, Pageable pageable);
 

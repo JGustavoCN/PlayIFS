@@ -115,6 +115,7 @@ public class TeamService {
         // Validação 7: Quantidade de atletas
         Sport sport = sportRepository.findById(dto.getSportId())
                 .orElseThrow(() -> new BusinessException("Esporte não encontrado."));
+
         int numAthletes = dto.getAthleteIds().size();
         if (numAthletes < sport.getMinAthletes() || numAthletes > sport.getMaxAthletes()) {
             throw new BusinessException("Número de atletas (" + numAthletes + ") fora do permitido para o esporte: "

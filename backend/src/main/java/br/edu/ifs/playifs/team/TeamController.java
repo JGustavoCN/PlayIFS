@@ -56,7 +56,7 @@ public class TeamController {
     @PostMapping
     @Operation(summary = "Cria uma nova equipa (apenas Atleta-Técnico)")
     @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Equipa criada com sucesso"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
-    @IsTeamCoach
+    @IsAthlete
     public ResponseEntity<TeamDTO> insert(@RequestBody TeamInsertDTO dto, @AuthenticationPrincipal User loggedUser) {
         TeamDTO newDto = service.insert(dto, loggedUser);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();

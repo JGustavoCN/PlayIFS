@@ -25,9 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -43,7 +41,7 @@ public class CompetitionService {
     @Autowired private CourseRepository courseRepository;
     @Autowired private AthleteRepository athleteRepository;
 
-    // --- MÉTODOS DE CRUD PARA COMPETITION ---
+    // --- MÉTODOS DE CRUD (sem alterações) ---
 
     @Transactional(readOnly = true)
     public Page<CompetitionDTO> findAll(String name, Pageable pageable) {
@@ -93,6 +91,7 @@ public class CompetitionService {
         repository.deleteById(id);
     }
 
+    // --- MÉTODO DE GERAÇÃO DE GRUPOS (sem alterações) ---
 
     @Transactional
     public List<GameDTO> generateGroupStage(Long competitionId, Long sportId) {
@@ -144,22 +143,94 @@ public class CompetitionService {
         return allNewGames.stream().map(GameDTO::new).toList();
     }
 
+    // =================================================================
+    // === MÉTODO generateEliminationStage TOTALMENTE REATORADO ======
+    // =================================================================
     @Transactional
     public List<GameDTO> generateEliminationStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
-                .orElseThrow(() -> new BusinessException("Competição não encontrada."));
+                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada."));
 
+        List<Game> allEliminationGames = gameRepository.findAllEliminationGamesByCompetitionAndSport(competitionId, sportId);
+
+        boolean hasPendingGames = allEliminationGames.stream()
+                .anyMatch(game -> game.getStatus() == GameStatus.SCHEDULED);
+        if (hasPendingGames) {
+            throw new BusinessException("Existem jogos da fase eliminatória atual que ainda não foram finalizados.");
+        }
+
+        boolean tournamentIsFinished = allEliminationGames.stream()
+                .anyMatch(game -> game.getPhase() == GamePhase.FINAL && game.getStatus() != GameStatus.SCHEDULED);
+        if (tournamentIsFinished) {
+            throw new BusinessException("Este torneio já foi finalizado e não pode gerar novas fases.");
+        }
+
+        List<Game> newGames = new ArrayList<>();
+        GamePhase lastPlayedPhase = allEliminationGames.stream()
+                .map(Game::getPhase)
+                .max(Comparator.comparing(Enum::ordinal))
+                .orElse(null);
+
+        if (lastPlayedPhase == null) {
+            // Cenário 1: Gerar a PRIMEIRA fase eliminatória a partir dos grupos.
+            List<Team> teamsForNextRound = getTeamsFromGroupStage(competition, sportId);
+            if (teamsForNextRound.size() < 2) {
+                throw new BusinessException("Não há equipas suficientes para gerar a fase eliminatória.");
+            }
+            GamePhase nextPhase = getPhaseFor(teamsForNextRound.size());
+            newGames.addAll(generateKnockoutRound(teamsForNextRound, nextPhase));
+
+        } else if (lastPlayedPhase == GamePhase.SEMI_FINALS) {
+            // Cenário 2: Semifinais terminaram. Gerar a FINAL e a DISPUTA DE TERCEIRO LUGAR.
+            List<Game> semiFinalGames = allEliminationGames.stream()
+                    .filter(g -> g.getPhase() == GamePhase.SEMI_FINALS).toList();
+
+            List<Team> winners = semiFinalGames.stream().map(this::getWinner).toList();
+            List<Team> losers = semiFinalGames.stream().map(this::getLoser).toList();
+
+            if (winners.size() == 2) {
+                newGames.add(createEliminationGame(winners.get(0), winners.get(1), GamePhase.FINAL));
+            }
+            if (losers.size() == 2) {
+                newGames.add(createEliminationGame(losers.get(0), losers.get(1), GamePhase.THIRD_PLACE_DISPUTE));
+            }
+        } else {
+            // Cenário 3: Outra fase eliminatória (ex: Quartas) terminou. Gerar a fase seguinte.
+            List<Team> winners = allEliminationGames.stream()
+                    .filter(game -> game.getPhase() == lastPlayedPhase)
+                    .map(this::getWinner)
+                    .collect(Collectors.toList());
+
+            List<Team> initialQualifiedTeams = getTeamsFromGroupStage(competition, sportId);
+            int byesInFirstRound = getNextPowerOfTwo(initialQualifiedTeams.size()) - initialQualifiedTeams.size();
+
+            List<Team> teamsForNextRound = new ArrayList<>();
+            if (getPhaseFor(initialQualifiedTeams.size()) == lastPlayedPhase) {
+                teamsForNextRound.addAll(initialQualifiedTeams.subList(0, byesInFirstRound));
+            }
+            teamsForNextRound.addAll(winners);
+
+            if (teamsForNextRound.size() < 2) {
+                throw new BusinessException("Não há equipas suficientes para gerar a próxima fase.");
+            }
+            GamePhase nextPhase = getPhaseFor(teamsForNextRound.size());
+            newGames.addAll(generateKnockoutRound(teamsForNextRound, nextPhase));
+        }
+
+        if (newGames.isEmpty()) {
+            throw new BusinessException("Nenhuma nova fase a ser gerada no momento. O torneio pode ter sido concluído.");
+        }
+
+        gameRepository.saveAll(newGames);
+        return newGames.stream().map(GameDTO::new).toList();
+    }
+
+    // --- MÉTODOS PRIVADOS AUXILIARES (Refatorados) ---
+
+    private List<Team> getTeamsFromGroupStage(Competition competition, Long sportId) {
         List<Team> teamsOfSport = competition.getTeams().stream()
                 .filter(team -> team.getSport().getId().equals(sportId))
                 .toList();
-
-        boolean isTournamentFinished = teamsOfSport.stream()
-                .flatMap(team -> team.getGamesAsTeamA().stream())
-                .anyMatch(game -> game.getPhase() == GamePhase.FINAL && game.getStatus() != GameStatus.SCHEDULED);
-
-        if (isTournamentFinished) {
-            throw new BusinessException("Este torneio já foi finalizado e não pode gerar novas fases.");
-        }
 
         boolean allGroupGamesFinished = teamsOfSport.stream()
                 .filter(team -> team.getGameGroup() != null)
@@ -170,12 +241,14 @@ public class CompetitionService {
             throw new BusinessException("Ainda existem jogos pendentes na fase de grupos para este esporte.");
         }
 
-        List<Team> qualifiedTeams = new ArrayList<>();
         List<GameGroup> groups = teamsOfSport.stream()
                 .map(Team::getGameGroup)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
+
+        List<TeamStanding> firstPlaceFinishers = new ArrayList<>();
+        List<TeamStanding> secondPlaceFinishers = new ArrayList<>();
 
         for (GameGroup group : groups) {
             List<TeamStanding> standings = group.getTeams().stream()
@@ -183,50 +256,44 @@ public class CompetitionService {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             for (Game game : group.getGames()) {
-                TeamStanding standingA = standings.stream().filter(s -> s.getTeam().equals(game.getTeamA())).findFirst().get();
-                TeamStanding standingB = standings.stream().filter(s -> s.getTeam().equals(game.getTeamB())).findFirst().get();
-                updateStandings(game, standingA, standingB);
+                if (game.getStatus() == GameStatus.FINISHED || game.getStatus() == GameStatus.WO) {
+                    TeamStanding standingA = standings.stream().filter(s -> s.getTeam().equals(game.getTeamA())).findFirst().get();
+                    TeamStanding standingB = standings.stream().filter(s -> s.getTeam().equals(game.getTeamB())).findFirst().get();
+                    updateStandings(game, standingA, standingB);
+                }
             }
-
             standings.sort(TeamStanding::compareTo);
-            if (!standings.isEmpty()) qualifiedTeams.add(standings.get(0).getTeam());
-            if (standings.size() > 1) qualifiedTeams.add(standings.get(1).getTeam());
+            if (!standings.isEmpty()) firstPlaceFinishers.add(standings.get(0));
+            if (standings.size() > 1) secondPlaceFinishers.add(standings.get(1));
         }
 
-        int numTeams = qualifiedTeams.size();
-        if (numTeams < 2) {
-            throw new BusinessException("Número de equipas qualificadas insuficiente para gerar a fase eliminatória.");
-        }
+        firstPlaceFinishers.sort(TeamStanding::compareTo);
+        secondPlaceFinishers.sort(TeamStanding::compareTo);
 
-        GamePhase currentPhase = getPhaseFor(numTeams);
-        List<Game> eliminationGames = generateKnockoutRound(qualifiedTeams, currentPhase);
+        List<Team> qualifiedTeams = new ArrayList<>();
+        firstPlaceFinishers.forEach(standing -> qualifiedTeams.add(standing.getTeam()));
+        secondPlaceFinishers.forEach(standing -> qualifiedTeams.add(standing.getTeam()));
 
-        gameRepository.saveAll(eliminationGames);
-        return eliminationGames.stream().map(GameDTO::new).toList();
+        return qualifiedTeams;
     }
 
     private List<Game> generateKnockoutRound(List<Team> teams, GamePhase phase) {
         int numTeams = teams.size();
-        int nextPowerOfTwo = 1;
-        while (nextPowerOfTwo < numTeams) {
-            nextPowerOfTwo *= 2;
-        }
-        int byes = nextPowerOfTwo - numTeams;
+        List<Team> teamsToPlay = new ArrayList<>(teams);
+        int byes = getNextPowerOfTwo(numTeams) - numTeams;
 
-        List<Team> teamsWithBye = new ArrayList<>(teams.subList(0, byes));
-        List<Team> teamsInFirstRound = new ArrayList<>(teams.subList(byes, numTeams));
+        List<Team> teamsWithBye = new ArrayList<>();
+        if (byes > 0 && numTeams > 2) {
+            teamsWithBye.addAll(teams.subList(0, byes));
+            teamsToPlay.removeAll(teamsWithBye);
+        }
 
         List<Game> games = new ArrayList<>();
-        Collections.shuffle(teamsInFirstRound);
-
-        for (int i = 0; i < teamsInFirstRound.size() / 2; i++) {
-            Team teamA = teamsInFirstRound.get(i);
-            Team teamB = teamsInFirstRound.get(teamsInFirstRound.size() - 1 - i);
+        for (int i = 0; i < teamsToPlay.size() / 2; i++) {
+            Team teamA = teamsToPlay.get(i);
+            Team teamB = teamsToPlay.get(teamsToPlay.size() - 1 - i);
             games.add(createEliminationGame(teamA, teamB, phase));
         }
-
-        System.out.println("Equipas com Bye (folga na ronda " + phase + "): " + teamsWithBye.stream().map(Team::getName).toList());
-
         return games;
     }
 
@@ -234,39 +301,41 @@ public class CompetitionService {
         if (numberOfTeams <= 2) return GamePhase.FINAL;
         if (numberOfTeams <= 4) return GamePhase.SEMI_FINALS;
         if (numberOfTeams <= 8) return GamePhase.QUARTER_FINALS;
-        return GamePhase.FINAL; // Fallback
+        return GamePhase.ROUND_OF_16;
+    }
+
+    private int getNextPowerOfTwo(int n) {
+        int power = 1;
+        while (power < n) {
+            power *= 2;
+        }
+        return power;
+    }
+
+    private Team getWinner(Game game) {
+        if (game.getScoreTeamA() > game.getScoreTeamB()) return game.getTeamA();
+        return game.getTeamB();
+    }
+
+    private Team getLoser(Game game) {
+        if (game.getScoreTeamA() < game.getScoreTeamB()) return game.getTeamA();
+        return game.getTeamB();
     }
 
     private List<Integer> calculateGroupSizes(int totalTeams) {
-        if (totalTeams < 3) {
-            return new ArrayList<>();
-        }
-
+        if (totalTeams < 3) return new ArrayList<>();
         List<Integer> sizes = new ArrayList<>();
-        int numGroupsOf4 = 0;
-        int numGroupsOf3 = 0;
-
+        int numGroupsOf4 = 0, numGroupsOf3 = 0;
         switch (totalTeams % 3) {
-            case 0:
-                numGroupsOf3 = totalTeams / 3;
-                break;
-            case 1:
-                numGroupsOf4 = 1;
-                numGroupsOf3 = (totalTeams - 4) / 3;
-                break;
+            case 0: numGroupsOf3 = totalTeams / 3; break;
+            case 1: numGroupsOf4 = 1; numGroupsOf3 = (totalTeams - 4) / 3; break;
             case 2:
-                if (totalTeams == 5) {
-                    sizes.add(5);
-                    return sizes;
-                }
-                numGroupsOf4 = 2;
-                numGroupsOf3 = (totalTeams - 8) / 3;
+                if (totalTeams == 5) { sizes.add(5); return sizes; }
+                numGroupsOf4 = 2; numGroupsOf3 = (totalTeams - 8) / 3;
                 break;
         }
-
         for (int i = 0; i < numGroupsOf4; i++) sizes.add(4);
         for (int i = 0; i < numGroupsOf3; i++) sizes.add(3);
-
         return sizes;
     }
 
@@ -302,11 +371,12 @@ public class CompetitionService {
         standingA.setGoalsAgainst(standingA.getGoalsAgainst() + game.getScoreTeamB());
         standingB.setGoalsFor(standingB.getGoalsFor() + game.getScoreTeamB());
         standingB.setGoalsAgainst(standingB.getGoalsAgainst() + game.getScoreTeamA());
-
         if (game.getScoreTeamA() > game.getScoreTeamB()) {
             standingA.setPoints(standingA.getPoints() + 3);
+            standingA.setWins(standingA.getWins() + 1);
         } else if (game.getScoreTeamB() > game.getScoreTeamA()) {
             standingB.setPoints(standingB.getPoints() + 3);
+            standingB.setWins(standingB.getWins() + 1);
         } else {
             standingA.setPoints(standingA.getPoints() + 1);
             standingB.setPoints(standingB.getPoints() + 1);

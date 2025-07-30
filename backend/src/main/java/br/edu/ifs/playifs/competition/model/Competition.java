@@ -20,10 +20,10 @@ public class Competition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name; // Ex: "Jogos Internos do Integrado 2025"
+    private String name;
 
     @Enumerated(EnumType.STRING)
-    private CourseLevel level; // Para separar por INTEGRADO, TECNICO, SUPERIOR
+    private CourseLevel level; // P/ separa por INTEGRADO, TECNICO, SUPERIOR
 
     @OneToMany(mappedBy = "competition")
     private Set<Team> teams = new HashSet<>();

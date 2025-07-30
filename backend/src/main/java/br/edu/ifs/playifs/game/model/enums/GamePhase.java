@@ -5,5 +5,5 @@ public enum GamePhase {
     QUARTER_FINALS,     // Quartas de Final
     SEMI_FINALS,        // Semifinal
     FINAL,              // Final
-    THIRD_PLACE_DISPUTE // Disputa de Terceiro Lugar
+    ROUND_OF_16, THIRD_PLACE_DISPUTE // Disputa de Terceiro Lugar
 }
