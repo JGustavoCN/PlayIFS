@@ -9,6 +9,7 @@ import br.edu.ifs.playifs.data.sport.SportRepository;
 import br.edu.ifs.playifs.data.sport.model.Sport;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.user.repository.AthleteRepository;
 import br.edu.ifs.playifs.user.model.Athlete;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class DesignatedCoachService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DesignatedCoachDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) {
+    public PageDTO<DesignatedCoachDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) {
         Specification<DesignatedCoach> spec = Specification.anyOf();
         if (competitionId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("competition").get("id"), competitionId));
@@ -50,7 +51,9 @@ public class DesignatedCoachService {
         }
 
         Page<DesignatedCoach> page = repository.findAll(spec, pageable);
-        return page.map(DesignatedCoachDTO::new);
+        Page<DesignatedCoachDTO> pageDto = page.map(DesignatedCoachDTO::new);
+
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional

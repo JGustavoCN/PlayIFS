@@ -13,6 +13,7 @@ import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
 import br.edu.ifs.playifs.shared.util.TeamStanding;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.TeamRepository;
 import br.edu.ifs.playifs.team.model.Team;
 import br.edu.ifs.playifs.user.repository.AthleteRepository;
@@ -44,9 +45,10 @@ public class CompetitionService {
     // --- MÉTODOS DE CRUD (sem alterações) ---
 
     @Transactional(readOnly = true)
-    public Page<CompetitionDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<CompetitionDTO> findAll(String name, Pageable pageable) {
         Page<Competition> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        return page.map(CompetitionDTO::new);
+        Page<CompetitionDTO> pageDto = page.map(CompetitionDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional(readOnly = true)

@@ -2,30 +2,32 @@ package br.edu.ifs.playifs.user.dto;
 
 import br.edu.ifs.playifs.user.model.Athlete;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Schema(description = "DTO para representar os dados de um atleta.")
+@Schema(description = "DTO para representar ou atualizar os dados de um atleta.")
 public class AthleteDTO {
 
-    @Schema(description = "ID único do atleta.", example = "1")
+    @Schema(description = "ID único do perfil do atleta.", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
-    @Schema(description = "Matrícula do atleta, usada para login.", example = "202301")
+    @Schema(description = "Matrícula única do atleta, usada para login.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "O campo matrícula é obrigatório.")
     private String registration;
 
-    @Schema(description = "Nome completo do atleta.", example = "João da Silva")
+    @Schema(description = "Nome completo do atleta.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "O campo nome completo é obrigatório.")
     private String fullName;
 
-    @Schema(description = "Apelido do atleta.", example = "João")
     private String nickname;
-
-    @Schema(description = "Número de telefone para contato.", example = "79912345678")
     private String phone;
 
-    @Schema(description = "Email do atleta.", example = "joao.silva@ifs.edu.br")
+    @Schema(description = "Email do atleta.", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Email(message = "Por favor, insira um email válido.")
     private String email;
 
     public AthleteDTO(Athlete entity) {

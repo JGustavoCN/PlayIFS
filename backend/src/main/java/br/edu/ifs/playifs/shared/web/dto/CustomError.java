@@ -1,4 +1,4 @@
-package br.edu.ifs.playifs.shared.web;
+package br.edu.ifs.playifs.shared.web.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

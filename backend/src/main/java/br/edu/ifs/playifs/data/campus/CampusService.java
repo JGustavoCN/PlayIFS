@@ -4,6 +4,7 @@ import br.edu.ifs.playifs.data.campus.dto.CampusDTO;
 import br.edu.ifs.playifs.data.campus.model.Campus;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,9 +26,10 @@ public class CampusService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CampusDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<CampusDTO> findAll(String name, Pageable pageable) {
         Page<Campus> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        return page.map(CampusDTO::new);
+        Page<CampusDTO> pageDto = page.map(CampusDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,9 +41,10 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "Autenticação bem-sucedida",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = LoginResponseDTO.class))),
-            @ApiResponse(responseCode = "403", ref = "ForbiddenError")
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError")
     })
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO data){
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO data){
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.registration(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
         String accessToken = tokenService.generateToken((UserDetails) auth.getPrincipal());
@@ -56,12 +58,13 @@ public class AuthenticationController {
             description = "Gera um novo token de acesso e um novo refresh token a partir de um refresh token válido. O refresh token antigo é invalidado (rotação de token)."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Token de acesso renovado com sucesso",
+            @ApiResponse(responseCode = "200", description = "Token renovado com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = RefreshTokenResponseDTO.class))),
-            @ApiResponse(responseCode = "403", ref = "ForbiddenError")
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError")
     })
-    public ResponseEntity<RefreshTokenResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO request) {
+    public ResponseEntity<RefreshTokenResponseDTO> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO request) {
         User user = refreshTokenService.verifyExpiration(request.refreshToken());
         String newAccessToken = tokenService.generateToken(user);
         String newRefreshToken = refreshTokenService.createRefreshToken(user.getUsername());
