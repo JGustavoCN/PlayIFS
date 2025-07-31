@@ -24,7 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/games")
+@RequestMapping(value = "/api/v1/games")
 @Tag(name = "5. Jogos (Games)", description = "Endpoints para a gestão de jogos individuais, resultados e W.O.s.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

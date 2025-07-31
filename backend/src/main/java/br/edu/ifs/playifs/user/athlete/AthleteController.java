@@ -28,7 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/athletes")
+@RequestMapping(value = "/api/v1/athletes")
 @Tag(name = "6. Gestão de Perfis - Atletas", description = "Endpoints para o cadastro público e gestão administrativa de perfis de atletas.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

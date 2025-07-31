@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping ("/dashboard")
+@RequestMapping ("/api/v1/dashboard")
 @Tag(name = "1. Dashboards", description = "Endpoints que fornecem dados consolidados e de alto valor para os painéis de Atleta e Coordenador.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 public class DashboardController {

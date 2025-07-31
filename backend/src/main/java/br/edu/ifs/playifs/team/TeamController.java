@@ -28,7 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/teams")
+@RequestMapping(value = "/api/v1/teams")
 @Tag(name = "4. Equipas (Teams)", description = "Endpoints para a gestão de equipas e seus elencos de atletas.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

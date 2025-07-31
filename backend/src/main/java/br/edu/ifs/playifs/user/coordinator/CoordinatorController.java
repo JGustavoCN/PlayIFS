@@ -28,7 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/coordinators")
+@RequestMapping(value = "/api/v1/coordinators")
 @Tag(name = "6. Gestão de Perfis - Coordenadores", description = "Endpoints para a gestão administrativa de perfis de coordenadores.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

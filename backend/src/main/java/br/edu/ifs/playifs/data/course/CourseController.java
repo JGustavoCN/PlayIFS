@@ -25,7 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/courses")
+@RequestMapping(value = "/api/v1/courses")
 @Tag(name = "7. Administração (Dados Base) - Cursos", description = "Endpoints para a gestão de Cursos.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/reports")
+@RequestMapping(value = "/api/v1/reports")
 @Tag(name = "2. Relatórios (BI)", description = "Endpoints para a extração de relatórios e estatísticas complexas sobre as competições.")
 @Validated // Ativa a validação para os parâmetros de requisição (@RequestParam)
 public class ReportController {

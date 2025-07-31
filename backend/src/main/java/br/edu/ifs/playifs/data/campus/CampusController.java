@@ -25,7 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/campuses")
+@RequestMapping(value = "/api/v1/campuses")
 @Tag(name = "7. Administração (Dados Base) - Campi", description = "Endpoints para a gestão de Campi.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

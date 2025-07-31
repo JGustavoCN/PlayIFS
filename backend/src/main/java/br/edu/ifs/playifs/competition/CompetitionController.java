@@ -27,7 +27,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/competitions")
+@RequestMapping(value = "/api/v1/competitions")
 @Tag(name = "3. Competições", description = "Endpoints para criar e gerenciar o ciclo de vida das competições e suas fases.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

@@ -23,7 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/designated-coaches")
+@RequestMapping(value = "/api/v1/designated-coaches")
 @Tag(name = "8. Técnicos Designados (Admin)", description = "Endpoints para a gestão das autorizações de técnicos para competições.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

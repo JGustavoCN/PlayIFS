@@ -25,7 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/sports")
+@RequestMapping(value = "/api/v1/sports")
 @Tag(name = "7. Administração (Dados Base) - Desportos", description = "Endpoints para a gestão de modalidades desportivas.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
 @Validated

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @Tag(name = "0. Autenticação", description = "Endpoints para autenticação, autorização e gestão de tokens de acesso.")
 public class AuthenticationController {
 
