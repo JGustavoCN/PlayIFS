@@ -1,7 +1,10 @@
 package br.edu.ifs.playifs.user.coordinator;
 
-import br.edu.ifs.playifs.user.dto.CoordinatorDTO;
-import br.edu.ifs.playifs.user.dto.CoordinatorInsertDTO;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.user.dto.CoordinatorDetailsDTO; // Importação alterada
+import br.edu.ifs.playifs.user.dto.CoordinatorSummaryDTO; // Nova importação
+import br.edu.ifs.playifs.user.dto.CoordinatorInputDTO;
+import br.edu.ifs.playifs.user.dto.CoordinatorUpdateDTO; // Nova importação
 import br.edu.ifs.playifs.user.model.Coordinator;
 import br.edu.ifs.playifs.user.model.Role;
 import br.edu.ifs.playifs.user.model.User;
@@ -25,20 +28,21 @@ public class CoordinatorService {
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public CoordinatorDTO findById(Long id) {
+    public CoordinatorDetailsDTO findById(Long id) { // Tipo de retorno alterado
         Coordinator entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Coordenador não encontrado com o ID: " + id));
-        return new CoordinatorDTO(entity);
+        return new CoordinatorDetailsDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public Page<CoordinatorDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<CoordinatorSummaryDTO> findAll(String name, Pageable pageable) { // Tipo de retorno alterado
         Page<Coordinator> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        return page.map(CoordinatorDTO::new);
+        Page<CoordinatorSummaryDTO> pageDto = page.map(CoordinatorSummaryDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional
-    public CoordinatorDTO insert(CoordinatorInsertDTO dto) {
+    public CoordinatorDetailsDTO insert(CoordinatorInputDTO dto) { // Tipo de retorno alterado
         User user = new User();
         user.setRegistration(dto.getRegistration());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -47,23 +51,25 @@ public class CoordinatorService {
         user.getRoles().add(coordinatorRole);
 
         Coordinator entity = new Coordinator();
+        // Mapeamento direto de campos de CoordinatorInsertDTO para a entidade
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail());
         entity.setUser(user);
 
         entity = repository.save(entity);
-        return new CoordinatorDTO(entity);
+        return new CoordinatorDetailsDTO(entity);
     }
 
     @Transactional
-    public CoordinatorDTO update(Long id, CoordinatorDTO dto) {
+    public CoordinatorDetailsDTO update(Long id, CoordinatorUpdateDTO dto) { // Parâmetro e tipo de retorno alterados
         try {
             Coordinator entity = repository.getReferenceById(id);
+            // Atualiza os campos do CoordinatorUpdateDTO
             entity.setName(dto.getName());
             entity.setEmail(dto.getEmail());
-            entity.getUser().setRegistration(dto.getRegistration());
+            entity.getUser().setRegistration(dto.getRegistration()); // Atualiza a matrícula do usuário associado
             entity = repository.save(entity);
-            return new CoordinatorDTO(entity);
+            return new CoordinatorDetailsDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }

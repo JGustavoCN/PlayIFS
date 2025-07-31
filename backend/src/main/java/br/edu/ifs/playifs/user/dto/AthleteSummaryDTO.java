@@ -1,0 +1,27 @@
+package br.edu.ifs.playifs.user.dto;
+
+import br.edu.ifs.playifs.user.model.Athlete;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@Schema(description = "DTO para representar os dados resumidos de um atleta, ideal para listagens.")
+public class AthleteSummaryDTO {
+
+    @Schema(description = "ID único do perfil do atleta.", example = "1")
+    private Long id;
+
+    @Schema(description = "Matrícula única do atleta.", example = "202301")
+    private String registration;
+
+    @Schema(description = "Nome completo do atleta.", example = "José da Silva")
+    private String fullName;
+
+    public AthleteSummaryDTO(Athlete entity) {
+        this.id = entity.getId();
+        this.registration = entity.getUser().getRegistration();
+        this.fullName = entity.getFullName();
+    }
+}

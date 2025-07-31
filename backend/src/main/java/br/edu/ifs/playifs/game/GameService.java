@@ -1,13 +1,15 @@
 package br.edu.ifs.playifs.game;
 
-import br.edu.ifs.playifs.game.dto.GameDTO;
+import br.edu.ifs.playifs.game.dto.GameDetailsDTO; // Importação alterada
 import br.edu.ifs.playifs.game.dto.GameResultDTO;
+import br.edu.ifs.playifs.game.dto.GameSummaryDTO; // Nova importação
 import br.edu.ifs.playifs.game.dto.GameUpdateDTO;
 import br.edu.ifs.playifs.game.dto.GameWoDTO;
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,21 +24,22 @@ public class GameService {
     private GameRepository repository;
 
     @Transactional(readOnly = true)
-    public Page<GameDTO> findAll(Long teamId, Pageable pageable) {
+    public PageDTO<GameSummaryDTO> findAll(Long teamId, Pageable pageable) { // Tipo de retorno alterado
         Page<Game> page;
         if (teamId != null && teamId > 0) {
             page = repository.findByTeam(teamId, pageable);
         } else {
             page = repository.findAll(pageable);
         }
-        return page.map(GameDTO::new);
+        Page<GameSummaryDTO> pageDto = page.map(GameSummaryDTO::new); // Criação do DTO alterada
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional(readOnly = true)
-    public GameDTO findById(Long id) {
+    public GameDetailsDTO findById(Long id) { // Tipo de retorno alterado
         Game entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Jogo não encontrado com o ID: " + id));
-        return new GameDTO(entity);
+        return new GameDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional
@@ -54,12 +57,12 @@ public class GameService {
     }
 
     @Transactional
-    public GameDTO update(Long id, GameUpdateDTO dto) {
+    public GameDetailsDTO update(Long id, GameUpdateDTO dto) { // Tipo de retorno alterado
         try {
             Game entity = repository.getReferenceById(id);
             entity.setDateTime(dto.getDateTime());
             entity = repository.save(entity);
-            return new GameDTO(entity);
+            return new GameDetailsDTO(entity); // Criação do DTO alterada
         }
         catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
@@ -67,7 +70,7 @@ public class GameService {
     }
 
     @Transactional
-    public GameDTO updateResult(Long id, GameResultDTO dto) {
+    public GameDetailsDTO updateResult(Long id, GameResultDTO dto) { // Tipo de retorno alterado
         // Busca o jogo no banco de dados. Se não encontrar, lança exceção.
         Game entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Jogo não encontrado"));
@@ -83,11 +86,11 @@ public class GameService {
         entity = repository.save(entity);
 
         // Retorna o DTO com os dados atualizados
-        return new GameDTO(entity);
+        return new GameDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional
-    public GameDTO registerWo(Long id, GameWoDTO dto) {
+    public GameDetailsDTO registerWo(Long id, GameWoDTO dto) { // Tipo de retorno alterado
         Game entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Jogo não encontrado"));
 
@@ -110,11 +113,11 @@ public class GameService {
         entity.setStatus(GameStatus.WO);
         entity = repository.save(entity);
 
-        return new GameDTO(entity);
+        return new GameDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional
-    public GameDTO undoWo(Long id) {
+    public GameDetailsDTO undoWo(Long id) { // Tipo de retorno alterado
         Game entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Jogo não encontrado"));
 
@@ -128,7 +131,7 @@ public class GameService {
         entity.setScoreTeamB(null);
 
         entity = repository.save(entity);
-        return new GameDTO(entity);
+        return new GameDetailsDTO(entity); // Criação do DTO alterada
     }
 
 }

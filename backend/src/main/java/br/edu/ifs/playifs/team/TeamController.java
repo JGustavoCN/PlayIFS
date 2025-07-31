@@ -2,8 +2,10 @@ package br.edu.ifs.playifs.team;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.security.annotations.*;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.dto.AthleteListDTO;
-import br.edu.ifs.playifs.team.dto.TeamDTO;
+import br.edu.ifs.playifs.team.dto.TeamDetailsDTO; // Importação alterada
+import br.edu.ifs.playifs.team.dto.TeamSummaryDTO; // Nova importação
 import br.edu.ifs.playifs.team.dto.TeamInsertDTO;
 import br.edu.ifs.playifs.team.dto.TeamUpdateDTO;
 import br.edu.ifs.playifs.user.model.User;
@@ -16,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,7 +31,7 @@ import java.net.URI;
 @RequestMapping(value = "/teams")
 @Tag(name = "4. Equipas (Teams)", description = "Endpoints para a gestão de equipas e seus elencos de atletas.")
 @SecurityRequirement(name = SecurityConstants.SECURITY_SCHEME_NAME)
-@Validated // Ativa a validação para @RequestParam e @PathVariable
+@Validated
 public class TeamController {
 
     @Autowired
@@ -39,12 +40,12 @@ public class TeamController {
     @GetMapping
     @Operation(summary = "Lista todas as equipas de forma paginada")
     @IsAuthenticated
-    public ResponseEntity<Page<TeamDTO>> findAll(
-            @Parameter(description = "Filtrar por ID da competição") @RequestParam(required = false) @Positive Long competitionId,
-            @Parameter(description = "Filtrar por ID do desporto") @RequestParam(required = false) @Positive Long sportId,
-            @Parameter(description = "Filtrar por ID do curso") @RequestParam(required = false) @Positive Long courseId,
-            Pageable pageable) {
-        Page<TeamDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
+    public ResponseEntity<PageDTO<TeamSummaryDTO>> findAll(
+                                                            @Parameter(description = "Filtrar por ID da competição") @RequestParam(required = false) @Positive Long competitionId,
+                                                            @Parameter(description = "Filtrar por ID do desporto") @RequestParam(required = false) @Positive Long sportId,
+                                                            @Parameter(description = "Filtrar por ID do curso") @RequestParam(required = false) @Positive Long courseId,
+                                                            Pageable pageable) {
+        PageDTO<TeamSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable); // Tipo do DTO alterado
         return ResponseEntity.ok(page);
     }
 
@@ -52,8 +53,8 @@ public class TeamController {
     @Operation(summary = "Busca uma equipa por ID")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Equipa encontrada"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError") })
     @IsAuthenticated
-    public ResponseEntity<TeamDTO> findById(@PathVariable @Positive Long id) {
-        TeamDTO dto = service.findById(id);
+    public ResponseEntity<TeamDetailsDTO> findById(@PathVariable @Positive Long id) { // Tipo de retorno alterado
+        TeamDetailsDTO dto = service.findById(id); // Tipo do DTO alterado
         return ResponseEntity.ok(dto);
     }
 
@@ -61,8 +62,8 @@ public class TeamController {
     @Operation(summary = "Cria uma nova equipa (apenas Atleta-Técnico)")
     @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Equipa criada com sucesso"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsAthlete
-    public ResponseEntity<TeamDTO> insert(@Valid @RequestBody TeamInsertDTO dto, @AuthenticationPrincipal User loggedUser) {
-        TeamDTO newDto = service.insert(dto, loggedUser);
+    public ResponseEntity<TeamDetailsDTO> insert(@Valid @RequestBody TeamInsertDTO dto, @AuthenticationPrincipal User loggedUser) { // Tipo de retorno alterado
+        TeamDetailsDTO newDto = service.insert(dto, loggedUser); // Tipo do DTO alterado
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(newDto);
     }
@@ -71,8 +72,8 @@ public class TeamController {
     @Operation(summary = "Atualiza o nome da equipa (apenas Técnico da Equipa)")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Equipa atualizada"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError") })
     @IsTeamCoach
-    public ResponseEntity<TeamDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody TeamUpdateDTO dto) {
-        TeamDTO newDto = service.update(id, dto);
+    public ResponseEntity<TeamDetailsDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody TeamUpdateDTO dto) { // Tipo de retorno alterado
+        TeamDetailsDTO newDto = service.update(id, dto); // Tipo do DTO alterado
         return ResponseEntity.ok(newDto);
     }
 
@@ -80,8 +81,8 @@ public class TeamController {
     @Operation(summary = "Adiciona atletas a uma equipa (apenas Técnico da Equipa)")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Atletas adicionados"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsTeamCoach
-    public ResponseEntity<TeamDTO> addAthletes(@PathVariable @Positive Long id, @Valid @RequestBody AthleteListDTO dto) {
-        TeamDTO newDto = service.addAthletes(id, dto.getAthleteIds());
+    public ResponseEntity<TeamDetailsDTO> addAthletes(@PathVariable @Positive Long id, @Valid @RequestBody AthleteListDTO dto) { // Tipo de retorno alterado
+        TeamDetailsDTO newDto = service.addAthletes(id, dto.getAthleteIds()); // Tipo do DTO alterado
         return ResponseEntity.ok(newDto);
     }
 

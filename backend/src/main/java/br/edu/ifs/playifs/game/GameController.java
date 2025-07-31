@@ -1,12 +1,14 @@
 package br.edu.ifs.playifs.game;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
-import br.edu.ifs.playifs.game.dto.GameDTO;
+import br.edu.ifs.playifs.game.dto.GameDetailsDTO; // Importação alterada
 import br.edu.ifs.playifs.game.dto.GameResultDTO;
+import br.edu.ifs.playifs.game.dto.GameSummaryDTO; // Nova importação
 import br.edu.ifs.playifs.game.dto.GameUpdateDTO;
 import br.edu.ifs.playifs.game.dto.GameWoDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -35,10 +36,10 @@ public class GameController {
     @GetMapping
     @Operation(summary = "Lista todos os jogos")
     @IsAuthenticated
-    public ResponseEntity<Page<GameDTO>> findAll(
-            @Parameter(description = "ID da equipa para filtrar os jogos.") @RequestParam(required = false) @Positive Long teamId,
-            Pageable pageable) {
-        Page<GameDTO> page = service.findAll(teamId, pageable);
+    public ResponseEntity<PageDTO<GameSummaryDTO>> findAll( // Tipo de retorno alterado
+                                                            @Parameter(description = "ID da equipa para filtrar os jogos.") @RequestParam(required = false) @Positive Long teamId,
+                                                            Pageable pageable) {
+        PageDTO<GameSummaryDTO> page = service.findAll(teamId, pageable); // Tipo do DTO alterado
         return ResponseEntity.ok(page);
     }
 
@@ -46,8 +47,8 @@ public class GameController {
     @Operation(summary = "Busca um jogo por ID")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Jogo encontrado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
     @IsAuthenticated
-    public ResponseEntity<GameDTO> findById(@PathVariable @Positive Long id) {
-        GameDTO dto = service.findById(id);
+    public ResponseEntity<GameDetailsDTO> findById(@PathVariable @Positive Long id) { // Tipo de retorno alterado
+        GameDetailsDTO dto = service.findById(id); // Tipo do DTO alterado
         return ResponseEntity.ok(dto);
     }
 
@@ -55,8 +56,8 @@ public class GameController {
     @Operation(summary = "Atualiza a data/hora de um jogo (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Jogo atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<GameDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody GameUpdateDTO dto) {
-        GameDTO newDto = service.update(id, dto);
+    public ResponseEntity<GameDetailsDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody GameUpdateDTO dto) { // Tipo de retorno alterado
+        GameDetailsDTO newDto = service.update(id, dto); // Tipo do DTO alterado
         return ResponseEntity.ok(newDto);
     }
 
@@ -73,8 +74,8 @@ public class GameController {
     @Operation(summary = "Atualiza o resultado de um jogo (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Resultado atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<GameDTO> updateResult(@PathVariable @Positive Long id, @Valid @RequestBody GameResultDTO dto) {
-        GameDTO updatedDto = service.updateResult(id, dto);
+    public ResponseEntity<GameDetailsDTO> updateResult(@PathVariable @Positive Long id, @Valid @RequestBody GameResultDTO dto) { // Tipo de retorno alterado
+        GameDetailsDTO updatedDto = service.updateResult(id, dto); // Tipo do DTO alterado
         return ResponseEntity.ok(updatedDto);
     }
 
@@ -82,8 +83,8 @@ public class GameController {
     @Operation(summary = "Regista um W.O. (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "W.O. registado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<GameDTO> registerWo(@PathVariable @Positive Long id, @Valid @RequestBody GameWoDTO dto) {
-        GameDTO updatedDto = service.registerWo(id, dto);
+    public ResponseEntity<GameDetailsDTO> registerWo(@PathVariable @Positive Long id, @Valid @RequestBody GameWoDTO dto) { // Tipo de retorno alterado
+        GameDetailsDTO updatedDto = service.registerWo(id, dto); // Tipo do DTO alterado
         return ResponseEntity.ok(updatedDto);
     }
 
@@ -91,8 +92,8 @@ public class GameController {
     @Operation(summary = "Desfaz um W.O. (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "W.O. desfeito"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<GameDTO> undoWo(@PathVariable @Positive Long id) {
-        GameDTO updatedDto = service.undoWo(id);
+    public ResponseEntity<GameDetailsDTO> undoWo(@PathVariable @Positive Long id) { // Tipo de retorno alterado
+        GameDetailsDTO updatedDto = service.undoWo(id); // Tipo do DTO alterado
         return ResponseEntity.ok(updatedDto);
     }
 }

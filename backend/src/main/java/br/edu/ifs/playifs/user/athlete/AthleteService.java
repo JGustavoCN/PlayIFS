@@ -1,7 +1,10 @@
 package br.edu.ifs.playifs.user.athlete;
 
-import br.edu.ifs.playifs.user.dto.AthleteDTO;
-import br.edu.ifs.playifs.user.dto.AthleteInsertDTO;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.user.dto.AthleteDetailsDTO; // Importação alterada
+import br.edu.ifs.playifs.user.dto.AthleteInputDTO;
+import br.edu.ifs.playifs.user.dto.AthleteSummaryDTO;
+import br.edu.ifs.playifs.user.dto.AthleteUpdateDTO;
 import br.edu.ifs.playifs.user.model.Athlete;
 import br.edu.ifs.playifs.user.model.Role;
 import br.edu.ifs.playifs.user.model.User;
@@ -26,20 +29,21 @@ public class AthleteService {
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public AthleteDTO findById(Long id) {
+    public AthleteDetailsDTO findById(Long id) {
         Athlete entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Atleta não encontrado com o ID: " + id));
-        return new AthleteDTO(entity);
+        return new AthleteDetailsDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public Page<AthleteDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<AthleteSummaryDTO> findAll(String name, Pageable pageable) {
         Page<Athlete> page = repository.findByFullNameContainingIgnoreCase(name, pageable);
-        return page.map(AthleteDTO::new);
+        Page<AthleteSummaryDTO> pageDto = page.map(AthleteSummaryDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional
-    public AthleteDTO insert(AthleteInsertDTO dto) {
+    public AthleteDetailsDTO insert(AthleteInputDTO dto) {
         User user = new User();
         user.setRegistration(dto.getRegistration());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -48,25 +52,30 @@ public class AthleteService {
         user.getRoles().add(athleteRole);
 
         Athlete entity = new Athlete();
-        copyDtoToEntity(dto, entity);
+        // Mapeamento direto de campos de AthleteInsertDTO para a entidade
+        entity.setFullName(dto.getFullName());
+        entity.setNickname(dto.getNickname());
+        entity.setPhone(dto.getPhone());
+        entity.setEmail(dto.getEmail());
         entity.setUser(user);
 
         entity = repository.save(entity);
-        return new AthleteDTO(entity);
+        return new AthleteDetailsDTO(entity);
     }
 
     @Transactional
-    public AthleteDTO update(Long id, AthleteDTO dto) {
+    public AthleteDetailsDTO update(Long id, AthleteUpdateDTO dto) { // Parâmetro alterado
         try {
             Athlete entity = repository.getReferenceById(id);
+            // Atualiza os campos do AthleteUpdateDTO
             entity.setFullName(dto.getFullName());
             entity.setNickname(dto.getNickname());
             entity.setPhone(dto.getPhone());
             entity.setEmail(dto.getEmail());
-            entity.getUser().setRegistration(dto.getRegistration());
+            entity.getUser().setRegistration(dto.getRegistration()); // Atualiza a matrícula do usuário associado
 
             entity = repository.save(entity);
-            return new AthleteDTO(entity);
+            return new AthleteDetailsDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
@@ -82,13 +91,6 @@ public class AthleteService {
             throw new BusinessException("Não é possível apagar um atleta que já está inscrito em uma ou mais equipas.");
         }
         repository.deleteById(id);
-    }
-
-    private void copyDtoToEntity(AthleteInsertDTO dto, Athlete entity) {
-        entity.setFullName(dto.getFullName());
-        entity.setNickname(dto.getNickname());
-        entity.setPhone(dto.getPhone());
-        entity.setEmail(dto.getEmail());
     }
 
     public boolean isCurrentUser(Long athleteId, UserDetails loggedUser) {

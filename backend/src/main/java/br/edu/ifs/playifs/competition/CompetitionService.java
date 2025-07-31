@@ -1,28 +1,29 @@
 package br.edu.ifs.playifs.competition;
 
-import br.edu.ifs.playifs.competition.dto.CompetitionDTO;
+import br.edu.ifs.playifs.competition.dto.CompetitionDetailsDTO;
+import br.edu.ifs.playifs.competition.dto.CompetitionInputDTO;
+import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
 import br.edu.ifs.playifs.competition.model.Competition;
-import br.edu.ifs.playifs.competition.model.GameGroup;
-import br.edu.ifs.playifs.data.course.CourseRepository;
-import br.edu.ifs.playifs.data.sport.SportRepository;
-import br.edu.ifs.playifs.game.dto.GameDTO;
-import br.edu.ifs.playifs.game.model.enums.GamePhase;
-import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.game.GameRepository;
-import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
 import br.edu.ifs.playifs.shared.util.TeamStanding;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.TeamRepository;
-import br.edu.ifs.playifs.team.model.Team;
-import br.edu.ifs.playifs.user.repository.AthleteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import br.edu.ifs.playifs.competition.model.GameGroup;
+import br.edu.ifs.playifs.game.dto.GameDetailsDTO;
+import br.edu.ifs.playifs.game.model.enums.GamePhase;
+import br.edu.ifs.playifs.game.model.enums.GameStatus;
+import br.edu.ifs.playifs.game.model.Game;
+import br.edu.ifs.playifs.team.model.Team;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -37,46 +38,37 @@ public class CompetitionService {
     @Autowired private TeamRepository teamRepository;
     @Autowired private GameGroupRepository groupRepository;
     @Autowired private GameRepository gameRepository;
-    @Autowired private DesignatedCoachRepository designatedCoachRepository;
-    @Autowired private SportRepository sportRepository;
-    @Autowired private CourseRepository courseRepository;
-    @Autowired private AthleteRepository athleteRepository;
-
-    // --- MÉTODOS DE CRUD (sem alterações) ---
 
     @Transactional(readOnly = true)
-    public PageDTO<CompetitionDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<CompetitionSummaryDTO> findAll(String name, Pageable pageable) {
         Page<Competition> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        Page<CompetitionDTO> pageDto = page.map(CompetitionDTO::new);
+        Page<CompetitionSummaryDTO> pageDto = page.map(CompetitionSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }
 
     @Transactional(readOnly = true)
-    public CompetitionDTO findById(Long id) {
+    public CompetitionDetailsDTO findById(Long id) {
         Competition entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Competição não encontrada com o ID: " + id));
-        return new CompetitionDTO(entity);
+        return new CompetitionDetailsDTO(entity);
     }
 
     @Transactional
-    public CompetitionDTO insert(CompetitionDTO dto) {
+    public CompetitionDetailsDTO insert(CompetitionInputDTO dto) {
         Competition entity = new Competition();
-        entity.setName(dto.getName());
-        entity.setLevel(dto.getLevel());
+        copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
-        return new CompetitionDTO(entity);
+        return new CompetitionDetailsDTO(entity);
     }
 
     @Transactional
-    public CompetitionDTO update(Long id, CompetitionDTO dto) {
+    public CompetitionDetailsDTO update(Long id, CompetitionInputDTO dto) {
         try {
             Competition entity = repository.getReferenceById(id);
-            entity.setName(dto.getName());
-            entity.setLevel(dto.getLevel());
+            copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
-            return new CompetitionDTO(entity);
-        }
-        catch (EntityNotFoundException e) {
+            return new CompetitionDetailsDTO(entity);
+        } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
     }
@@ -93,10 +85,15 @@ public class CompetitionService {
         repository.deleteById(id);
     }
 
+    private void copyDtoToEntity(CompetitionInputDTO dto, Competition entity) {
+        entity.setName(dto.getName());
+        entity.setLevel(dto.getLevel());
+    }
+
     // --- MÉTODO DE GERAÇÃO DE GRUPOS (sem alterações) ---
 
     @Transactional
-    public List<GameDTO> generateGroupStage(Long competitionId, Long sportId) {
+    public List<GameDetailsDTO> generateGroupStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
                 .orElseThrow(() -> new BusinessException("Competição não encontrada."));
 
@@ -142,14 +139,14 @@ public class CompetitionService {
         }
 
         gameRepository.saveAll(allNewGames);
-        return allNewGames.stream().map(GameDTO::new).toList();
+        return allNewGames.stream().map(GameDetailsDTO::new).toList();
     }
 
     // =================================================================
     // === MÉTODO generateEliminationStage TOTALMENTE REATORADO ======
     // =================================================================
     @Transactional
-    public List<GameDTO> generateEliminationStage(Long competitionId, Long sportId) {
+    public List<GameDetailsDTO> generateEliminationStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada."));
 
@@ -224,7 +221,7 @@ public class CompetitionService {
         }
 
         gameRepository.saveAll(newGames);
-        return newGames.stream().map(GameDTO::new).toList();
+        return newGames.stream().map(GameDetailsDTO::new).toList();
     }
 
     // --- MÉTODOS PRIVADOS AUXILIARES (Refatorados) ---

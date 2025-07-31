@@ -7,7 +7,9 @@ import br.edu.ifs.playifs.data.course.CourseRepository;
 import br.edu.ifs.playifs.data.course.model.Course;
 import br.edu.ifs.playifs.data.sport.SportRepository;
 import br.edu.ifs.playifs.data.sport.model.Sport;
-import br.edu.ifs.playifs.team.dto.TeamDTO;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.team.dto.TeamDetailsDTO; // Importação alterada
+import br.edu.ifs.playifs.team.dto.TeamSummaryDTO; // Nova importação
 import br.edu.ifs.playifs.team.dto.TeamInsertDTO;
 import br.edu.ifs.playifs.team.dto.TeamUpdateDTO;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
@@ -39,16 +41,16 @@ public class TeamService {
     @Autowired private DesignatedCoachRepository designatedCoachRepository;
 
     @Transactional(readOnly = true)
-    public TeamDTO findById(Long id) {
+    public TeamDetailsDTO findById(Long id) { // Tipo de retorno alterado
         Team entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Equipa não encontrada com o ID: " + id));
-        return new TeamDTO(entity);
+        return new TeamDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional(readOnly = true)
-    public Page<TeamDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) {
+    public PageDTO<TeamSummaryDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) { // Tipo de retorno alterado
 
-        Specification<Team> spec = Specification.anyOf(); // Inicia a especificação
+        Specification<Team> spec = Specification.anyOf();
 
         if (competitionId != null) {
             spec = spec.and(hasCompetition(competitionId));
@@ -61,10 +63,11 @@ public class TeamService {
         }
 
         Page<Team> page = repository.findAll(spec, pageable);
-        return page.map(TeamDTO::new);
+        Page<TeamSummaryDTO> pageDto = page.map(TeamSummaryDTO::new); // Criação do DTO alterada
+
+        return new PageDTO<>(pageDto);
     }
 
-    // --- MÉTODOS AUXILIARES PARA OS FILTROS ---
     private static Specification<Team> hasCompetition(Long id) {
         return (root, query, cb) -> cb.equal(root.get("competition").get("id"), id);
     }
@@ -77,7 +80,7 @@ public class TeamService {
         return (root, query, cb) -> cb.equal(root.get("course").get("id"), id);
     }
     @Transactional
-    public TeamDTO insert(TeamInsertDTO dto, User loggedUser) {
+    public TeamDetailsDTO insert(TeamInsertDTO dto, User loggedUser) { // Tipo de retorno alterado
         // Validação 1: O técnico da equipa deve ser o usuário logado
         Athlete loggedAthlete = athleteRepository.findByUser(loggedUser)
                 .orElseThrow(() -> new BusinessException("Perfil de atleta não encontrado para o usuário logado."));
@@ -140,16 +143,16 @@ public class TeamService {
         entity.getAthletes().addAll(athletes);
 
         entity = repository.save(entity);
-        return new TeamDTO(entity);
+        return new TeamDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional
-    public TeamDTO update(Long id, TeamUpdateDTO dto) {
+    public TeamDetailsDTO update(Long id, TeamUpdateDTO dto) { // Tipo de retorno alterado
         try {
             Team entity = repository.getReferenceById(id);
             entity.setName(dto.getName());
             entity = repository.save(entity);
-            return new TeamDTO(entity);
+            return new TeamDetailsDTO(entity); // Criação do DTO alterada
         }
         catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
@@ -157,7 +160,7 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamDTO addAthletes(Long teamId, List<Long> athleteIds) {
+    public TeamDetailsDTO addAthletes(Long teamId, List<Long> athleteIds) { // Tipo de retorno alterado
         Team entity = repository.findById(teamId).orElseThrow(() -> new ResourceNotFoundException("Equipa não encontrada"));
 
         // Validação: Os novos atletas já jogam noutra equipa neste desporto?
@@ -174,7 +177,7 @@ public class TeamService {
         }
 
         entity = repository.save(entity);
-        return new TeamDTO(entity);
+        return new TeamDetailsDTO(entity); // Criação do DTO alterada
     }
 
     @Transactional
@@ -211,7 +214,6 @@ public class TeamService {
         repository.deleteById(id);
     }
 
-    // Método público para ser usado na anotação @PreAuthorize
     public boolean isCoachOfTeam(User user, Long teamId) {
         Athlete athlete = athleteRepository.findByUser(user).orElse(null);
         if (athlete == null) {

@@ -1,6 +1,8 @@
 package br.edu.ifs.playifs.data.campus;
 
-import br.edu.ifs.playifs.data.campus.dto.CampusDTO;
+import br.edu.ifs.playifs.data.campus.dto.CampusDetailsDTO;
+import br.edu.ifs.playifs.data.campus.dto.CampusInputDTO;
+import br.edu.ifs.playifs.data.campus.dto.CampusSummaryDTO;
 import br.edu.ifs.playifs.data.campus.model.Campus;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
@@ -19,34 +21,34 @@ public class CampusService {
     private CampusRepository repository;
 
     @Transactional(readOnly = true)
-    public CampusDTO findById(Long id) {
-        Campus entity = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Campus não encontrado com o ID: " + id));
-        return new CampusDTO(entity);
-    }
-
-    @Transactional(readOnly = true)
-    public PageDTO<CampusDTO> findAll(String name, Pageable pageable) {
+    public PageDTO<CampusSummaryDTO> findAll(String name, Pageable pageable) {
         Page<Campus> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        Page<CampusDTO> pageDto = page.map(CampusDTO::new);
+        Page<CampusSummaryDTO> pageDto = page.map(CampusSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }
 
-    @Transactional
-    public CampusDTO insert(CampusDTO dto) {
-        Campus entity = new Campus();
-        entity.setName(dto.getName());
-        entity = repository.save(entity);
-        return new CampusDTO(entity);
+    @Transactional(readOnly = true)
+    public CampusDetailsDTO findById(Long id) {
+        Campus entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Campus não encontrado com o ID: " + id));
+        return new CampusDetailsDTO(entity);
     }
 
     @Transactional
-    public CampusDTO update(Long id, CampusDTO dto) {
+    public CampusDetailsDTO insert(CampusInputDTO dto) {
+        Campus entity = new Campus();
+        entity.setName(dto.getName());
+        entity = repository.save(entity);
+        return new CampusDetailsDTO(entity);
+    }
+
+    @Transactional
+    public CampusDetailsDTO update(Long id, CampusInputDTO dto) {
         try {
             Campus entity = repository.getReferenceById(id);
             entity.setName(dto.getName());
             entity = repository.save(entity);
-            return new CampusDTO(entity);
+            return new CampusDetailsDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }

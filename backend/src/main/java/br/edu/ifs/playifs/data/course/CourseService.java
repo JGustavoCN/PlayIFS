@@ -1,11 +1,14 @@
 package br.edu.ifs.playifs.data.course;
 
-import br.edu.ifs.playifs.data.course.dto.CourseDTO;
-import br.edu.ifs.playifs.data.campus.model.Campus;
-import br.edu.ifs.playifs.data.course.model.Course;
 import br.edu.ifs.playifs.data.campus.CampusRepository;
+import br.edu.ifs.playifs.data.campus.model.Campus;
+import br.edu.ifs.playifs.data.course.dto.CourseDetailsDTO;
+import br.edu.ifs.playifs.data.course.dto.CourseInputDTO;
+import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
+import br.edu.ifs.playifs.data.course.model.Course;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,33 +25,34 @@ public class CourseService {
     private CampusRepository campusRepository;
 
     @Transactional(readOnly = true)
-    public CourseDTO findById(Long id) {
-        Course entity = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Curso não encontrado com o ID: " + id));
-        return new CourseDTO(entity);
+    public PageDTO<CourseSummaryDTO> findAll(String name, Long campusId, Pageable pageable) {
+        Page<Course> page = repository.find(name, campusId, pageable);
+        Page<CourseSummaryDTO> pageDto = page.map(CourseSummaryDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional(readOnly = true)
-    public Page<CourseDTO> findAll(String name, Long campusId, Pageable pageable) {
-        Page<Course> page = repository.find(name, campusId, pageable);
-        return page.map(CourseDTO::new);
+    public CourseDetailsDTO findById(Long id) {
+        Course entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Curso não encontrado com o ID: " + id));
+        return new CourseDetailsDTO(entity);
     }
 
     @Transactional
-    public CourseDTO insert(CourseDTO dto) {
+    public CourseDetailsDTO insert(CourseInputDTO dto) {
         Course entity = new Course();
         copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
-        return new CourseDTO(entity);
+        return new CourseDetailsDTO(entity);
     }
 
     @Transactional
-    public CourseDTO update(Long id, CourseDTO dto) {
+    public CourseDetailsDTO update(Long id, CourseInputDTO dto) {
         try {
             Course entity = repository.getReferenceById(id);
             copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
-            return new CourseDTO(entity);
+            return new CourseDetailsDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
@@ -66,10 +70,11 @@ public class CourseService {
         repository.deleteById(id);
     }
 
-    private void copyDtoToEntity(CourseDTO dto, Course entity) {
+    private void copyDtoToEntity(CourseInputDTO dto, Course entity) {
         entity.setName(dto.getName());
         entity.setLevel(dto.getLevel());
-        Campus campus = campusRepository.getReferenceById(dto.getCampus().getId());
+        Campus campus = campusRepository.findById(dto.getCampusId())
+                .orElseThrow(() -> new ResourceNotFoundException("Campus não encontrado com o ID: " + dto.getCampusId()));
         entity.setCampus(campus);
     }
 }

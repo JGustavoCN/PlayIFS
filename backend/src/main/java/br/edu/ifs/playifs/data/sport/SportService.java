@@ -1,9 +1,12 @@
 package br.edu.ifs.playifs.data.sport;
 
-import br.edu.ifs.playifs.data.sport.dto.SportDTO;
+import br.edu.ifs.playifs.data.sport.dto.SportDetailsDTO;
+import br.edu.ifs.playifs.data.sport.dto.SportInputDTO;
+import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO;
 import br.edu.ifs.playifs.data.sport.model.Sport;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
+import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,33 +21,34 @@ public class SportService {
     private SportRepository repository;
 
     @Transactional(readOnly = true)
-    public SportDTO findById(Long id) {
-        Sport entity = repository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Desporto não encontrado com o ID: " + id));
-        return new SportDTO(entity);
+    public PageDTO<SportSummaryDTO> findAll(String name, Pageable pageable) {
+        Page<Sport> page = repository.findByNameContainingIgnoreCase(name, pageable);
+        Page<SportSummaryDTO> pageDto = page.map(SportSummaryDTO::new);
+        return new PageDTO<>(pageDto);
     }
 
     @Transactional(readOnly = true)
-    public Page<SportDTO> findAll(String name, Pageable pageable) {
-        Page<Sport> page = repository.findByNameContainingIgnoreCase(name, pageable);
-        return page.map(SportDTO::new);
+    public SportDetailsDTO findById(Long id) {
+        Sport entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Desporto não encontrado com o ID: " + id));
+        return new SportDetailsDTO(entity);
     }
 
     @Transactional
-    public SportDTO insert(SportDTO dto) {
+    public SportDetailsDTO insert(SportInputDTO dto) {
         Sport entity = new Sport();
         copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
-        return new SportDTO(entity);
+        return new SportDetailsDTO(entity);
     }
 
     @Transactional
-    public SportDTO update(Long id, SportDTO dto) {
+    public SportDetailsDTO update(Long id, SportInputDTO dto) {
         try {
             Sport entity = repository.getReferenceById(id);
             copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
-            return new SportDTO(entity);
+            return new SportDetailsDTO(entity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
@@ -55,16 +59,14 @@ public class SportService {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
         }
-        // Validação de Negócio: Não apagar desportos em uso.
-        // O Spring Data JPA lançaria uma DataIntegrityViolationException, mas esta
-        // mensagem é mais clara para o usuário.
-        if (repository.findById(id).get().getTeams().isEmpty() == false) {
+        Sport sport = repository.findById(id).get();
+        if (!sport.getTeams().isEmpty()) {
             throw new BusinessException("Não é possível apagar um desporto que já está associado a equipas.");
         }
         repository.deleteById(id);
     }
 
-    private void copyDtoToEntity(SportDTO dto, Sport entity) {
+    private void copyDtoToEntity(SportInputDTO dto, Sport entity) {
         entity.setName(dto.getName());
         entity.setMinAthletes(dto.getMinAthletes());
         entity.setMaxAthletes(dto.getMaxAthletes());
