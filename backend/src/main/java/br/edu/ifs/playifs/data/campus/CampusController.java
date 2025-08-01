@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.data.campus.dto.CampusInputDTO;
 import br.edu.ifs.playifs.data.campus.dto.CampusSummaryDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,40 +38,40 @@ public class CampusController {
     @GetMapping
     @Operation(summary = "Lista todos os campi (versão resumida)")
     @IsAuthenticated
-    public ResponseEntity<PageDTO<CampusSummaryDTO>> findAll(
+    public ResponseEntity<ApiResponseBody<PageDTO<CampusSummaryDTO>>> findAll(
             @Parameter(description = "Texto para buscar no nome do campus.")
             @RequestParam(value = "name", defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<CampusSummaryDTO> page = service.findAll(name, pageable);
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
     @GetMapping(value = "/{id}")
     @Operation(summary = "Busca os detalhes de um campus por ID")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Campus encontrado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
     @IsAuthenticated
-    public ResponseEntity<CampusDetailsDTO> findById(@PathVariable @Positive Long id) {
+    public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CampusDetailsDTO dto = service.findById(id);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
     @PostMapping
     @Operation(summary = "Cria um novo campus (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "201", description = "Campus criado"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<CampusDetailsDTO> insert(@Valid @RequestBody CampusInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> insert(@Valid @RequestBody CampusInputDTO dto) {
         CampusDetailsDTO newDto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(newDto);
+        return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Campus criado com sucesso!"));
     }
 
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um campus existente (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Campus atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<CampusDetailsDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody CampusInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CampusInputDTO dto) {
         CampusDetailsDTO updatedDto = service.update(id, dto);
-        return ResponseEntity.ok(updatedDto);
+        return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Campus atualizado com sucesso!"));
     }
 
     @DeleteMapping(value = "/{id}")

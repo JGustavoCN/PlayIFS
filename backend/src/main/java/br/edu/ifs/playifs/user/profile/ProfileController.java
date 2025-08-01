@@ -2,6 +2,7 @@ package br.edu.ifs.playifs.user.profile;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.user.dto.ProfileDTO;
 import br.edu.ifs.playifs.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +27,8 @@ public class ProfileController {
     @GetMapping
     @Operation(summary = "Busca os dados do perfil do usuário logado", description = "Retorna um objeto unificado com os detalhes do perfil (Atleta e/ou Coordenador) do usuário autenticado.")
     @IsAuthenticated
-    public ResponseEntity<ProfileDTO> getMyProfile(@AuthenticationPrincipal User loggedUser) {
+    public ResponseEntity<ApiResponseBody<ProfileDTO>> getMyProfile(@AuthenticationPrincipal User loggedUser) {
         ProfileDTO profile = service.getLoggedUserProfile(loggedUser);
-        return ResponseEntity.ok(profile);
+        return ResponseEntity.ok(new ApiResponseBody<>(profile));
     }
 }

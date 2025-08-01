@@ -5,6 +5,7 @@ import br.edu.ifs.playifs.dashboard.dto.AthleteDashboardDTO;
 import br.edu.ifs.playifs.dashboard.dto.CoordinatorDashboardDTO;
 import br.edu.ifs.playifs.security.annotations.IsAthlete;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,9 +38,9 @@ public class DashboardController {
             @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")
     })
     @IsAthlete
-    public ResponseEntity<AthleteDashboardDTO> getAthleteDashboard(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponseBody<AthleteDashboardDTO>> getAthleteDashboard(@AuthenticationPrincipal UserDetails userDetails) {
         AthleteDashboardDTO dto = service.getAthleteDashboard(userDetails);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
     @GetMapping(value = "/coordinator")
@@ -51,8 +52,8 @@ public class DashboardController {
             @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError")
     })
     @IsCoordinator
-    public ResponseEntity<CoordinatorDashboardDTO> getCoordinatorDashboard() {
+    public ResponseEntity<ApiResponseBody<CoordinatorDashboardDTO>> getCoordinatorDashboard() {
         CoordinatorDashboardDTO dto = service.getCoordinatorDashboard();
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 }

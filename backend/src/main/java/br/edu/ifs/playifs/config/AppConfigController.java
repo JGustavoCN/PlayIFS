@@ -1,6 +1,7 @@
 package br.edu.ifs.playifs.config;
 
 import br.edu.ifs.playifs.config.dto.AppConfigDTO;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,8 +26,8 @@ public class AppConfigController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Configurações retornadas com sucesso.")
     })
-    public ResponseEntity<AppConfigDTO> getAppConfig() {
+    public ResponseEntity<ApiResponseBody<AppConfigDTO>> getAppConfig() {
         AppConfigDTO dto = service.getAppConfig();
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 }

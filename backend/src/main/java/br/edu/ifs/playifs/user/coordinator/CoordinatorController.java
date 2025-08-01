@@ -3,11 +3,12 @@ package br.edu.ifs.playifs.user.coordinator;
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
-import br.edu.ifs.playifs.user.dto.CoordinatorDetailsDTO; // Importação alterada
-import br.edu.ifs.playifs.user.dto.CoordinatorSummaryDTO; // Nova importação
+import br.edu.ifs.playifs.user.dto.CoordinatorDetailsDTO;
 import br.edu.ifs.playifs.user.dto.CoordinatorInputDTO;
-import br.edu.ifs.playifs.user.dto.CoordinatorUpdateDTO; // Nova importação
+import br.edu.ifs.playifs.user.dto.CoordinatorSummaryDTO;
+import br.edu.ifs.playifs.user.dto.CoordinatorUpdateDTO;
 import br.edu.ifs.playifs.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,39 +41,39 @@ public class CoordinatorController {
     @GetMapping
     @Operation(summary = "Lista todos os coordenadores")
     @IsAuthenticated
-    public ResponseEntity<PageDTO<CoordinatorSummaryDTO>> findAll( // Tipo de retorno alterado
-                                                                   @Parameter(description = "Nome do coordenador para filtrar a busca.") @RequestParam(value = "name", defaultValue = "") String name,
-                                                                   Pageable pageable) {
+    public ResponseEntity<ApiResponseBody<PageDTO<CoordinatorSummaryDTO>>> findAll(
+            @Parameter(description = "Nome do coordenador para filtrar a busca.") @RequestParam(value = "name", defaultValue = "") String name,
+            Pageable pageable) {
         PageDTO<CoordinatorSummaryDTO> page = service.findAll(name, pageable);
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
     @GetMapping(value = "/{id}")
     @Operation(summary = "Busca um coordenador por ID")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Coordenador encontrado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
     @IsAuthenticated
-    public ResponseEntity<CoordinatorDetailsDTO> findById(@PathVariable @Positive Long id) { // Tipo de retorno alterado
+    public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CoordinatorDetailsDTO dto = service.findById(id);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
     @PostMapping
     @Operation(summary = "Cria um novo coordenador (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "201", description = "Coordenador criado"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<CoordinatorDetailsDTO> insert(@Valid @RequestBody CoordinatorInputDTO dto) { // Tipo de retorno alterado
+    public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> insert(@Valid @RequestBody CoordinatorInputDTO dto) {
         CoordinatorDetailsDTO newDto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(newDto);
+        return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Coordenador criado com sucesso!"));
     }
 
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um coordenador existente (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Coordenador atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<CoordinatorDetailsDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody CoordinatorUpdateDTO dto) { // Parâmetro e tipo de retorno alterados
+    public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CoordinatorUpdateDTO dto) {
         CoordinatorDetailsDTO updatedDto = service.update(id, dto);
-        return ResponseEntity.ok(updatedDto);
+        return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Coordenador atualizado com sucesso!"));
     }
 
     @DeleteMapping(value = "/{id}")

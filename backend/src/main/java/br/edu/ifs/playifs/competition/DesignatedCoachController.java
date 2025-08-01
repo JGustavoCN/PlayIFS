@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.competition.dto.DesignatedCoachSummaryDTO;
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,40 +36,40 @@ public class DesignatedCoachController {
     @GetMapping
     @Operation(summary = "Lista as designações de técnicos (versão resumida)")
     @IsAuthenticated
-    public ResponseEntity<PageDTO<DesignatedCoachSummaryDTO>> findAll(
+    public ResponseEntity<ApiResponseBody<PageDTO<DesignatedCoachSummaryDTO>>> findAll(
             @Parameter(description = "ID da competição para filtrar.") @RequestParam(required = false) @Positive Long competitionId,
             @Parameter(description = "ID do desporto para filtrar.") @RequestParam(required = false) @Positive Long sportId,
             @Parameter(description = "ID do curso para filtrar.") @RequestParam(required = false) @Positive Long courseId,
             Pageable pageable) {
         PageDTO<DesignatedCoachSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
     @GetMapping(value = "/{id}")
     @Operation(summary = "Busca os detalhes de uma designação de técnico por ID")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Designação encontrada."), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
     @IsAuthenticated
-    public ResponseEntity<DesignatedCoachDetailsDTO> findById(@PathVariable @Positive Long id) {
+    public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> findById(@PathVariable @Positive Long id) {
         DesignatedCoachDetailsDTO dto = service.findById(id);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
     @PostMapping
     @Operation(summary = "Define um novo técnico (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "201", description = "Técnico definido com sucesso."), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<DesignatedCoachDetailsDTO> defineCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> defineCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
         DesignatedCoachDetailsDTO newDto = service.defineCoach(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDto, "Técnico definido com sucesso!"));
     }
 
     @PutMapping
     @Operation(summary = "Atualiza/Substitui um técnico (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Técnico atualizado com sucesso."), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     @IsCoordinator
-    public ResponseEntity<DesignatedCoachDetailsDTO> updateCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> updateCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
         DesignatedCoachDetailsDTO updatedDto = service.updateCoach(dto);
-        return ResponseEntity.ok(updatedDto);
+        return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Técnico atualizado com sucesso!"));
     }
 
     @DeleteMapping

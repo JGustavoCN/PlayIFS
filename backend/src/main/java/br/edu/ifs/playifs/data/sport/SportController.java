@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.data.sport.dto.SportInputDTO;
 import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
+import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,39 +38,39 @@ public class SportController {
     @GetMapping
     @Operation(summary = "Lista todos os desportos (versão resumida)")
     @IsAuthenticated
-    public ResponseEntity<PageDTO<SportSummaryDTO>> findAll(
+    public ResponseEntity<ApiResponseBody<PageDTO<SportSummaryDTO>>> findAll(
             @Parameter(description = "Texto para buscar no nome do desporto") @RequestParam(defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<SportSummaryDTO> page = service.findAll(name, pageable);
-        return ResponseEntity.ok(page);
+        return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
     @GetMapping(value = "/{id}")
     @Operation(summary = "Busca os detalhes de um desporto por ID")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Desporto encontrado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError") })
     @IsAuthenticated
-    public ResponseEntity<SportDetailsDTO> findById(@PathVariable @Positive Long id) {
+    public ResponseEntity<ApiResponseBody<SportDetailsDTO>> findById(@PathVariable @Positive Long id) {
         SportDetailsDTO dto = service.findById(id);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
     @PostMapping
     @Operation(summary = "Cria um novo desporto")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Esporte criado com sucesso"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Desporto criado com sucesso"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsCoordinator
-    public ResponseEntity<SportDetailsDTO> insert(@Valid @RequestBody SportInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<SportDetailsDTO>> insert(@Valid @RequestBody SportInputDTO dto) {
         SportDetailsDTO newDto = service.insert(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(newDto);
+        return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Desporto criado com sucesso!"));
     }
 
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um desporto")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Desporto atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsCoordinator
-    public ResponseEntity<SportDetailsDTO> update(@PathVariable @Positive Long id, @Valid @RequestBody SportInputDTO dto) {
+    public ResponseEntity<ApiResponseBody<SportDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody SportInputDTO dto) {
         SportDetailsDTO updatedDto = service.update(id, dto);
-        return ResponseEntity.ok(updatedDto);
+        return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Desporto atualizado com sucesso!"));
     }
 
     @DeleteMapping(value = "/{id}")
