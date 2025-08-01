@@ -32,6 +32,12 @@ public class GameSummaryDTO {
     @Schema(description = "Nome da Equipa B.", example = "Edificações FC")
     private String teamBName;
 
+    @Schema(description = "Data e hora da criação do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant createdAt;
+
+    @Schema(description = "Data e hora da última atualização do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant updatedAt;
+
     public GameSummaryDTO(Game entity) {
         this.id = entity.getId();
         this.dateTime = entity.getDateTime();
@@ -43,5 +49,7 @@ public class GameSummaryDTO {
         if (entity.getTeamB() != null) {
             this.teamBName = entity.getTeamB().getName();
         }
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 }

@@ -1,14 +1,15 @@
 package br.edu.ifs.playifs.team.dto;
 
-import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO; // Alterado para SummaryDTO
-import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO; // Alterado para SummaryDTO
-import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO; // Alterado para SummaryDTO
+import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
+import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
+import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO;
 import br.edu.ifs.playifs.team.model.Team;
-import br.edu.ifs.playifs.user.dto.AthleteDetailsDTO; // Mantido AthleteDTO, pois serve como resumo nesse contexto
+import br.edu.ifs.playifs.user.dto.AthleteDetailsDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,7 @@ public class TeamDetailsDTO {
     private CourseSummaryDTO course;
 
     @Schema(description = "Desporto que a equipa disputa.")
-    private SportSummaryDTO sport; // Alterado para SportSummaryDTO
+    private SportSummaryDTO sport;
 
     @Schema(description = "Competição na qual a equipa está inscrita.")
     private CompetitionSummaryDTO competition;
@@ -38,6 +39,12 @@ public class TeamDetailsDTO {
     @Schema(description = "Lista de atletas que compõem o elenco da equipa.")
     private List<AthleteDetailsDTO> athletes;
 
+    @Schema(description = "Data e hora da criação do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant createdAt;
+
+    @Schema(description = "Data e hora da última atualização do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant updatedAt;
+
     public TeamDetailsDTO(Team entity) {
         this.id = entity.getId();
         this.name = entity.getName();
@@ -46,5 +53,7 @@ public class TeamDetailsDTO {
         this.competition = new CompetitionSummaryDTO(entity.getCompetition());
         this.coach = new AthleteDetailsDTO(entity.getCoach());
         this.athletes = entity.getAthletes().stream().map(AthleteDetailsDTO::new).collect(Collectors.toList());
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 }

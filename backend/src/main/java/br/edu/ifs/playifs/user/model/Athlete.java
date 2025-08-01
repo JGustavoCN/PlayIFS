@@ -1,5 +1,6 @@
 package br.edu.ifs.playifs.user.model;
 
+import br.edu.ifs.playifs.shared.model.AuditableEntity;
 import br.edu.ifs.playifs.team.model.Team;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,8 +13,9 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
-public class Athlete {
+@EqualsAndHashCode(of = "id", callSuper = true)
+@ToString(callSuper = true)
+public class Athlete extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

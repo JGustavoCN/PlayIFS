@@ -1,5 +1,6 @@
 package br.edu.ifs.playifs.data.sport.model;
 
+import br.edu.ifs.playifs.shared.model.AuditableEntity;
 import br.edu.ifs.playifs.team.model.Team;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,19 +10,21 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tb_sport")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Sport {
+@EqualsAndHashCode(of = "id", callSuper = true)
+@ToString(callSuper = true)
+public class Sport extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    private Integer minAthletes; // Mapeia o "número mínimo de cada atleta"
-    private Integer maxAthletes; // Mapeia o "número máximo de cada atleta"
+    private Integer minAthletes;
+    private Integer maxAthletes;
 
     @OneToMany(mappedBy = "sport")
     private Set<Team> teams = new HashSet<>();
-
 }

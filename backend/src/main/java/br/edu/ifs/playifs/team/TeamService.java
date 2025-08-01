@@ -10,7 +10,7 @@ import br.edu.ifs.playifs.data.sport.model.Sport;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.dto.TeamDetailsDTO; // Importação alterada
 import br.edu.ifs.playifs.team.dto.TeamSummaryDTO; // Nova importação
-import br.edu.ifs.playifs.team.dto.TeamInsertDTO;
+import br.edu.ifs.playifs.team.dto.TeamInputDTO;
 import br.edu.ifs.playifs.team.dto.TeamUpdateDTO;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
@@ -80,7 +80,7 @@ public class TeamService {
         return (root, query, cb) -> cb.equal(root.get("course").get("id"), id);
     }
     @Transactional
-    public TeamDetailsDTO insert(TeamInsertDTO dto, User loggedUser) { // Tipo de retorno alterado
+    public TeamDetailsDTO insert(TeamInputDTO dto, User loggedUser) { // Tipo de retorno alterado
         // Validação 1: O técnico da equipa deve ser o usuário logado
         Athlete loggedAthlete = athleteRepository.findByUser(loggedUser)
                 .orElseThrow(() -> new BusinessException("Perfil de atleta não encontrado para o usuário logado."));

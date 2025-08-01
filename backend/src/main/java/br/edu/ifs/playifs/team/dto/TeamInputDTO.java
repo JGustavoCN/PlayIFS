@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Schema(description = "DTO para a criação de uma nova equipa.")
-public class TeamInsertDTO {
+public class TeamInputDTO {
 
     @Schema(description = "Nome da equipa.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "O nome da equipa é obrigatório.")

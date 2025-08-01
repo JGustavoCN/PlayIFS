@@ -1,5 +1,6 @@
 package br.edu.ifs.playifs.user.model;
 
+import br.edu.ifs.playifs.shared.model.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,8 +10,9 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
-public class Coordinator {
+@EqualsAndHashCode(of = "id", callSuper = true)
+@ToString(callSuper = true)
+public class Coordinator extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

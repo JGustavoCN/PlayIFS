@@ -6,7 +6,7 @@ import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.dto.AthleteListDTO;
 import br.edu.ifs.playifs.team.dto.TeamDetailsDTO; // Importação alterada
 import br.edu.ifs.playifs.team.dto.TeamSummaryDTO; // Nova importação
-import br.edu.ifs.playifs.team.dto.TeamInsertDTO;
+import br.edu.ifs.playifs.team.dto.TeamInputDTO;
 import br.edu.ifs.playifs.team.dto.TeamUpdateDTO;
 import br.edu.ifs.playifs.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,7 +62,7 @@ public class TeamController {
     @Operation(summary = "Cria uma nova equipa (apenas Atleta-Técnico)")
     @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Equipa criada com sucesso"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsAthlete
-    public ResponseEntity<TeamDetailsDTO> insert(@Valid @RequestBody TeamInsertDTO dto, @AuthenticationPrincipal User loggedUser) { // Tipo de retorno alterado
+    public ResponseEntity<TeamDetailsDTO> insert(@Valid @RequestBody TeamInputDTO dto, @AuthenticationPrincipal User loggedUser) { // Tipo de retorno alterado
         TeamDetailsDTO newDto = service.insert(dto, loggedUser); // Tipo do DTO alterado
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(newDto);

@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @Schema(description = "DTO para representar os dados resumidos de um atleta, ideal para listagens.")
@@ -19,9 +21,17 @@ public class AthleteSummaryDTO {
     @Schema(description = "Nome completo do atleta.", example = "José da Silva")
     private String fullName;
 
+    @Schema(description = "Data e hora da criação do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant createdAt;
+
+    @Schema(description = "Data e hora da última atualização do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant updatedAt;
+
     public AthleteSummaryDTO(Athlete entity) {
         this.id = entity.getId();
         this.registration = entity.getUser().getRegistration();
         this.fullName = entity.getFullName();
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 }

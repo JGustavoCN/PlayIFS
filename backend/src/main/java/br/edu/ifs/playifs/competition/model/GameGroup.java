@@ -1,6 +1,7 @@
 package br.edu.ifs.playifs.competition.model;
 
 import br.edu.ifs.playifs.game.model.Game;
+import br.edu.ifs.playifs.shared.model.AuditableEntity;
 import br.edu.ifs.playifs.team.model.Team;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,8 +14,9 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
-public class GameGroup {
+@EqualsAndHashCode(of = "id", callSuper = true)
+@ToString(callSuper = true)
+public class GameGroup extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @NoArgsConstructor
 @Schema(description = "DTO para representar os dados detalhados de um atleta.")
 public class AthleteDetailsDTO {
 
-    @Schema(description = "ID único do perfil do atleta.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "ID único do perfil do atleta.", example = "1")
     private Long id;
 
     @Schema(description = "Matrícula única do atleta, usada para login.", example = "202301")
@@ -31,6 +33,12 @@ public class AthleteDetailsDTO {
     @Schema(description = "Indica se este atleta é também um técnico designado de alguma equipa.", example = "true")
     private boolean isCoach;
 
+    @Schema(description = "Data e hora da criação do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant createdAt;
+
+    @Schema(description = "Data e hora da última atualização do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant updatedAt;
+
     public AthleteDetailsDTO(Athlete entity) {
         this.id = entity.getId();
         this.registration = entity.getUser().getRegistration();
@@ -38,6 +46,8 @@ public class AthleteDetailsDTO {
         this.nickname = entity.getNickname();
         this.phone = entity.getPhone();
         this.email = entity.getEmail();
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 
     public AthleteDetailsDTO(Athlete entity, boolean isCoach) {

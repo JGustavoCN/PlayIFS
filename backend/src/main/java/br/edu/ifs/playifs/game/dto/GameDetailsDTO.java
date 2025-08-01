@@ -3,7 +3,7 @@ package br.edu.ifs.playifs.game.dto;
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.game.model.enums.GamePhase;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
-import br.edu.ifs.playifs.team.dto.TeamSummaryDTO; // Importação alterada para TeamSummaryDTO
+import br.edu.ifs.playifs.team.dto.TeamSummaryDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,6 +38,12 @@ public class GameDetailsDTO {
     @Schema(description = "Placar da Equipa B. Nulo se o jogo não estiver finalizado.", example = "2")
     private Integer scoreTeamB;
 
+    @Schema(description = "Data e hora da criação do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant createdAt;
+
+    @Schema(description = "Data e hora da última atualização do registo.", accessMode = Schema.AccessMode.READ_ONLY)
+    private Instant updatedAt;
+
     public GameDetailsDTO(Game entity) {
         this.id = entity.getId();
         this.dateTime = entity.getDateTime();
@@ -47,5 +53,7 @@ public class GameDetailsDTO {
         this.teamB = new TeamSummaryDTO(entity.getTeamB());
         this.scoreTeamA = entity.getScoreTeamA();
         this.scoreTeamB = entity.getScoreTeamB();
+        this.createdAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 }

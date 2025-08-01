@@ -5,6 +5,7 @@ import br.edu.ifs.playifs.competition.model.GameGroup;
 import br.edu.ifs.playifs.data.course.model.Course;
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.data.sport.model.Sport;
+import br.edu.ifs.playifs.shared.model.AuditableEntity;
 import br.edu.ifs.playifs.user.model.Athlete;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,9 +19,9 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id") // Usando a forma correta e mais simples
-@ToString
-public class Team {
+@EqualsAndHashCode(of = "id", callSuper = true)
+@ToString(callSuper = true)
+public class Team extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
