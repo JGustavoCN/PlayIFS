@@ -19,4 +19,5 @@ public interface AthleteRepository extends JpaRepository<Athlete, Long> {
 
     // NOVO MÉTODO: Busca paginada de atletas com filtro por nome.
     Page<Athlete> findByFullNameContainingIgnoreCase(String name, Pageable pageable);
+
 }
