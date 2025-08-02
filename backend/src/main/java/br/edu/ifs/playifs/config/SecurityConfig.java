@@ -43,6 +43,7 @@ public class SecurityConfig {
                         // =================================================================
                         // 1. ENDPOINTS PÚBLICOS (não exigem token)
                         // =================================================================
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         // ATUALIZADO: Inclui /api/v1/ nos caminhos
