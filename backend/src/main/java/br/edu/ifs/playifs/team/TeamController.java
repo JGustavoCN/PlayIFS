@@ -49,11 +49,23 @@ public class TeamController {
     @Operation(summary = "Lista todas as equipas de forma paginada")
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<TeamSummaryDTO>>> findAll(
-            @Parameter(description = "Filtrar por ID da competição") @RequestParam(required = false) @Positive Long competitionId,
-            @Parameter(description = "Filtrar por ID do desporto") @RequestParam(required = false) @Positive Long sportId,
-            @Parameter(description = "Filtrar por ID do curso") @RequestParam(required = false) @Positive Long courseId,
+            @Parameter(description = "Texto para buscar no nome da equipa.")
+            @RequestParam(required = false) String name,
+
+            @Parameter(description = "ID da competição para filtrar")
+            @RequestParam(required = false) @Positive Long competitionId,
+
+            @Parameter(description = "ID do desporto para filtrar")
+            @RequestParam(required = false) @Positive Long sportId,
+
+            @Parameter(description = "ID do curso para filtrar")
+            @RequestParam(required = false) @Positive Long courseId,
+
+            @Parameter(description = "Parâmetros de paginação e ordenação. Ex: ?sort=name,asc")
             Pageable pageable) {
-        PageDTO<TeamSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
+
+        PageDTO<TeamSummaryDTO> page = service.findAll(name, competitionId, sportId, courseId, pageable);
+
         page.getContent().forEach(team ->
                 team.add(linkTo(methodOn(TeamController.class).findById(team.getId())).withSelfRel())
         );
@@ -154,7 +166,7 @@ public class TeamController {
     // Método auxiliar para evitar repetição de código
     private void addLinksToTeamDetails(TeamDetailsDTO dto) {
         dto.add(linkTo(methodOn(TeamController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(TeamController.class).findAll(null, null, null, Pageable.unpaged())).withRel("teams"));
+        dto.add(linkTo(methodOn(TeamController.class).findAll(null, null, null,  null,Pageable.unpaged())).withRel("teams"));
         dto.getCompetition().add(linkTo(methodOn(CompetitionController.class).findById(dto.getCompetition().getId())).withSelfRel());
         dto.getSport().add(linkTo(methodOn(SportController.class).findById(dto.getSport().getId())).withSelfRel());
         dto.getCourse().add(linkTo(methodOn(CourseController.class).findById(dto.getCourse().getId())).withSelfRel());

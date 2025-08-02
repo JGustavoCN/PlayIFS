@@ -7,19 +7,17 @@ import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-public interface GameRepository extends JpaRepository<Game, Long> {
+public interface GameRepository extends JpaRepository<Game, Long>, JpaSpecificationExecutor<Game> {
 
     @Query("SELECT g FROM Game g WHERE g.teamA.competition.id = :competitionId AND g.teamA.sport.id = :sportId AND g.phase <> 'GROUP_STAGE'")
     List<Game> findAllEliminationGamesByCompetitionAndSport(Long competitionId, Long sportId);
-
-    @Query("SELECT obj FROM Game obj WHERE (:teamId IS NULL OR obj.teamA.id = :teamId OR obj.teamB.id = :teamId)")
-    Page<Game> findByTeam(Long teamId, Pageable pageable);
 
     long countByStatusAndDateTimeBefore(GameStatus status, Instant now);
 

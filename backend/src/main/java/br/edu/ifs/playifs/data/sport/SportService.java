@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,8 @@ public class SportService {
 
     @Transactional(readOnly = true)
     public PageDTO<SportSummaryDTO> findAll(String name, Pageable pageable) {
-        Page<Sport> page = repository.findByNameContainingIgnoreCase(name, pageable);
+        Specification<Sport> spec = SportSpecification.hasName(name);
+        Page<Sport> page = repository.findAll(spec, pageable);
         Page<SportSummaryDTO> pageDto = page.map(SportSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }

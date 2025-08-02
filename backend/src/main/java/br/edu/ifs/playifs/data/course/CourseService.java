@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.data.course.dto.CourseDetailsDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseInputDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
 import br.edu.ifs.playifs.data.course.model.Course;
+import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
@@ -13,6 +14,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +30,13 @@ public class CourseService {
     private CampusRepository campusRepository;
 
     @Transactional(readOnly = true)
-    public PageDTO<CourseSummaryDTO> findAll(String name, Long campusId, Pageable pageable) {
-        Page<Course> page = repository.find(name, campusId, pageable);
+    public PageDTO<CourseSummaryDTO> findAll(String name, Long campusId, CourseLevel level, Pageable pageable) {
+
+        Specification<Course> spec = CourseSpecification.hasName(name)
+                .and(CourseSpecification.inCampus(campusId))
+                .and(CourseSpecification.hasLevel(level));
+
+        Page<Course> page = repository.findAll(spec, pageable);
         Page<CourseSummaryDTO> pageDto = page.map(CourseSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }

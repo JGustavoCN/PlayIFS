@@ -4,6 +4,7 @@ import br.edu.ifs.playifs.competition.dto.CompetitionDetailsDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionInputDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
 import br.edu.ifs.playifs.competition.model.Competition;
+import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.game.GameRepository;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
@@ -14,6 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,8 +42,13 @@ public class CompetitionService {
     @Autowired private GameRepository gameRepository;
 
     @Transactional(readOnly = true)
-    public PageDTO<CompetitionSummaryDTO> findAll(String name, Pageable pageable) {
-        Page<Competition> page = repository.findByNameContainingIgnoreCase(name, pageable);
+    public PageDTO<CompetitionSummaryDTO> findAll(String name, CourseLevel level, Pageable pageable) {
+
+        Specification<Competition> spec = Specification.anyOf();
+        spec = spec.and(CompetitionSpecification.hasName(name));
+        spec = spec.and(CompetitionSpecification.hasLevel(level));
+
+        Page<Competition> page = repository.findAll(spec, pageable);
         Page<CompetitionSummaryDTO> pageDto = page.map(CompetitionSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }

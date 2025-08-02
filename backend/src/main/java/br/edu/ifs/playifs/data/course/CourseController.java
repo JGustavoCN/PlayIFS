@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.data.course.dto.CourseDetailsDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseInputBatchDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseInputDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
+import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
@@ -42,14 +43,24 @@ public class CourseController {
     @Autowired
     private CourseService service;
 
+
     @GetMapping
     @Operation(summary = "Lista todos os cursos (versão resumida)")
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<CourseSummaryDTO>>> findAll(
-            @Parameter(description = "Texto para buscar no nome do curso.") @RequestParam(required = false) String name,
-            @Parameter(description = "ID do campus para filtrar os cursos.") @RequestParam(required = false) @Positive Long campusId,
+            @Parameter(description = "Texto para buscar no nome do curso.")
+            @RequestParam(required = false) String name,
+
+            @Parameter(description = "ID do campus para filtrar os cursos.")
+            @RequestParam(required = false) @Positive Long campusId,
+
+            @Parameter(description = "Nível do curso para filtrar (INTEGRADO, TECNICO, SUPERIOR).")
+            @RequestParam(required = false) CourseLevel level,
+
             Pageable pageable) {
-        PageDTO<CourseSummaryDTO> page = service.findAll(name, campusId, pageable);
+
+        PageDTO<CourseSummaryDTO> page = service.findAll(name, campusId, level, pageable);
+
         page.getContent().forEach(course ->
                 course.add(linkTo(methodOn(CourseController.class).findById(course.getId())).withSelfRel())
         );
@@ -124,10 +135,9 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
-    // Método auxiliar para evitar repetição de código
     private void addLinksToCourseDetails(CourseDetailsDTO dto) {
         dto.add(linkTo(methodOn(CourseController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(CourseController.class).findAll(null, null, Pageable.unpaged())).withRel("courses"));
+        dto.add(linkTo(methodOn(CourseController.class).findAll(null, null, null, Pageable.unpaged())).withRel("courses"));
         if (dto.getCampus() != null) {
             dto.getCampus().add(linkTo(methodOn(CampusController.class).findById(dto.getCampus().getId())).withSelfRel());
         }

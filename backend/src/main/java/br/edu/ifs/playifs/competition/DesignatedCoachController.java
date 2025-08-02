@@ -47,11 +47,22 @@ public class DesignatedCoachController {
     @Operation(summary = "Lista as designações de técnicos (versão resumida)")
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<DesignatedCoachSummaryDTO>>> findAll(
-            @Parameter(description = "ID da competição para filtrar.") @RequestParam(required = false) @Positive Long competitionId,
-            @Parameter(description = "ID do desporto para filtrar.") @RequestParam(required = false) @Positive Long sportId,
-            @Parameter(description = "ID do curso para filtrar.") @RequestParam(required = false) @Positive Long courseId,
+            @Parameter(description = "ID da competição para filtrar.")
+            @RequestParam(required = false) @Positive Long competitionId,
+
+            @Parameter(description = "ID do desporto para filtrar.")
+            @RequestParam(required = false) @Positive Long sportId,
+
+            @Parameter(description = "ID do curso para filtrar.")
+            @RequestParam(required = false) @Positive Long courseId,
+
+            @Parameter(description = "Texto para buscar no nome do técnico.")
+            @RequestParam(required = false) String athleteName,
+
             Pageable pageable) {
-        PageDTO<DesignatedCoachSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
+
+        PageDTO<DesignatedCoachSummaryDTO> page = service.findAll(competitionId, sportId, courseId, athleteName, pageable);
+
         page.getContent().forEach(dto ->
                 dto.add(linkTo(methodOn(DesignatedCoachController.class).findById(dto.getId())).withSelfRel())
         );
@@ -133,7 +144,7 @@ public class DesignatedCoachController {
     // Método auxiliar para evitar repetição de código
     private void addLinksToDesignatedCoachDetails(DesignatedCoachDetailsDTO dto) {
         dto.add(linkTo(methodOn(DesignatedCoachController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(DesignatedCoachController.class).findAll(null, null, null, Pageable.unpaged())).withRel("designated-coaches"));
+        dto.add(linkTo(methodOn(DesignatedCoachController.class).findAll(null, null, null, null, Pageable.unpaged())).withRel("designated-coaches"));
 
         if (dto.getCompetition() != null) {
             dto.getCompetition().add(linkTo(methodOn(CompetitionController.class).findById(dto.getCompetition().getId())).withSelfRel());

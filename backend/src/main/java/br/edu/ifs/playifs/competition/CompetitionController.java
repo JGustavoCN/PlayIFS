@@ -4,6 +4,7 @@ import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.competition.dto.CompetitionDetailsDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionInputDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
+import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.game.GameController;
 import br.edu.ifs.playifs.game.dto.GameDetailsDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
@@ -46,9 +47,17 @@ public class CompetitionController {
     @Operation(summary = "Lista todas as competições (versão resumida)")
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<CompetitionSummaryDTO>>> findAll(
-            @Parameter(description = "Texto para buscar no nome da competição") @RequestParam(defaultValue = "") String name,
+            @Parameter(description = "Texto para buscar no nome da competição")
+            @RequestParam(required = false) String name,
+
+            @Parameter(description = "Nível da competição para filtrar (INTEGRADO, TECNICO, SUPERIOR).")
+            @RequestParam(required = false) CourseLevel level,
+
+            @Parameter(description = "Parâmetros de paginação e ordenação. Ex: ?sort=createdAt,desc")
             Pageable pageable) {
-        PageDTO<CompetitionSummaryDTO> page = service.findAll(name, pageable);
+
+        PageDTO<CompetitionSummaryDTO> page = service.findAll(name, level, pageable);
+
         page.getContent().forEach(competition ->
                 competition.add(linkTo(methodOn(CompetitionController.class).findById(competition.getId())).withSelfRel())
         );
@@ -131,10 +140,9 @@ public class CompetitionController {
         return ResponseEntity.ok(new ApiResponseBody<>(eliminationGames, "Fase eliminatória gerada com sucesso!"));
     }
 
-    // Método auxiliar para evitar repetição de código
     private void addLinksToCompetitionDetails(CompetitionDetailsDTO dto) {
         dto.add(linkTo(methodOn(CompetitionController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(CompetitionController.class).findAll(null, Pageable.unpaged())).withRel("competitions"));
-        dto.add(linkTo(methodOn(TeamController.class).findAll(dto.getId(), null, null, Pageable.unpaged())).withRel("teams"));
+        dto.add(linkTo(methodOn(CompetitionController.class).findAll(null, null, Pageable.unpaged())).withRel("competitions"));
+        dto.add(linkTo(methodOn(TeamController.class).findAll(null, dto.getId(), null, null, Pageable.unpaged())).withRel("teams"));
     }
 }

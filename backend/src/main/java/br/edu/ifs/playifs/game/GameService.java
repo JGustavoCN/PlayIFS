@@ -2,6 +2,7 @@ package br.edu.ifs.playifs.game;
 
 import br.edu.ifs.playifs.game.dto.*;
 import br.edu.ifs.playifs.game.model.Game;
+import br.edu.ifs.playifs.game.model.enums.GamePhase;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
 import br.edu.ifs.playifs.shared.exceptions.ResourceNotFoundException;
@@ -10,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +27,16 @@ public class GameService {
     private GameRepository repository;
 
     @Transactional(readOnly = true)
-    public PageDTO<GameSummaryDTO> findAll(Long teamId, Pageable pageable) { // Tipo de retorno alterado
-        Page<Game> page;
-        if (teamId != null && teamId > 0) {
-            page = repository.findByTeam(teamId, pageable);
-        } else {
-            page = repository.findAll(pageable);
-        }
-        Page<GameSummaryDTO> pageDto = page.map(GameSummaryDTO::new); // Criação do DTO alterada
+    public PageDTO<GameSummaryDTO> findAll(Long teamId, Long competitionId, GameStatus status, GamePhase phase, Pageable pageable) {
+
+        // Combina as especificações para construir a query dinâmica
+        Specification<Game> spec = GameSpecification.hasTeam(teamId)
+                .and(GameSpecification.inCompetition(competitionId))
+                .and(GameSpecification.hasStatus(status))
+                .and(GameSpecification.hasPhase(phase));
+
+        Page<Game> page = repository.findAll(spec, pageable);
+        Page<GameSummaryDTO> pageDto = page.map(GameSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }
 

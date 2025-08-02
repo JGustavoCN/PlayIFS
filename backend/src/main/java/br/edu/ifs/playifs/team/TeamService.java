@@ -48,25 +48,20 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public PageDTO<TeamSummaryDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) { // Tipo de retorno alterado
+    public PageDTO<TeamSummaryDTO> findAll(String name, Long competitionId, Long sportId, Long courseId, Pageable pageable) {
 
         Specification<Team> spec = Specification.anyOf();
-
-        if (competitionId != null) {
-            spec = spec.and(hasCompetition(competitionId));
-        }
-        if (sportId != null) {
-            spec = spec.and(hasSport(sportId));
-        }
-        if (courseId != null) {
-            spec = spec.and(hasCourse(courseId));
-        }
+        spec = spec.and(TeamSpecification.hasName(name));
+        spec = spec.and(TeamSpecification.inCompetition(competitionId));
+        spec = spec.and(TeamSpecification.ofSport(sportId));
+        spec = spec.and(TeamSpecification.fromCourse(courseId));
 
         Page<Team> page = repository.findAll(spec, pageable);
-        Page<TeamSummaryDTO> pageDto = page.map(TeamSummaryDTO::new); // Criação do DTO alterada
+        Page<TeamSummaryDTO> pageDto = page.map(TeamSummaryDTO::new);
 
         return new PageDTO<>(pageDto);
     }
+
 
     private static Specification<Team> hasCompetition(Long id) {
         return (root, query, cb) -> cb.equal(root.get("competition").get("id"), id);

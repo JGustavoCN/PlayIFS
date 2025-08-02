@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,8 +36,9 @@ public class CoordinatorService {
     }
 
     @Transactional(readOnly = true)
-    public PageDTO<CoordinatorSummaryDTO> findAll(String name, Pageable pageable) { // Tipo de retorno alterado
-        Page<Coordinator> page = repository.findByNameContainingIgnoreCase(name, pageable);
+    public PageDTO<CoordinatorSummaryDTO> findAll(String name, Pageable pageable) {
+        Specification<Coordinator> spec = CoordinatorSpecification.hasName(name);
+        Page<Coordinator> page = repository.findAll(spec, pageable);
         Page<CoordinatorSummaryDTO> pageDto = page.map(CoordinatorSummaryDTO::new);
         return new PageDTO<>(pageDto);
     }

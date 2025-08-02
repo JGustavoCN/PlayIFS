@@ -42,17 +42,12 @@ public class DesignatedCoachService {
     }
 
     @Transactional(readOnly = true)
-    public PageDTO<DesignatedCoachSummaryDTO> findAll(Long competitionId, Long sportId, Long courseId, Pageable pageable) {
-        Specification<DesignatedCoach> spec = Specification.anyOf();
-        if (competitionId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("competition").get("id"), competitionId));
-        }
-        if (sportId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("sport").get("id"), sportId));
-        }
-        if (courseId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("course").get("id"), courseId));
-        }
+    public PageDTO<DesignatedCoachSummaryDTO> findAll(Long competitionId, Long sportId, Long courseId, String athleteName, Pageable pageable) {
+        Specification<DesignatedCoach> spec = DesignatedCoachSpecification.inCompetition(competitionId)
+                .and(DesignatedCoachSpecification.ofSport(sportId))
+                .and(DesignatedCoachSpecification.fromCourse(courseId))
+                .and(DesignatedCoachSpecification.withAthleteName(athleteName));
+
         Page<DesignatedCoach> page = repository.findAll(spec, pageable);
         Page<DesignatedCoachSummaryDTO> pageDto = page.map(DesignatedCoachSummaryDTO::new);
         return new PageDTO<>(pageDto);

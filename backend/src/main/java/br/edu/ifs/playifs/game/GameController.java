@@ -2,6 +2,8 @@ package br.edu.ifs.playifs.game;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.game.dto.*;
+import br.edu.ifs.playifs.game.model.enums.GamePhase;
+import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
@@ -41,9 +43,22 @@ public class GameController {
     @Operation(summary = "Lista todos os jogos")
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<GameSummaryDTO>>> findAll(
-            @Parameter(description = "ID da equipa para filtrar os jogos.") @RequestParam(required = false) @Positive Long teamId,
+            @Parameter(description = "ID da equipa para filtrar os jogos.")
+            @RequestParam(required = false) @Positive Long teamId,
+
+            @Parameter(description = "ID da competição para filtrar os jogos.")
+            @RequestParam(required = false) @Positive Long competitionId,
+
+            @Parameter(description = "Status do jogo para filtrar (SCHEDULED, FINISHED, WO).")
+            @RequestParam(required = false) GameStatus status,
+
+            @Parameter(description = "Fase do jogo para filtrar (GROUP_STAGE, QUARTER_FINALS, etc.).")
+            @RequestParam(required = false) GamePhase phase,
+
+            @Parameter(description = "Parâmetros de paginação e ordenação. Ex: ?sort=dateTime,desc&page=0&size=10")
             Pageable pageable) {
-        PageDTO<GameSummaryDTO> page = service.findAll(teamId, pageable);
+
+        PageDTO<GameSummaryDTO> page = service.findAll(teamId, competitionId, status, phase, pageable);
         page.getContent().forEach(game ->
                 game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
         );
@@ -157,10 +172,9 @@ public class GameController {
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "W.O. desfeito com sucesso!"));
     }
 
-    // Método auxiliar para adicionar links e evitar repetição
     private void addLinksToGameDetails(GameDetailsDTO dto) {
         dto.add(linkTo(methodOn(GameController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(GameController.class).findAll(null, Pageable.unpaged())).withRel("games"));
+        dto.add(linkTo(methodOn(GameController.class).findAll(null, null, null, null, Pageable.unpaged())).withRel("games"));
 
         if (dto.getTeamA() != null) {
             dto.getTeamA().add(linkTo(methodOn(TeamController.class).findById(dto.getTeamA().getId())).withSelfRel());
