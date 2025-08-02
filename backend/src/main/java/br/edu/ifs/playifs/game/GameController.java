@@ -6,6 +6,7 @@ import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.team.TeamController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/api/v1/games")
@@ -37,6 +41,9 @@ public class GameController {
             @Parameter(description = "ID da equipa para filtrar os jogos.") @RequestParam(required = false) @Positive Long teamId,
             Pageable pageable) {
         PageDTO<GameSummaryDTO> page = service.findAll(teamId, pageable);
+        page.getContent().forEach(game ->
+                game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -46,6 +53,7 @@ public class GameController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<GameDetailsDTO>> findById(@PathVariable @Positive Long id) {
         GameDetailsDTO dto = service.findById(id);
+        addLinksToGameDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -55,6 +63,7 @@ public class GameController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<GameDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody GameUpdateDTO dto) {
         GameDetailsDTO newDto = service.update(id, dto);
+        addLinksToGameDetails(newDto);
         return ResponseEntity.ok(new ApiResponseBody<>(newDto, "Jogo atualizado com sucesso!"));
     }
 
@@ -73,6 +82,7 @@ public class GameController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<GameDetailsDTO>> updateResult(@PathVariable @Positive Long id, @Valid @RequestBody GameResultDTO dto) {
         GameDetailsDTO updatedDto = service.updateResult(id, dto);
+        addLinksToGameDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Resultado atualizado com sucesso!"));
     }
 
@@ -82,6 +92,7 @@ public class GameController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<GameDetailsDTO>> registerWo(@PathVariable @Positive Long id, @Valid @RequestBody GameWoDTO dto) {
         GameDetailsDTO updatedDto = service.registerWo(id, dto);
+        addLinksToGameDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "W.O. registado com sucesso!"));
     }
 
@@ -91,6 +102,20 @@ public class GameController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<GameDetailsDTO>> undoWo(@PathVariable @Positive Long id) {
         GameDetailsDTO updatedDto = service.undoWo(id);
+        addLinksToGameDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "W.O. desfeito com sucesso!"));
+    }
+
+    // Método auxiliar para adicionar links e evitar repetição
+    private void addLinksToGameDetails(GameDetailsDTO dto) {
+        dto.add(linkTo(methodOn(GameController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(GameController.class).findAll(null, Pageable.unpaged())).withRel("games"));
+
+        if (dto.getTeamA() != null) {
+            dto.getTeamA().add(linkTo(methodOn(TeamController.class).findById(dto.getTeamA().getId())).withSelfRel());
+        }
+        if (dto.getTeamB() != null) {
+            dto.getTeamB().add(linkTo(methodOn(TeamController.class).findById(dto.getTeamB().getId())).withSelfRel());
+        }
     }
 }

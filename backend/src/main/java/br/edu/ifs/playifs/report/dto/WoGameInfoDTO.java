@@ -3,12 +3,15 @@ package br.edu.ifs.playifs.report.dto;
 import br.edu.ifs.playifs.game.model.Game;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "Detalhes de um único jogo que terminou em W.O.")
-public class WoGameInfoDTO {
+public class WoGameInfoDTO extends RepresentationModel<WoGameInfoDTO> {
     @Schema(description = "ID do jogo.", example = "78")
     private Long gameId;
 

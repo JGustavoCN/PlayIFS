@@ -6,13 +6,17 @@ import br.edu.ifs.playifs.team.model.Team;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "DTO que representa a participação de um atleta em um desporto dentro de uma competição.")
-public class SportParticipationDTO {
+public class SportParticipationDTO extends RepresentationModel<SportParticipationDTO> {
+
     @Schema(description = "ID do desporto.", example = "1")
     private Long sportId;
 

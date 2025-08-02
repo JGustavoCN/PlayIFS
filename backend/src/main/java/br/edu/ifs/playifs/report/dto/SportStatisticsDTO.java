@@ -3,13 +3,16 @@ package br.edu.ifs.playifs.report.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Relatório com estatísticas agregadas de um desporto dentro de uma competição.")
-public class SportStatisticsDTO {
+@EqualsAndHashCode(callSuper = false)
+public class SportStatisticsDTO extends RepresentationModel<SportStatisticsDTO> {
     @Schema(description = "Número total de jogos finalizados.", example = "25")
     private long totalGames;
 

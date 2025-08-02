@@ -4,14 +4,17 @@ import br.edu.ifs.playifs.competition.model.Competition;
 import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados detalhados de uma Competição.")
-public class CompetitionDetailsDTO {
+public class CompetitionDetailsDTO extends RepresentationModel<CompetitionDetailsDTO> {
 
     @Schema(description = "ID único da competição.", example = "1")
     private Long id;

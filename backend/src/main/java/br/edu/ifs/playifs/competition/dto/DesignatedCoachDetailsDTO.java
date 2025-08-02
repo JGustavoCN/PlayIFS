@@ -6,14 +6,17 @@ import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO;
 import br.edu.ifs.playifs.user.dto.AthleteDetailsDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados detalhados de uma designação de técnico.")
-public class DesignatedCoachDetailsDTO {
+public class DesignatedCoachDetailsDTO extends RepresentationModel<DesignatedCoachDetailsDTO> {
 
     @Schema(description = "ID único da designação.", example = "1")
     private Long id;

@@ -25,6 +25,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/campuses")
 @Tag(name = "7. Administração (Dados Base) - Campi", description = "Endpoints para a gestão de Campi.")
@@ -43,6 +46,9 @@ public class CampusController {
             @RequestParam(value = "name", defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<CampusSummaryDTO> page = service.findAll(name, pageable);
+        page.getContent().forEach(campus ->
+                campus.add(linkTo(methodOn(CampusController.class).findById(campus.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -52,6 +58,8 @@ public class CampusController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CampusDetailsDTO dto = service.findById(id);
+        dto.add(linkTo(methodOn(CampusController.class).findById(id)).withSelfRel());
+        dto.add(linkTo(methodOn(CampusController.class).findAll(null, Pageable.unpaged())).withRel("campuses"));
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -61,6 +69,8 @@ public class CampusController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> insert(@Valid @RequestBody CampusInputDTO dto) {
         CampusDetailsDTO newDto = service.insert(dto);
+        newDto.add(linkTo(methodOn(CampusController.class).findById(newDto.getId())).withSelfRel());
+        newDto.add(linkTo(methodOn(CampusController.class).findAll(null, Pageable.unpaged())).withRel("campuses"));
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Campus criado com sucesso!"));
     }
@@ -71,6 +81,8 @@ public class CampusController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CampusDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CampusInputDTO dto) {
         CampusDetailsDTO updatedDto = service.update(id, dto);
+        updatedDto.add(linkTo(methodOn(CampusController.class).findById(id)).withSelfRel());
+        updatedDto.add(linkTo(methodOn(CampusController.class).findAll(null, Pageable.unpaged())).withRel("campuses"));
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Campus atualizado com sucesso!"));
     }
 

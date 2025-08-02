@@ -28,6 +28,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/coordinators")
 @Tag(name = "6. Gestão de Perfis - Coordenadores", description = "Endpoints para a gestão administrativa de perfis de coordenadores.")
@@ -45,6 +48,9 @@ public class CoordinatorController {
             @Parameter(description = "Nome do coordenador para filtrar a busca.") @RequestParam(value = "name", defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<CoordinatorSummaryDTO> page = service.findAll(name, pageable);
+        page.getContent().forEach(coordinator ->
+                coordinator.add(linkTo(methodOn(CoordinatorController.class).findById(coordinator.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -54,6 +60,8 @@ public class CoordinatorController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CoordinatorDetailsDTO dto = service.findById(id);
+        dto.add(linkTo(methodOn(CoordinatorController.class).findById(id)).withSelfRel());
+        dto.add(linkTo(methodOn(CoordinatorController.class).findAll(null, Pageable.unpaged())).withRel("coordinators"));
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -63,6 +71,8 @@ public class CoordinatorController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> insert(@Valid @RequestBody CoordinatorInputDTO dto) {
         CoordinatorDetailsDTO newDto = service.insert(dto);
+        newDto.add(linkTo(methodOn(CoordinatorController.class).findById(newDto.getId())).withSelfRel());
+        newDto.add(linkTo(methodOn(CoordinatorController.class).findAll(null, Pageable.unpaged())).withRel("coordinators"));
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Coordenador criado com sucesso!"));
     }
@@ -73,6 +83,8 @@ public class CoordinatorController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CoordinatorDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CoordinatorUpdateDTO dto) {
         CoordinatorDetailsDTO updatedDto = service.update(id, dto);
+        updatedDto.add(linkTo(methodOn(CoordinatorController.class).findById(id)).withSelfRel());
+        updatedDto.add(linkTo(methodOn(CoordinatorController.class).findAll(null, Pageable.unpaged())).withRel("coordinators"));
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Coordenador atualizado com sucesso!"));
     }
 

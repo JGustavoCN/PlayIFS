@@ -4,10 +4,13 @@ import br.edu.ifs.playifs.competition.dto.DesignatedCoachDetailsDTO;
 import br.edu.ifs.playifs.competition.dto.DesignatedCoachInputDTO;
 import br.edu.ifs.playifs.competition.dto.DesignatedCoachSummaryDTO;
 import br.edu.ifs.playifs.config.SecurityConstants;
+import br.edu.ifs.playifs.data.course.CourseController;
+import br.edu.ifs.playifs.data.sport.SportController;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.user.athlete.AthleteController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +25,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/api/v1/designated-coaches")
@@ -42,6 +48,9 @@ public class DesignatedCoachController {
             @Parameter(description = "ID do curso para filtrar.") @RequestParam(required = false) @Positive Long courseId,
             Pageable pageable) {
         PageDTO<DesignatedCoachSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
+        page.getContent().forEach(dto ->
+                dto.add(linkTo(methodOn(DesignatedCoachController.class).findById(dto.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -51,6 +60,7 @@ public class DesignatedCoachController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> findById(@PathVariable @Positive Long id) {
         DesignatedCoachDetailsDTO dto = service.findById(id);
+        addLinksToDesignatedCoachDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -60,6 +70,7 @@ public class DesignatedCoachController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> defineCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
         DesignatedCoachDetailsDTO newDto = service.defineCoach(dto);
+        addLinksToDesignatedCoachDetails(newDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDto, "Técnico definido com sucesso!"));
     }
 
@@ -69,6 +80,7 @@ public class DesignatedCoachController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<DesignatedCoachDetailsDTO>> updateCoach(@Valid @RequestBody DesignatedCoachInputDTO dto) {
         DesignatedCoachDetailsDTO updatedDto = service.updateCoach(dto);
+        addLinksToDesignatedCoachDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Técnico atualizado com sucesso!"));
     }
 
@@ -82,5 +94,24 @@ public class DesignatedCoachController {
             @RequestParam @Positive Long courseId) {
         service.removeCoach(competitionId, sportId, courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToDesignatedCoachDetails(DesignatedCoachDetailsDTO dto) {
+        dto.add(linkTo(methodOn(DesignatedCoachController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(DesignatedCoachController.class).findAll(null, null, null, Pageable.unpaged())).withRel("designated-coaches"));
+
+        if (dto.getCompetition() != null) {
+            dto.getCompetition().add(linkTo(methodOn(CompetitionController.class).findById(dto.getCompetition().getId())).withSelfRel());
+        }
+        if (dto.getSport() != null) {
+            dto.getSport().add(linkTo(methodOn(SportController.class).findById(dto.getSport().getId())).withSelfRel());
+        }
+        if (dto.getCourse() != null) {
+            dto.getCourse().add(linkTo(methodOn(CourseController.class).findById(dto.getCourse().getId())).withSelfRel());
+        }
+        if (dto.getCoach() != null) {
+            dto.getCoach().add(linkTo(methodOn(AthleteController.class).findById(dto.getCoach().getId())).withSelfRel());
+        }
     }
 }

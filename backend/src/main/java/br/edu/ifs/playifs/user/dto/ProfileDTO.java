@@ -4,14 +4,17 @@ import br.edu.ifs.playifs.user.model.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO unificado para representar o perfil do usuário logado.")
-@JsonInclude(JsonInclude.Include.NON_NULL) // Oculta campos nulos
-public class ProfileDTO {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ProfileDTO extends RepresentationModel<ProfileDTO> {
 
     @Schema(description = "ID da conta do usuário.", example = "1")
     private Long userId;
@@ -20,11 +23,11 @@ public class ProfileDTO {
     @Schema(description = "Lista de permissões (roles) do usuário.", example = "[\"ROLE_ATHLETE\"]")
     private Set<String> roles;
     @Schema(description = "Perfil de Atleta (presente se o usuário for um atleta).")
-    private AthleteDetailsDTO athleteProfile; // Corrigido para AthleteDetailsDTO
+    private AthleteDetailsDTO athleteProfile;
     @Schema(description = "Perfil de Coordenador (presente se o usuário for um coordenador).")
-    private CoordinatorDetailsDTO coordinatorProfile; // Corrigido para CoordinatorDetailsDTO
+    private CoordinatorDetailsDTO coordinatorProfile;
 
-    public ProfileDTO(User user, AthleteDetailsDTO athleteProfile, CoordinatorDetailsDTO coordinatorProfile) { // Corrigido para AthleteDetailsDTO e CoordinatorDetailsDTO
+    public ProfileDTO(User user, AthleteDetailsDTO athleteProfile, CoordinatorDetailsDTO coordinatorProfile) {
         this.userId = user.getId();
         this.registration = user.getRegistration();
         this.roles = user.getRoles().stream().map(role -> role.getAuthority()).collect(Collectors.toSet());

@@ -1,6 +1,7 @@
 package br.edu.ifs.playifs.data.course;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
+import br.edu.ifs.playifs.data.campus.CampusController;
 import br.edu.ifs.playifs.data.course.dto.CourseDetailsDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseInputDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
@@ -25,6 +26,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/courses")
 @Tag(name = "7. Administração (Dados Base) - Cursos", description = "Endpoints para a gestão de Cursos.")
@@ -43,6 +47,9 @@ public class CourseController {
             @Parameter(description = "ID do campus para filtrar os cursos.") @RequestParam(required = false) @Positive Long campusId,
             Pageable pageable) {
         PageDTO<CourseSummaryDTO> page = service.findAll(name, campusId, pageable);
+        page.getContent().forEach(course ->
+                course.add(linkTo(methodOn(CourseController.class).findById(course.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -52,6 +59,7 @@ public class CourseController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<CourseDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CourseDetailsDTO dto = service.findById(id);
+        addLinksToCourseDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -61,6 +69,7 @@ public class CourseController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CourseDetailsDTO>> insert(@Valid @RequestBody CourseInputDTO dto) {
         CourseDetailsDTO newDto = service.insert(dto);
+        addLinksToCourseDetails(newDto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Curso criado com sucesso!"));
     }
@@ -71,6 +80,7 @@ public class CourseController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CourseDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CourseInputDTO dto) {
         CourseDetailsDTO updatedDto = service.update(id, dto);
+        addLinksToCourseDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Curso atualizado com sucesso!"));
     }
 
@@ -81,5 +91,14 @@ public class CourseController {
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToCourseDetails(CourseDetailsDTO dto) {
+        dto.add(linkTo(methodOn(CourseController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(CourseController.class).findAll(null, null, Pageable.unpaged())).withRel("courses"));
+        if (dto.getCampus() != null) {
+            dto.getCampus().add(linkTo(methodOn(CampusController.class).findById(dto.getCampus().getId())).withSelfRel());
+        }
     }
 }

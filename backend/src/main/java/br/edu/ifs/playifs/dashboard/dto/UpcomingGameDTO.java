@@ -3,13 +3,18 @@ package br.edu.ifs.playifs.dashboard.dto;
 import br.edu.ifs.playifs.game.model.Game;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO simplificado para representar um próximo jogo no dashboard do coordenador.")
-public class UpcomingGameDTO {
+public class UpcomingGameDTO extends RepresentationModel<UpcomingGameDTO> {
+
     @Schema(description = "ID do jogo.", example = "101")
     private Long gameId;
 

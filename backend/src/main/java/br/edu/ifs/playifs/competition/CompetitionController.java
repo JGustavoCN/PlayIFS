@@ -1,14 +1,16 @@
 package br.edu.ifs.playifs.competition;
 
+import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.competition.dto.CompetitionDetailsDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionInputDTO;
 import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
-import br.edu.ifs.playifs.config.SecurityConstants;
+import br.edu.ifs.playifs.game.GameController;
 import br.edu.ifs.playifs.game.dto.GameDetailsDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
+import br.edu.ifs.playifs.team.TeamController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +29,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/competitions")
 @Tag(name = "3. Competições", description = "Endpoints para criar e gerenciar o ciclo de vida das competições e suas fases.")
@@ -44,6 +49,9 @@ public class CompetitionController {
             @Parameter(description = "Texto para buscar no nome da competição") @RequestParam(defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<CompetitionSummaryDTO> page = service.findAll(name, pageable);
+        page.getContent().forEach(competition ->
+                competition.add(linkTo(methodOn(CompetitionController.class).findById(competition.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -53,6 +61,7 @@ public class CompetitionController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<CompetitionDetailsDTO>> findById(@PathVariable @Positive Long id) {
         CompetitionDetailsDTO dto = service.findById(id);
+        addLinksToCompetitionDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -62,6 +71,7 @@ public class CompetitionController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CompetitionDetailsDTO>> insert(@Valid @RequestBody CompetitionInputDTO dto) {
         CompetitionDetailsDTO newDto = service.insert(dto);
+        addLinksToCompetitionDetails(newDto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Competição criada com sucesso!"));
     }
@@ -72,6 +82,7 @@ public class CompetitionController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<CompetitionDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody CompetitionInputDTO dto) {
         CompetitionDetailsDTO updatedDto = service.update(id, dto);
+        addLinksToCompetitionDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Competição atualizada com sucesso!"));
     }
 
@@ -90,6 +101,9 @@ public class CompetitionController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<List<GameDetailsDTO>>> generateGroupStage(@PathVariable @Positive Long competitionId, @PathVariable @Positive Long sportId) {
         List<GameDetailsDTO> generatedGames = service.generateGroupStage(competitionId, sportId);
+        generatedGames.forEach(game ->
+                game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(generatedGames, "Fase de grupos gerada com sucesso!"));
     }
 
@@ -99,6 +113,16 @@ public class CompetitionController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<List<GameDetailsDTO>>> generateEliminationStage(@PathVariable @Positive Long competitionId, @PathVariable @Positive Long sportId) {
         List<GameDetailsDTO> eliminationGames = service.generateEliminationStage(competitionId, sportId);
+        eliminationGames.forEach(game ->
+                game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(eliminationGames, "Fase eliminatória gerada com sucesso!"));
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToCompetitionDetails(CompetitionDetailsDTO dto) {
+        dto.add(linkTo(methodOn(CompetitionController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(CompetitionController.class).findAll(null, Pageable.unpaged())).withRel("competitions"));
+        dto.add(linkTo(methodOn(TeamController.class).findAll(dto.getId(), null, null, Pageable.unpaged())).withRel("teams"));
     }
 }

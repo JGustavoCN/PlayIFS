@@ -5,14 +5,17 @@ import br.edu.ifs.playifs.data.course.model.Course;
 import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados detalhados de um Curso.")
-public class CourseDetailsDTO {
+public class CourseDetailsDTO extends RepresentationModel<CourseDetailsDTO> {
 
     @Schema(description = "ID único do curso.", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;

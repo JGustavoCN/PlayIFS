@@ -1,6 +1,9 @@
 package br.edu.ifs.playifs.team;
 
+import br.edu.ifs.playifs.competition.CompetitionController;
 import br.edu.ifs.playifs.config.SecurityConstants;
+import br.edu.ifs.playifs.data.course.CourseController;
+import br.edu.ifs.playifs.data.sport.SportController;
 import br.edu.ifs.playifs.security.annotations.*;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
@@ -9,6 +12,7 @@ import br.edu.ifs.playifs.team.dto.TeamDetailsDTO;
 import br.edu.ifs.playifs.team.dto.TeamInputDTO;
 import br.edu.ifs.playifs.team.dto.TeamSummaryDTO;
 import br.edu.ifs.playifs.team.dto.TeamUpdateDTO;
+import br.edu.ifs.playifs.user.athlete.AthleteController;
 import br.edu.ifs.playifs.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +31,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping(value = "/api/v1/teams")
@@ -47,6 +54,9 @@ public class TeamController {
             @Parameter(description = "Filtrar por ID do curso") @RequestParam(required = false) @Positive Long courseId,
             Pageable pageable) {
         PageDTO<TeamSummaryDTO> page = service.findAll(competitionId, sportId, courseId, pageable);
+        page.getContent().forEach(team ->
+                team.add(linkTo(methodOn(TeamController.class).findById(team.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -56,6 +66,7 @@ public class TeamController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> findById(@PathVariable @Positive Long id) {
         TeamDetailsDTO dto = service.findById(id);
+        addLinksToTeamDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -65,6 +76,7 @@ public class TeamController {
     @IsAthlete
     public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> insert(@Valid @RequestBody TeamInputDTO dto, @AuthenticationPrincipal User loggedUser) {
         TeamDetailsDTO newDto = service.insert(dto, loggedUser);
+        addLinksToTeamDetails(newDto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Equipa criada com sucesso!"));
     }
@@ -75,6 +87,7 @@ public class TeamController {
     @IsTeamCoach
     public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody TeamUpdateDTO dto) {
         TeamDetailsDTO newDto = service.update(id, dto);
+        addLinksToTeamDetails(newDto);
         return ResponseEntity.ok(new ApiResponseBody<>(newDto, "Equipa atualizada com sucesso!"));
     }
 
@@ -84,6 +97,7 @@ public class TeamController {
     @IsTeamCoach
     public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> addAthletes(@PathVariable @Positive Long id, @Valid @RequestBody AthleteListDTO dto) {
         TeamDetailsDTO newDto = service.addAthletes(id, dto.getAthleteIds());
+        addLinksToTeamDetails(newDto);
         return ResponseEntity.ok(new ApiResponseBody<>(newDto, "Atletas adicionados com sucesso!"));
     }
 
@@ -103,5 +117,18 @@ public class TeamController {
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToTeamDetails(TeamDetailsDTO dto) {
+        dto.add(linkTo(methodOn(TeamController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(TeamController.class).findAll(null, null, null, Pageable.unpaged())).withRel("teams"));
+        dto.getCompetition().add(linkTo(methodOn(CompetitionController.class).findById(dto.getCompetition().getId())).withSelfRel());
+        dto.getSport().add(linkTo(methodOn(SportController.class).findById(dto.getSport().getId())).withSelfRel());
+        dto.getCourse().add(linkTo(methodOn(CourseController.class).findById(dto.getCourse().getId())).withSelfRel());
+        dto.getCoach().add(linkTo(methodOn(AthleteController.class).findById(dto.getCoach().getId())).withSelfRel());
+        dto.getAthletes().forEach(athlete ->
+                athlete.add(linkTo(methodOn(AthleteController.class).findById(athlete.getId())).withSelfRel())
+        );
     }
 }

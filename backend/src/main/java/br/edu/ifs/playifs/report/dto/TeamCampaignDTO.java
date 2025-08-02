@@ -4,14 +4,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Relatório detalhado sobre a campanha de uma equipa específica em uma competição.")
-public class TeamCampaignDTO {
+@EqualsAndHashCode(callSuper = false)
+public class TeamCampaignDTO extends RepresentationModel<TeamCampaignDTO> {
 
     @Schema(description = "Nome da equipa.", example = "Info Futsal PRO")
     private String teamName;

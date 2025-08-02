@@ -4,11 +4,18 @@ import br.edu.ifs.playifs.team.model.Team;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "Representa uma equipa no pódio (top 3).")
-public class PodiumItemDTO {
+public class PodiumItemDTO extends RepresentationModel<PodiumItemDTO> {
+
+    @Schema(description = "ID da equipa.", example = "12")
+    private Long teamId;
+
     @Schema(description = "Posição no pódio.", example = "1")
     private int position;
 
@@ -23,6 +30,7 @@ public class PodiumItemDTO {
 
     public PodiumItemDTO(int position, Team team) {
         this.position = position;
+        this.teamId = team.getId();
         this.teamName = team.getName();
         this.course = team.getCourse().getName();
         this.campus = team.getCourse().getCampus().getName();

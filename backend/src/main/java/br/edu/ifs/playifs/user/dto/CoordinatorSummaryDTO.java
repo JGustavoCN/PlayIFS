@@ -3,14 +3,17 @@ package br.edu.ifs.playifs.user.dto;
 import br.edu.ifs.playifs.user.model.Coordinator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados resumidos de um Coordenador, ideal para listagens.")
-public class CoordinatorSummaryDTO {
+public class CoordinatorSummaryDTO extends RepresentationModel<CoordinatorSummaryDTO> {
 
     @Schema(description = "ID único do perfil do coordenador.", example = "1")
     private Long id;

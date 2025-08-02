@@ -5,14 +5,17 @@ import br.edu.ifs.playifs.game.model.enums.GamePhase;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados resumidos de um jogo, ideal para listagens.")
-public class GameSummaryDTO {
+public class GameSummaryDTO extends RepresentationModel<GameSummaryDTO> {
 
     @Schema(description = "ID único do jogo.", example = "1")
     private Long id;

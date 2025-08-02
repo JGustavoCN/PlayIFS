@@ -7,7 +7,9 @@ import br.edu.ifs.playifs.team.model.Team;
 import br.edu.ifs.playifs.user.dto.AthleteDetailsDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,8 +17,9 @@ import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados completos de uma equipa, incluindo seu elenco e a competição que disputa.")
-public class TeamDetailsDTO {
+public class TeamDetailsDTO extends RepresentationModel<TeamDetailsDTO> {
 
     @Schema(description = "ID único da equipa.", example = "1")
     private Long id;

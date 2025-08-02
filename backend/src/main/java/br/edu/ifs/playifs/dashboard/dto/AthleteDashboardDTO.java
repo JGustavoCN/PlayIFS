@@ -2,16 +2,19 @@ package br.edu.ifs.playifs.dashboard.dto;
 
 import br.edu.ifs.playifs.user.model.Athlete;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO que agrega todas as informações para o dashboard do atleta.")
-public class AthleteDashboardDTO {
+public class AthleteDashboardDTO extends RepresentationModel<AthleteDashboardDTO> {
+
     @Schema(description = "ID do atleta logado.", example = "15")
     private Long athleteId;
 

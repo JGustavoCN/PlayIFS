@@ -28,6 +28,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/athletes")
 @Tag(name = "6. Gestão de Perfis - Atletas", description = "Endpoints para o cadastro público e gestão administrativa de perfis de atletas.")
@@ -45,6 +48,9 @@ public class AthleteController {
             @Parameter(description = "Texto para buscar no nome do atleta") @RequestParam(value = "name", defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<AthleteSummaryDTO> page = service.findAll(name, pageable);
+        page.getContent().forEach(athlete ->
+                athlete.add(linkTo(methodOn(AthleteController.class).findById(athlete.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -54,6 +60,7 @@ public class AthleteController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<AthleteDetailsDTO>> findById(@PathVariable @Positive Long id) {
         AthleteDetailsDTO dto = service.findById(id);
+        addLinksToAthleteDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -63,6 +70,7 @@ public class AthleteController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Atleta cadastrado"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
     public ResponseEntity<ApiResponseBody<AthleteDetailsDTO>> insert(@Valid @RequestBody AthleteInputDTO dto) {
         AthleteDetailsDTO newDto = service.insert(dto);
+        addLinksToAthleteDetails(newDto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Atleta cadastrado com sucesso!"));
     }
@@ -73,6 +81,7 @@ public class AthleteController {
     @IsSelfOrCoordinator
     public ResponseEntity<ApiResponseBody<AthleteDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody AthleteUpdateDTO dto) {
         AthleteDetailsDTO updatedDto = service.update(id, dto);
+        addLinksToAthleteDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Atleta atualizado com sucesso!"));
     }
 
@@ -83,5 +92,11 @@ public class AthleteController {
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToAthleteDetails(AthleteDetailsDTO dto) {
+        dto.add(linkTo(methodOn(AthleteController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(AthleteController.class).findAll(null, Pageable.unpaged())).withRel("athletes"));
     }
 }

@@ -6,13 +6,17 @@ import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.team.dto.TeamSummaryDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "Representa os dados completos de um único jogo.")
-public class GameDetailsDTO {
+public class GameDetailsDTO extends RepresentationModel<GameDetailsDTO> {
 
     @Schema(description = "ID único do jogo.", example = "1")
     private Long id;
@@ -49,8 +53,12 @@ public class GameDetailsDTO {
         this.dateTime = entity.getDateTime();
         this.status = entity.getStatus();
         this.phase = entity.getPhase();
-        this.teamA = new TeamSummaryDTO(entity.getTeamA());
-        this.teamB = new TeamSummaryDTO(entity.getTeamB());
+        if (entity.getTeamA() != null) {
+            this.teamA = new TeamSummaryDTO(entity.getTeamA());
+        }
+        if (entity.getTeamB() != null) {
+            this.teamB = new TeamSummaryDTO(entity.getTeamB());
+        }
         this.scoreTeamA = entity.getScoreTeamA();
         this.scoreTeamB = entity.getScoreTeamB();
         this.createdAt = entity.getCreatedAt();

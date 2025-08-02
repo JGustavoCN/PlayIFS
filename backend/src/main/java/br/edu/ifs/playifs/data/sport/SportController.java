@@ -25,6 +25,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/api/v1/sports")
 @Tag(name = "7. Administração (Dados Base) - Desportos", description = "Endpoints para a gestão de modalidades desportivas.")
@@ -42,6 +45,9 @@ public class SportController {
             @Parameter(description = "Texto para buscar no nome do desporto") @RequestParam(defaultValue = "") String name,
             Pageable pageable) {
         PageDTO<SportSummaryDTO> page = service.findAll(name, pageable);
+        page.getContent().forEach(sport ->
+                sport.add(linkTo(methodOn(SportController.class).findById(sport.getId())).withSelfRel())
+        );
         return ResponseEntity.ok(new ApiResponseBody<>(page));
     }
 
@@ -51,6 +57,7 @@ public class SportController {
     @IsAuthenticated
     public ResponseEntity<ApiResponseBody<SportDetailsDTO>> findById(@PathVariable @Positive Long id) {
         SportDetailsDTO dto = service.findById(id);
+        addLinksToSportDetails(dto);
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
     }
 
@@ -60,6 +67,7 @@ public class SportController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<SportDetailsDTO>> insert(@Valid @RequestBody SportInputDTO dto) {
         SportDetailsDTO newDto = service.insert(dto);
+        addLinksToSportDetails(newDto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newDto.getId()).toUri();
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Desporto criado com sucesso!"));
     }
@@ -70,6 +78,7 @@ public class SportController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<SportDetailsDTO>> update(@PathVariable @Positive Long id, @Valid @RequestBody SportInputDTO dto) {
         SportDetailsDTO updatedDto = service.update(id, dto);
+        addLinksToSportDetails(updatedDto);
         return ResponseEntity.ok(new ApiResponseBody<>(updatedDto, "Desporto atualizado com sucesso!"));
     }
 
@@ -80,5 +89,11 @@ public class SportController {
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Método auxiliar para evitar repetição de código
+    private void addLinksToSportDetails(SportDetailsDTO dto) {
+        dto.add(linkTo(methodOn(SportController.class).findById(dto.getId())).withSelfRel());
+        dto.add(linkTo(methodOn(SportController.class).findAll(null, Pageable.unpaged())).withRel("sports"));
     }
 }

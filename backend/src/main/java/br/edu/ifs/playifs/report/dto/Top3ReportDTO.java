@@ -3,12 +3,16 @@ package br.edu.ifs.playifs.report.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.util.List;
 
 @Data
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "Relatório com o pódio (Top 3) de um desporto em uma competição.")
-public class Top3ReportDTO {
+public class Top3ReportDTO extends RepresentationModel<Top3ReportDTO> {
     @Schema(description = "Informações da competição.")
     private CompetitionInfo competition;
 

@@ -3,13 +3,17 @@ package br.edu.ifs.playifs.data.sport.dto;
 import br.edu.ifs.playifs.data.sport.model.Sport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO para representar os dados resumidos de um Desporto, ideal para listagens.")
-public class SportSummaryDTO {
+public class SportSummaryDTO extends RepresentationModel<SportSummaryDTO> {
 
     @Schema(description = "ID único do desporto.", example = "1")
     private Long id;

@@ -4,13 +4,17 @@ import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.team.model.Team;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO com informações do próximo jogo de uma equipa específica.")
-public class NextGameInfoDTO {
+public class NextGameInfoDTO extends RepresentationModel<NextGameInfoDTO> {
     @Schema(description = "ID do próximo jogo.", example = "102")
     private Long gameId;
 
