@@ -20,7 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class DesignatedCoachService {
@@ -83,6 +86,19 @@ public class DesignatedCoachService {
     }
 
     @Transactional
+    public List<DesignatedCoachDetailsDTO> batchUpsert(List<DesignatedCoachInputDTO> dtos) {
+        List<DesignatedCoachDetailsDTO> resultList = new ArrayList<>();
+
+        for (DesignatedCoachInputDTO dto : dtos) {
+            // A lógica de "updateCoach" já contém um "delete" seguido de um "define",
+            // funcionando perfeitamente como um "upsert".
+            resultList.add(updateCoach(dto));
+        }
+
+        return resultList;
+    }
+
+    @Transactional
     public DesignatedCoachDetailsDTO updateCoach(DesignatedCoachInputDTO dto) {
         repository.deleteByCompetitionIdAndSportIdAndCourseId(dto.getCompetitionId(), dto.getSportId(), dto.getCourseId());
         return defineCoach(dto);
@@ -95,4 +111,14 @@ public class DesignatedCoachService {
         }
         repository.deleteByCompetitionIdAndSportIdAndCourseId(competitionId, sportId, courseId);
     }
+
+    @Transactional
+    public void batchRemove(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return; // Nenhuma ação a ser feita
+        }
+        // O Spring Data JPA executará isso em uma única operação de deleção otimizada
+        repository.deleteAllByIdInBatch(ids);
+    }
+
 }

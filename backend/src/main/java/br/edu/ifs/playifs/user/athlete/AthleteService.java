@@ -22,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class AthleteService {
 
@@ -68,6 +71,32 @@ public class AthleteService {
     }
 
     @Transactional
+    public List<AthleteDetailsDTO> batchInsert(List<AthleteInputDTO> dtos) {
+        Role athleteRole = roleRepository.findByAuthority("ROLE_ATHLETE");
+
+        List<Athlete> entities = dtos.stream().map(dto -> {
+            User user = new User();
+            user.setRegistration(dto.getRegistration());
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            user.getRoles().add(athleteRole);
+
+            Athlete entity = new Athlete();
+            entity.setFullName(dto.getFullName());
+            entity.setNickname(dto.getNickname());
+            entity.setPhone(dto.getPhone());
+            entity.setEmail(dto.getEmail());
+            entity.setUser(user);
+            return entity;
+        }).collect(Collectors.toList());
+
+        List<Athlete> savedEntities = repository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(entity -> new AthleteDetailsDTO(entity, false)) // isCoach é false para novos atletas
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
     public AthleteDetailsDTO update(Long id, AthleteUpdateDTO dto) {
         try {
             Athlete entity = repository.getReferenceById(id);
@@ -96,6 +125,23 @@ public class AthleteService {
             throw new BusinessException("Não é possível apagar um atleta que já está inscrito em uma ou mais equipas.");
         }
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        List<Athlete> athletesToDelete = repository.findAllById(ids);
+
+        if (athletesToDelete.size() != ids.size()) {
+            throw new ResourceNotFoundException("Um ou mais atletas não foram encontrados.");
+        }
+
+        for (Athlete athlete : athletesToDelete) {
+            if (!athlete.getTeams().isEmpty()) {
+                throw new BusinessException("Não é possível apagar o atleta '" + athlete.getFullName() + "' (ID: " + athlete.getId() + ") pois ele já está inscrito em uma ou mais equipas.");
+            }
+        }
+
+        repository.deleteAllInBatch(athletesToDelete);
     }
 
     // Método auxiliar para verificar se um atleta é técnico de alguma equipe

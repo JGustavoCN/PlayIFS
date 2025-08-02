@@ -2,11 +2,13 @@ package br.edu.ifs.playifs.data.campus;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.data.campus.dto.CampusDetailsDTO;
+import br.edu.ifs.playifs.data.campus.dto.CampusInputBatchDTO;
 import br.edu.ifs.playifs.data.campus.dto.CampusInputDTO;
 import br.edu.ifs.playifs.data.campus.dto.CampusSummaryDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
+import br.edu.ifs.playifs.shared.web.dto.IdBatchDTO;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,12 +20,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -75,6 +79,25 @@ public class CampusController {
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Campus criado com sucesso!"));
     }
 
+    @PostMapping("/batch-create")
+    @Operation(summary = "Cria novos campi em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Campi criados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<ApiResponseBody<List<CampusDetailsDTO>>> batchInsert(@Valid @RequestBody CampusInputBatchDTO batchDto) {
+        List<CampusDetailsDTO> newDtos = service.batchInsert(batchDto.getCampuses());
+
+        // Adiciona links HATEOAS a cada campus criado
+        newDtos.forEach(dto -> {
+            dto.add(linkTo(methodOn(CampusController.class).findById(dto.getId())).withSelfRel());
+            dto.add(linkTo(methodOn(CampusController.class).findAll(null, Pageable.unpaged())).withRel("campuses"));
+        });
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDtos, newDtos.size() + " campi criados com sucesso!"));
+    }
+
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um campus existente (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Campus atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
@@ -94,4 +117,17 @@ public class CampusController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/batch-delete")
+    @Operation(summary = "Apaga campi em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Campi apagados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody IdBatchDTO batchDto) {
+        service.batchDelete(batchDto.getIds());
+        return ResponseEntity.noContent().build();
+    }
+
 }

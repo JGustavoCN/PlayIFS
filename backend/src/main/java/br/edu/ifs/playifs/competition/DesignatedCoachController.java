@@ -1,6 +1,7 @@
 package br.edu.ifs.playifs.competition;
 
 import br.edu.ifs.playifs.competition.dto.DesignatedCoachDetailsDTO;
+import br.edu.ifs.playifs.competition.dto.DesignatedCoachInputBatchDTO;
 import br.edu.ifs.playifs.competition.dto.DesignatedCoachInputDTO;
 import br.edu.ifs.playifs.competition.dto.DesignatedCoachSummaryDTO;
 import br.edu.ifs.playifs.config.SecurityConstants;
@@ -9,6 +10,7 @@ import br.edu.ifs.playifs.data.sport.SportController;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
+import br.edu.ifs.playifs.shared.web.dto.IdBatchDTO;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.user.athlete.AthleteController;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -74,6 +78,24 @@ public class DesignatedCoachController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDto, "Técnico definido com sucesso!"));
     }
 
+    @PostMapping("/batch-upsert")
+    @Operation(summary = "Cria ou atualiza múltiplas designações de técnicos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Designações processadas com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<ApiResponseBody<List<DesignatedCoachDetailsDTO>>> batchUpsert(
+            @Valid @RequestBody DesignatedCoachInputBatchDTO batchDto) {
+
+        List<DesignatedCoachDetailsDTO> resultDtos = service.batchUpsert(batchDto.getCoaches());
+
+        // Adiciona links HATEOAS a cada item do resultado
+        resultDtos.forEach(this::addLinksToDesignatedCoachDetails);
+
+        return ResponseEntity.ok(new ApiResponseBody<>(resultDtos, resultDtos.size() + " designações foram processadas com sucesso!"));
+    }
+
     @PutMapping
     @Operation(summary = "Atualiza/Substitui um técnico (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Técnico atualizado com sucesso."), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
@@ -93,6 +115,18 @@ public class DesignatedCoachController {
             @RequestParam @Positive Long sportId,
             @RequestParam @Positive Long courseId) {
         service.removeCoach(competitionId, sportId, courseId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/batch-remove")
+    @Operation(summary = "Remove designações de técnicos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Designações removidas com sucesso"),
+            @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchRemove(@Valid @RequestBody IdBatchDTO batchDto) {
+        service.batchRemove(batchDto.getIds());
         return ResponseEntity.noContent().build();
     }
 

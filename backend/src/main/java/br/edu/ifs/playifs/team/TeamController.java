@@ -6,8 +6,8 @@ import br.edu.ifs.playifs.data.course.CourseController;
 import br.edu.ifs.playifs.data.sport.SportController;
 import br.edu.ifs.playifs.security.annotations.*;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
+import br.edu.ifs.playifs.shared.web.dto.IdBatchDTO;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
-import br.edu.ifs.playifs.team.dto.AthleteListDTO;
 import br.edu.ifs.playifs.team.dto.TeamDetailsDTO;
 import br.edu.ifs.playifs.team.dto.TeamInputDTO;
 import br.edu.ifs.playifs.team.dto.TeamSummaryDTO;
@@ -91,12 +91,19 @@ public class TeamController {
         return ResponseEntity.ok(new ApiResponseBody<>(newDto, "Equipa atualizada com sucesso!"));
     }
 
-    @PostMapping(value = "/{id}/athletes")
-    @Operation(summary = "Adiciona atletas a uma equipa (apenas Técnico da Equipa)")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Atletas adicionados"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
+    @PostMapping(value = "/{id}/athletes/batch-add")
+    @Operation(summary = "Adiciona múltiplos atletas a uma equipa (apenas Técnico da Equipa)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Atletas adicionados com sucesso"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
     @IsTeamCoach
-    public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> addAthletes(@PathVariable @Positive Long id, @Valid @RequestBody AthleteListDTO dto) {
-        TeamDetailsDTO newDto = service.addAthletes(id, dto.getAthleteIds());
+    public ResponseEntity<ApiResponseBody<TeamDetailsDTO>> batchAddAthletes(
+            @PathVariable @Positive Long id,
+            @Valid @RequestBody IdBatchDTO batchDto) {
+
+        TeamDetailsDTO newDto = service.batchAddAthletes(id, batchDto.getIds());
         addLinksToTeamDetails(newDto);
         return ResponseEntity.ok(new ApiResponseBody<>(newDto, "Atletas adicionados com sucesso!"));
     }
@@ -110,12 +117,37 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(value = "/{id}/athletes/batch-remove")
+    @Operation(summary = "Remove múltiplos atletas de uma equipa (apenas Técnico da Equipa)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Atletas removidos"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsTeamCoach
+    public ResponseEntity<Void> batchRemoveAthletes(@PathVariable @Positive Long id, @Valid @RequestBody IdBatchDTO batchDto) {
+        service.batchRemoveAthletes(id, batchDto.getIds());
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping(value = "/{id}")
     @Operation(summary = "Apaga uma equipa (Técnico ou Coordenador)")
     @ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Equipa apagada"), @ApiResponse(responseCode = "403", ref = "#/components/responses/ForbiddenError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
     @IsCoordinator
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/batch-delete")
+    @Operation(summary = "Apaga equipas em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Equipas apagadas com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody IdBatchDTO batchDto) {
+        service.batchDelete(batchDto.getIds());
         return ResponseEntity.noContent().build();
     }
 

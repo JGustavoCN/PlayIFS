@@ -160,24 +160,33 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamDetailsDTO addAthletes(Long teamId, List<Long> athleteIds) { // Tipo de retorno alterado
-        Team entity = repository.findById(teamId).orElseThrow(() -> new ResourceNotFoundException("Equipa não encontrada"));
+    public TeamDetailsDTO batchAddAthletes(Long teamId, List<Long> athleteIds) {
+        Team entity = repository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException("Equipa não encontrada com o ID: " + teamId));
 
         // Validação: Os novos atletas já jogam noutra equipa neste desporto?
         if (athleteRepository.existsInAnotherTeamInCompetitionAndSport(entity.getCompetition().getId(), entity.getSport().getId(), athleteIds)) {
             throw new BusinessException("Um ou mais atletas já estão inscritos em outra equipa neste desporto.");
         }
 
+        // Busca os atletas para garantir que todos existem antes de adicionar
         List<Athlete> newAthletes = athleteRepository.findAllById(athleteIds);
+        if (newAthletes.size() != athleteIds.size()) {
+            throw new ResourceNotFoundException("Um ou mais IDs de atletas não foram encontrados.");
+        }
+
         entity.getAthletes().addAll(newAthletes);
 
         // Validação: A equipa excedeu o número máximo de atletas?
         if (entity.getAthletes().size() > entity.getSport().getMaxAthletes()) {
-            throw new BusinessException("A equipa excederia o número máximo de atletas para este desporto.");
+            throw new BusinessException("A equipa excederia o número máximo de atletas para este desporto. Máximo permitido: " + entity.getSport().getMaxAthletes());
         }
 
+        // O save não é estritamente necessário se a transação estiver ativa,
+        // mas pode ser explícito para maior clareza.
         entity = repository.save(entity);
-        return new TeamDetailsDTO(entity); // Criação do DTO alterada
+
+        return new TeamDetailsDTO(entity);
     }
 
     @Transactional
@@ -200,6 +209,26 @@ public class TeamService {
     }
 
     @Transactional
+    public void batchRemoveAthletes(Long teamId, List<Long> athleteIds) {
+        Team entity = repository.findById(teamId).orElseThrow(() -> new ResourceNotFoundException("Equipa não encontrada"));
+
+        // Validação: Não se pode remover o próprio técnico da lista de atletas.
+        if (athleteIds.contains(entity.getCoach().getId())) {
+            throw new BusinessException("O técnico não pode ser removido da lista de atletas da equipa.");
+        }
+
+        // Remove os atletas da coleção da equipe
+        entity.getAthletes().removeIf(athlete -> athleteIds.contains(athlete.getId()));
+
+        // Validação final: A equipe ficou abaixo do número mínimo?
+        if (entity.getAthletes().size() < entity.getSport().getMinAthletes()) {
+            throw new BusinessException("A operação foi cancelada. A equipa ficaria com menos que o número mínimo de atletas para este desporto.");
+        }
+
+        // A modificação na coleção 'athletes' será persistida ao final da transação
+    }
+
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Recurso não encontrado com o ID: " + id);
@@ -212,6 +241,23 @@ public class TeamService {
         }
 
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        List<Team> teamsToDelete = repository.findAllById(ids);
+
+        if (teamsToDelete.size() != ids.size()) {
+            throw new ResourceNotFoundException("Uma ou mais equipas não foram encontradas.");
+        }
+
+        for (Team team : teamsToDelete) {
+            if (!team.getGamesAsTeamA().isEmpty() || !team.getGamesAsTeamB().isEmpty()) {
+                throw new BusinessException("Não é possível apagar a equipa '" + team.getName() + "' (ID: " + team.getId() + ") pois ela já possui jogos associados.");
+            }
+        }
+
+        repository.deleteAllInBatch(teamsToDelete);
     }
 
     public boolean isCoachOfTeam(User user, Long teamId) {

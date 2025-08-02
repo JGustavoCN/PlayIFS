@@ -16,6 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class CourseService {
 
@@ -47,6 +50,22 @@ public class CourseService {
     }
 
     @Transactional
+    public List<CourseDetailsDTO> batchInsert(List<CourseInputDTO> dtos) {
+        List<Course> entities = dtos.stream().map(dto -> {
+            Course entity = new Course();
+            // Reutiliza o método que já possui a lógica de mapeamento
+            copyDtoToEntity(dto, entity);
+            return entity;
+        }).collect(Collectors.toList());
+
+        List<Course> savedEntities = repository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(CourseDetailsDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
     public CourseDetailsDTO update(Long id, CourseInputDTO dto) {
         try {
             Course entity = repository.getReferenceById(id);
@@ -68,6 +87,24 @@ public class CourseService {
             throw new BusinessException("Não é possível apagar um curso que já possui equipas inscritas.");
         }
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        List<Course> coursesToDelete = repository.findAllById(ids);
+
+        if (coursesToDelete.size() != ids.size()) {
+            throw new ResourceNotFoundException("Um ou mais cursos não foram encontrados.");
+        }
+
+        // Validação de negócio: verifica se algum curso possui equipes associadas
+        for (Course course : coursesToDelete) {
+            if (!course.getTeams().isEmpty()) {
+                throw new BusinessException("Não é possível apagar o curso '" + course.getName() + "' (ID: " + course.getId() + ") pois ele já possui equipas inscritas.");
+            }
+        }
+
+        repository.deleteAllInBatch(coursesToDelete);
     }
 
     private void copyDtoToEntity(CourseInputDTO dto, Course entity) {

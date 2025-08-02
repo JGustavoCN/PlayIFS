@@ -85,6 +85,25 @@ public class CompetitionService {
         repository.deleteById(id);
     }
 
+    @Transactional
+    public void batchDelete(List<Long> ids) {
+        // Busca todas as competições de uma vez para otimizar e validar
+        List<Competition> competitionsToDelete = repository.findAllById(ids);
+
+        if (competitionsToDelete.size() != ids.size()) {
+            throw new ResourceNotFoundException("Uma ou mais competições não foram encontradas.");
+        }
+
+        // Validação de negócio: verifica se alguma competição possui equipes
+        for (Competition competition : competitionsToDelete) {
+            if (!competition.getTeams().isEmpty()) {
+                throw new BusinessException("Não é possível apagar a competição '" + competition.getName() + "' (ID: " + competition.getId() + ") pois ela já possui equipas inscritas.");
+            }
+        }
+
+        repository.deleteAllInBatch(competitionsToDelete);
+    }
+
     private void copyDtoToEntity(CompetitionInputDTO dto, Competition entity) {
         entity.setName(dto.getName());
         entity.setLevel(dto.getLevel());

@@ -3,6 +3,7 @@ package br.edu.ifs.playifs.data.course;
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.data.campus.CampusController;
 import br.edu.ifs.playifs.data.course.dto.CourseDetailsDTO;
+import br.edu.ifs.playifs.data.course.dto.CourseInputBatchDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseInputDTO;
 import br.edu.ifs.playifs.data.course.dto.CourseSummaryDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
@@ -19,12 +20,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -74,6 +77,22 @@ public class CourseController {
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Curso criado com sucesso!"));
     }
 
+    @PostMapping("/batch-create")
+    @Operation(summary = "Cria novos cursos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Cursos criados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<ApiResponseBody<List<CourseDetailsDTO>>> batchInsert(@Valid @RequestBody CourseInputBatchDTO batchDto) {
+        List<CourseDetailsDTO> newDtos = service.batchInsert(batchDto.getCourses());
+
+        // Adiciona links HATEOAS a cada curso criado
+        newDtos.forEach(this::addLinksToCourseDetails);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDtos, newDtos.size() + " cursos criados com sucesso!"));
+    }
+
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um curso existente (Coordenador)")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Curso atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")})
@@ -90,6 +109,18 @@ public class CourseController {
     @IsCoordinator
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/batch-delete")
+    @Operation(summary = "Apaga cursos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Cursos apagados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody br.edu.ifs.playifs.shared.web.dto.IdBatchDTO batchDto) {
+        service.batchDelete(batchDto.getIds());
         return ResponseEntity.noContent().build();
     }
 

@@ -2,6 +2,7 @@ package br.edu.ifs.playifs.data.sport;
 
 import br.edu.ifs.playifs.config.SecurityConstants;
 import br.edu.ifs.playifs.data.sport.dto.SportDetailsDTO;
+import br.edu.ifs.playifs.data.sport.dto.SportInputBatchDTO;
 import br.edu.ifs.playifs.data.sport.dto.SportInputDTO;
 import br.edu.ifs.playifs.data.sport.dto.SportSummaryDTO;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
@@ -18,12 +19,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -72,6 +75,22 @@ public class SportController {
         return ResponseEntity.created(uri).body(new ApiResponseBody<>(newDto, "Desporto criado com sucesso!"));
     }
 
+    @PostMapping("/batch-create")
+    @Operation(summary = "Cria novos desportos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Desportos criados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<ApiResponseBody<List<SportDetailsDTO>>> batchInsert(@Valid @RequestBody SportInputBatchDTO batchDto) {
+        List<SportDetailsDTO> newDtos = service.batchInsert(batchDto.getSports());
+
+        // Adiciona links HATEOAS a cada desporto criado
+        newDtos.forEach(this::addLinksToSportDetails);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDtos, newDtos.size() + " desportos criados com sucesso!"));
+    }
+
     @PutMapping(value = "/{id}")
     @Operation(summary = "Atualiza um desporto")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Desporto atualizado"), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
@@ -88,6 +107,18 @@ public class SportController {
     @IsCoordinator
     public ResponseEntity<Void> delete(@PathVariable @Positive Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/batch-delete")
+    @Operation(summary = "Apaga desportos em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Desportos apagados com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody br.edu.ifs.playifs.shared.web.dto.IdBatchDTO batchDto) {
+        service.batchDelete(batchDto.getIds());
         return ResponseEntity.noContent().build();
     }
 

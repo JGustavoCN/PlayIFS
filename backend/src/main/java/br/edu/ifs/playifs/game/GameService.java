@@ -1,10 +1,6 @@
 package br.edu.ifs.playifs.game;
 
-import br.edu.ifs.playifs.game.dto.GameDetailsDTO; // Importação alterada
-import br.edu.ifs.playifs.game.dto.GameResultDTO;
-import br.edu.ifs.playifs.game.dto.GameSummaryDTO; // Nova importação
-import br.edu.ifs.playifs.game.dto.GameUpdateDTO;
-import br.edu.ifs.playifs.game.dto.GameWoDTO;
+import br.edu.ifs.playifs.game.dto.*;
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
 import br.edu.ifs.playifs.shared.exceptions.BusinessException;
@@ -16,6 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -57,6 +58,23 @@ public class GameService {
     }
 
     @Transactional
+    public void batchDelete(List<Long> ids) {
+        List<Game> gamesToDelete = repository.findAllById(ids);
+
+        if (gamesToDelete.size() != ids.size()) {
+            throw new ResourceNotFoundException("Um ou mais jogos não foram encontrados.");
+        }
+
+        for (Game game : gamesToDelete) {
+            if (game.getStatus() != GameStatus.SCHEDULED) {
+                throw new BusinessException("Apenas jogos com o status 'SCHEDULED' podem ser apagados. O jogo com ID " + game.getId() + " não pode ser apagado.");
+            }
+        }
+
+        repository.deleteAllInBatch(gamesToDelete);
+    }
+
+    @Transactional
     public GameDetailsDTO update(Long id, GameUpdateDTO dto) { // Tipo de retorno alterado
         try {
             Game entity = repository.getReferenceById(id);
@@ -87,6 +105,38 @@ public class GameService {
 
         // Retorna o DTO com os dados atualizados
         return new GameDetailsDTO(entity); // Criação do DTO alterada
+    }
+
+
+    @Transactional
+    public List<GameDetailsDTO> batchUpdateResults(List<GameResultItemDTO> resultItems) {
+        // Extrai todos os IDs para uma busca otimizada
+        List<Long> gameIds = resultItems.stream().map(GameResultItemDTO::getGameId).collect(Collectors.toList());
+
+        // Busca todos os jogos de uma vez para reduzir acessos ao banco
+        Map<Long, Game> gamesMap = repository.findAllById(gameIds).stream()
+                .collect(Collectors.toMap(Game::getId, game -> game));
+
+        List<Game> gamesToUpdate = new ArrayList<>();
+        for (GameResultItemDTO item : resultItems) {
+            Game entity = gamesMap.get(item.getGameId());
+
+            if (entity == null) {
+                throw new ResourceNotFoundException("Jogo não encontrado com o ID: " + item.getGameId());
+            }
+            if (entity.getStatus() != GameStatus.SCHEDULED) {
+                throw new BusinessException("Apenas jogos com status 'SCHEDULED' podem ter o resultado atualizado. Jogo ID: " + entity.getId());
+            }
+
+            entity.setScoreTeamA(item.getScoreTeamA());
+            entity.setScoreTeamB(item.getScoreTeamB());
+            entity.setStatus(GameStatus.FINISHED);
+            gamesToUpdate.add(entity);
+        }
+
+        List<Game> updatedGames = repository.saveAll(gamesToUpdate);
+
+        return updatedGames.stream().map(GameDetailsDTO::new).collect(Collectors.toList());
     }
 
     @Transactional
@@ -132,6 +182,35 @@ public class GameService {
 
         entity = repository.save(entity);
         return new GameDetailsDTO(entity); // Criação do DTO alterada
+    }
+
+    @Transactional
+    public List<GameDetailsDTO> batchUpdateDateTime(List<GameRescheduleItemDTO> scheduleItems) {
+        List<Long> gameIds = scheduleItems.stream()
+                .map(GameRescheduleItemDTO::getGameId)
+                .collect(Collectors.toList());
+
+        Map<Long, Game> gamesMap = repository.findAllById(gameIds).stream()
+                .collect(Collectors.toMap(Game::getId, game -> game));
+
+        List<Game> gamesToUpdate = new ArrayList<>();
+        for (GameRescheduleItemDTO item : scheduleItems) {
+            Game entity = gamesMap.get(item.getGameId());
+
+            if (entity == null) {
+                throw new ResourceNotFoundException("Jogo não encontrado com o ID: " + item.getGameId());
+            }
+            if (entity.getStatus() != GameStatus.SCHEDULED) {
+                throw new BusinessException("Apenas jogos com status 'SCHEDULED' podem ser reagendados. Jogo ID: " + entity.getId());
+            }
+
+            entity.setDateTime(item.getDateTime());
+            gamesToUpdate.add(entity);
+        }
+
+        List<Game> updatedGames = repository.saveAll(gamesToUpdate);
+
+        return updatedGames.stream().map(GameDetailsDTO::new).collect(Collectors.toList());
     }
 
 }

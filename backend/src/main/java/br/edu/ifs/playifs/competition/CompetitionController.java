@@ -95,6 +95,18 @@ public class CompetitionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/batch-delete")
+    @Operation(summary = "Apaga competições em massa (Coordenador)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Competições apagadas com sucesso"),
+            @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
+    })
+    @IsCoordinator
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody br.edu.ifs.playifs.shared.web.dto.IdBatchDTO batchDto) {
+        service.batchDelete(batchDto.getIds());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(value = "/{competitionId}/sports/{sportId}/generate-groups")
     @Operation(summary = "Gera a fase de grupos para um desporto (Apenas Coordenador)")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Jogos da fase de grupos gerados com sucesso"), @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError") })
