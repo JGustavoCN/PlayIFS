@@ -1,0 +1,53 @@
+name: playifs_frontend
+description: "A Flutter application for the PlayIFS tournament system."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  google_fonts: ^6.3.0
+
+  # Camada de Rede
+  dio: ^5.8.0+1
+  retrofit: ^4.7.0
+  get_it: ^8.2.0
+
+  # Modelos de Dados e Serialização
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+
+  # Gestão de Estado
+  flutter_riverpod: ^3.0.0-dev.17           # ATUALIZADO para a versão mais recente
+  riverpod_annotation: ^3.0.0-dev.17      # ADICIONADO (essencial para o gerador)
+
+  # Navegação
+  go_router: ^16.1.0
+
+  # Segurança
+  flutter_secure_storage: ^9.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  # Geração de Código
+  build_runner: ^2.4.11
+  freezed: ^3.2.0
+  json_serializable: ^6.10.0
+
+  # CORREÇÃO DEFINITIVA: Versão compatível com a árvore de dependências do riverpod_generator
+  retrofit_generator: ^10.0.0
+
+  riverpod_generator: ^3.0.0-dev.17
+  custom_lint: ^0.8.0             # ADICIONADO (requerido pelo novo riverpod_generator)
+
+flutter:
+  uses-material-design: true

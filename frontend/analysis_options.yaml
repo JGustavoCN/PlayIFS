@@ -1,0 +1,36 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/data/generated/**"
+
+  errors:
+    public_member_api_docs: error
+    invalid_annotation_target: ignore
+
+linter:
+  rules:
+    # Estilo e Imutabilidade
+    - always_declare_return_types
+    - prefer_final_fields
+    - prefer_const_constructors_in_immutables
+    - prefer_const_constructors
+    - prefer_expression_function_bodies
+    - sort_constructors_first
+    - prefer_single_quotes
+    - camel_case_types
+    - non_constant_identifier_names
+    - directives_ordering
+
+    # Prevenção de Erros
+    - avoid_print
+    - avoid_empty_else
+    - unnecessary_new
+    - unnecessary_const
+    - await_only_futures
+    - control_flow_in_finally
+
+    # Flutter
+    - use_key_in_widget_constructors

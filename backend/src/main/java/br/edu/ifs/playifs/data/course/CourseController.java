@@ -13,6 +13,7 @@ import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -45,16 +46,27 @@ public class CourseController {
 
 
     @GetMapping
-    @Operation(summary = "Lista todos os cursos (versão resumida)")
-    @IsAuthenticated
+    @Operation(
+            summary = "Lista todos os cursos com paginação",
+            description = "Retorna uma lista paginada de cursos, com filtros opcionais.",
+            parameters = {
+                    @Parameter(name = "page", description = "Número da página (começa em 0).", example = "0"),
+                    @Parameter(name = "size", description = "Tamanho da página.", example = "10"),
+                    @Parameter(name = "sort", description = "Critério de ordenação. Ex: 'name,asc'.", example = "name,asc"),
+                    @Parameter(name = "name", description = "Filtro por nome do curso."),
+                    @Parameter(name = "campusId", description = "Filtro por ID do campus."),
+                    @Parameter(
+                            name = "level",
+                            description = "Nível do curso para filtrar.",
+                            schema = @Schema(implementation = CourseLevel.class)
+                    )
+            }
+    )@IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<CourseSummaryDTO>>> findAll(
-            @Parameter(description = "Texto para buscar no nome do curso.")
             @RequestParam(required = false) String name,
 
-            @Parameter(description = "ID do campus para filtrar os cursos.")
             @RequestParam(required = false) @Positive Long campusId,
 
-            @Parameter(description = "Nível do curso para filtrar (INTEGRADO, TECNICO, SUPERIOR).")
             @RequestParam(required = false) CourseLevel level,
 
             Pageable pageable) {

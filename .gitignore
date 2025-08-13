@@ -1,51 +1,109 @@
-# ========== JAVA ==========
+# =============================================================
+# ========== JAVA + SPRING BOOT (Backend) =====================
+# =============================================================
 
+# Compilados e artefatos
 *.class
-*.log
 *.jar
 *.war
 *.ear
-*.zip
-*.tar.gz
-*.rar
+*.log
+*.tmp
+*.bak
+*.backup
 hs_err_pid*
 replay_pid*
 
-# ========== MAVEN ==========
+# Bancos de dados locais
+*.h2.db
+*.mv.db
+
+# Diretórios de build
 target/
+build/
+
+# Maven
 .mvn/
 !**/mvn/wrapper/maven-wrapper.jar
 
-# ========== GRADLE (caso misto) ==========
-.gradle/
-build/
-
-# ========== SPRING ==========
-springdoc-openapi.json
-springdoc-openapi.yaml
-*.h2.db
-*.mv.db
+# Spring Boot - arquivos sensíveis
 .env
 application-*.properties
 application-*.yml
 
-# ========== IDEs ==========
-*.iml
+# CORREÇÃO: Removidas as linhas abaixo para que o contrato da API
+# seja versionado e acessível pelo frontend e pelo Gemini.
+# springdoc-openapi.json
+# springdoc-openapi.yaml
+
+# =============================================================
+# ========== FLUTTER + DART (Frontend) ========================
+# =============================================================
+
+# Flutter metadata
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.melos_tool/
+
+# Build e cache
+build/
+.cxx/
+.generated/
+coverage/
+*.dart.js
+*.info
+*.js.map
+
+# Android (build + config local)
+**/android/local.properties
+**/android/.gradle/
+**/android/app/build/
+
+# iOS/macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner.xcworkspace/
+**/ios/build/
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/build/
+**/macos/Runner.xcworkspace/
+
+# Web
+**/web/.dart_tool/
+
+# Linux/Windows
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# =============================================================
+# ========== IDEs (Android Studio, IntelliJ, VSCode) ==========
+# =============================================================
+
+# IDEs
 .idea/
+*.iml
+*.ipr
+*.iws
 .vscode/
+*.sw?
+*.class
+
+# Outras IDEs (Eclipse, NetBeans, etc.)
 *.classpath
 *.project
 *.settings/
 nbproject/
 *.nb-gradle/
 
-# ========== OS ==========
+# =============================================================
+# ========== SISTEMA OPERACIONAL ==============================
+# =============================================================
+
 .DS_Store
 Thumbs.db
-
-# ========== TEMP ==========
-*.tmp
-*.bak
-*.backup
-.swp
-.swo

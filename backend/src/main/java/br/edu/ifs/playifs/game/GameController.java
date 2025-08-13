@@ -12,6 +12,7 @@ import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.TeamController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,22 +41,21 @@ public class GameController {
     private GameService service;
 
     @GetMapping
-    @Operation(summary = "Lista todos os jogos")
-    @IsAuthenticated
+    @Operation(
+            summary = "Lista todos os jogos",
+            parameters = {
+                    @Parameter(name = "teamId", description = "ID da equipa para filtrar os jogos."),
+                    @Parameter(name = "competitionId", description = "ID da competição para filtrar os jogos."),
+                    @Parameter(name = "status", description = "Status do jogo para filtrar.", schema = @Schema(implementation = GameStatus.class)),
+                    @Parameter(name = "phase", description = "Fase do jogo para filtrar.", schema = @Schema(implementation = GamePhase.class)),
+                    @Parameter(name = "pageable", hidden = true)
+            }
+    )@IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<GameSummaryDTO>>> findAll(
-            @Parameter(description = "ID da equipa para filtrar os jogos.")
             @RequestParam(required = false) @Positive Long teamId,
-
-            @Parameter(description = "ID da competição para filtrar os jogos.")
             @RequestParam(required = false) @Positive Long competitionId,
-
-            @Parameter(description = "Status do jogo para filtrar (SCHEDULED, FINISHED, WO).")
             @RequestParam(required = false) GameStatus status,
-
-            @Parameter(description = "Fase do jogo para filtrar (GROUP_STAGE, QUARTER_FINALS, etc.).")
             @RequestParam(required = false) GamePhase phase,
-
-            @Parameter(description = "Parâmetros de paginação e ordenação. Ex: ?sort=dateTime,desc&page=0&size=10")
             Pageable pageable) {
 
         PageDTO<GameSummaryDTO> page = service.findAll(teamId, competitionId, status, phase, pageable);
