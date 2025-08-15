@@ -1,7 +1,3 @@
-// Ficheiro: lib/presentation/providers/auth/auth_provider.dart
-
-import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/di/locator.dart';
@@ -20,7 +16,10 @@ part 'auth_provider.g.dart';
 class LoginFormErrors extends _$LoginFormErrors {
   @override
   Map<String, String> build() => {};
-  void setErrors(List<FieldError> errors) => state = {for (var e in errors) e.fieldName: e.message};
+
+  void setErrors(List<FieldError> errors) =>
+      state = {for (var e in errors) e.fieldName: e.message};
+
   void clearErrors() => state = {};
 }
 
@@ -54,26 +53,25 @@ class Auth extends _$Auth {
     final credentials = LoginCredentials(registration: registration, password: password);
     final result = await loginUseCase.execute(credentials);
 
-    // CORREÇÃO: A lógica agora é linear e explícita.
     await result.when(
       success: (tokens) async {
         await tokenService.saveTokens(tokens);
-
-        // Após guardar os tokens, buscamos o perfil diretamente aqui.
         final profileResult = await getProfileUseCase.execute();
 
-        // E definimos o estado final com base no resultado da busca do perfil.
         state = switch (profileResult) {
-          Success(data: final profile) => AsyncValue.data(AuthState.authenticated(profile)),
-          Failure(message: final msg) => AsyncValue.data(AuthState.failure(msg)),
+          Success(data: final profile) =>
+              AsyncValue.data(AuthState.authenticated(profile)),
+          Failure(error: final err) =>
+              AsyncValue.data(AuthState.failure(err.toString())),
         };
       },
-      failure: (message, error) {
-        if (error is DioException && error.error is ValidationException) {
-          final validationErrors = (error.error as ValidationException).errorDetails.errors;
-          ref.read(loginFormErrorsProvider.notifier).setErrors(validationErrors);
+      failure: (Exception err) {
+        if (err is ValidationException) {
+          ref
+              .read(loginFormErrorsProvider.notifier)
+              .setErrors(err.errorDetails.errors);
         }
-        state = AsyncValue.data(AuthState.failure(message));
+        state = AsyncValue.data(AuthState.failure(err.toString()));
       },
     );
   }

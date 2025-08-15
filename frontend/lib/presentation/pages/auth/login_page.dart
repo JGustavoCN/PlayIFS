@@ -1,7 +1,7 @@
-// Ficheiro: lib/presentation/pages/auth/login_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:playifs_frontend/core/routing/app_routes.dart';
 
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/auth/auth_state.dart';
@@ -37,19 +37,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // A variável 'authState' agora é do tipo AsyncValue<AuthState>.
     final authState = ref.watch(authProvider);
     final formErrors = ref.watch(loginFormErrorsProvider);
 
-    // CORREÇÃO 1: O 'listen' agora espera um AsyncValue<AuthState>.
     ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
-      // Usamos .whenData para agir apenas quando o provider tem um valor (não está a carregar/erro).
       next.whenData((actualState) {
-        // Agora, dentro do .whenData, 'actualState' é o nosso AuthState.
-        // Usamos o seu .whenOrNull para o efeito colateral.
         actualState.whenOrNull(
           failure: (message) {
-            // Evita mostrar o SnackBar para erros de validação que já estão nos campos
             if (formErrors.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -63,8 +57,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       });
     });
 
-    // CORREÇÃO 2: A forma correta de verificar se um AsyncValue está a carregar
-    // é simplesmente aceder à sua propriedade '.isLoading'.
     final isLoading = authState.isLoading;
 
     return Scaffold(
@@ -133,6 +125,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: isLoading
                           ? const CircularProgressIndicator()
                           : const Text('Entrar'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.pushNamed(AppRoutes.register),
+                      child: const Text('Não tem uma conta? Registe-se'),
                     ),
                   ],
                 ),

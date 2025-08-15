@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'athlete_profile.dart';
+import '../athlete/athlete_details.dart';
 import 'coordinator_profile.dart';
 
 part 'profile.freezed.dart';
@@ -10,8 +10,7 @@ abstract class Profile with _$Profile {
     required int userId,
     required String registration,
     required List<String> roles,
-    // Perfis específicos são nuláveis, refletindo a lógica do backend
-    AthleteProfile? athleteProfile,
+    AthleteDetails? athleteDetails,
     CoordinatorProfile? coordinatorProfile,
   }) = _Profile;
 }

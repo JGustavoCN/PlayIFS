@@ -14,8 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Profile {
 
- int get userId; String get registration; List<String> get roles;// Perfis específicos são nuláveis, refletindo a lógica do backend
- AthleteProfile? get athleteProfile; CoordinatorProfile? get coordinatorProfile;
+ int get userId; String get registration; List<String> get roles; AthleteDetails? get athleteDetails; CoordinatorProfile? get coordinatorProfile;
 /// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +25,16 @@ $ProfileCopyWith<Profile> get copyWith => _$ProfileCopyWithImpl<Profile>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Profile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.registration, registration) || other.registration == registration)&&const DeepCollectionEquality().equals(other.roles, roles)&&(identical(other.athleteProfile, athleteProfile) || other.athleteProfile == athleteProfile)&&(identical(other.coordinatorProfile, coordinatorProfile) || other.coordinatorProfile == coordinatorProfile));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Profile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.registration, registration) || other.registration == registration)&&const DeepCollectionEquality().equals(other.roles, roles)&&(identical(other.athleteDetails, athleteDetails) || other.athleteDetails == athleteDetails)&&(identical(other.coordinatorProfile, coordinatorProfile) || other.coordinatorProfile == coordinatorProfile));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,userId,registration,const DeepCollectionEquality().hash(roles),athleteProfile,coordinatorProfile);
+int get hashCode => Object.hash(runtimeType,userId,registration,const DeepCollectionEquality().hash(roles),athleteDetails,coordinatorProfile);
 
 @override
 String toString() {
-  return 'Profile(userId: $userId, registration: $registration, roles: $roles, athleteProfile: $athleteProfile, coordinatorProfile: $coordinatorProfile)';
+  return 'Profile(userId: $userId, registration: $registration, roles: $roles, athleteDetails: $athleteDetails, coordinatorProfile: $coordinatorProfile)';
 }
 
 
@@ -46,11 +45,11 @@ abstract mixin class $ProfileCopyWith<$Res>  {
   factory $ProfileCopyWith(Profile value, $Res Function(Profile) _then) = _$ProfileCopyWithImpl;
 @useResult
 $Res call({
- int userId, String registration, List<String> roles, AthleteProfile? athleteProfile, CoordinatorProfile? coordinatorProfile
+ int userId, String registration, List<String> roles, AthleteDetails? athleteDetails, CoordinatorProfile? coordinatorProfile
 });
 
 
-$AthleteProfileCopyWith<$Res>? get athleteProfile;$CoordinatorProfileCopyWith<$Res>? get coordinatorProfile;
+$AthleteDetailsCopyWith<$Res>? get athleteDetails;$CoordinatorProfileCopyWith<$Res>? get coordinatorProfile;
 
 }
 /// @nodoc
@@ -63,13 +62,13 @@ class _$ProfileCopyWithImpl<$Res>
 
 /// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? registration = null,Object? roles = null,Object? athleteProfile = freezed,Object? coordinatorProfile = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? registration = null,Object? roles = null,Object? athleteDetails = freezed,Object? coordinatorProfile = freezed,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int,registration: null == registration ? _self.registration : registration // ignore: cast_nullable_to_non_nullable
 as String,roles: null == roles ? _self.roles : roles // ignore: cast_nullable_to_non_nullable
-as List<String>,athleteProfile: freezed == athleteProfile ? _self.athleteProfile : athleteProfile // ignore: cast_nullable_to_non_nullable
-as AthleteProfile?,coordinatorProfile: freezed == coordinatorProfile ? _self.coordinatorProfile : coordinatorProfile // ignore: cast_nullable_to_non_nullable
+as List<String>,athleteDetails: freezed == athleteDetails ? _self.athleteDetails : athleteDetails // ignore: cast_nullable_to_non_nullable
+as AthleteDetails?,coordinatorProfile: freezed == coordinatorProfile ? _self.coordinatorProfile : coordinatorProfile // ignore: cast_nullable_to_non_nullable
 as CoordinatorProfile?,
   ));
 }
@@ -77,13 +76,13 @@ as CoordinatorProfile?,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$AthleteProfileCopyWith<$Res>? get athleteProfile {
-    if (_self.athleteProfile == null) {
+$AthleteDetailsCopyWith<$Res>? get athleteDetails {
+    if (_self.athleteDetails == null) {
     return null;
   }
 
-  return $AthleteProfileCopyWith<$Res>(_self.athleteProfile!, (value) {
-    return _then(_self.copyWith(athleteProfile: value));
+  return $AthleteDetailsCopyWith<$Res>(_self.athleteDetails!, (value) {
+    return _then(_self.copyWith(athleteDetails: value));
   });
 }/// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
@@ -179,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int userId,  String registration,  List<String> roles,  AthleteProfile? athleteProfile,  CoordinatorProfile? coordinatorProfile)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int userId,  String registration,  List<String> roles,  AthleteDetails? athleteDetails,  CoordinatorProfile? coordinatorProfile)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Profile() when $default != null:
-return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile,_that.coordinatorProfile);case _:
+return $default(_that.userId,_that.registration,_that.roles,_that.athleteDetails,_that.coordinatorProfile);case _:
   return orElse();
 
 }
@@ -200,10 +199,10 @@ return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int userId,  String registration,  List<String> roles,  AthleteProfile? athleteProfile,  CoordinatorProfile? coordinatorProfile)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int userId,  String registration,  List<String> roles,  AthleteDetails? athleteDetails,  CoordinatorProfile? coordinatorProfile)  $default,) {final _that = this;
 switch (_that) {
 case _Profile():
-return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile,_that.coordinatorProfile);case _:
+return $default(_that.userId,_that.registration,_that.roles,_that.athleteDetails,_that.coordinatorProfile);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -220,10 +219,10 @@ return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int userId,  String registration,  List<String> roles,  AthleteProfile? athleteProfile,  CoordinatorProfile? coordinatorProfile)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int userId,  String registration,  List<String> roles,  AthleteDetails? athleteDetails,  CoordinatorProfile? coordinatorProfile)?  $default,) {final _that = this;
 switch (_that) {
 case _Profile() when $default != null:
-return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile,_that.coordinatorProfile);case _:
+return $default(_that.userId,_that.registration,_that.roles,_that.athleteDetails,_that.coordinatorProfile);case _:
   return null;
 
 }
@@ -235,7 +234,7 @@ return $default(_that.userId,_that.registration,_that.roles,_that.athleteProfile
 
 
 class _Profile implements Profile {
-  const _Profile({required this.userId, required this.registration, required final  List<String> roles, this.athleteProfile, this.coordinatorProfile}): _roles = roles;
+  const _Profile({required this.userId, required this.registration, required final  List<String> roles, this.athleteDetails, this.coordinatorProfile}): _roles = roles;
   
 
 @override final  int userId;
@@ -247,8 +246,7 @@ class _Profile implements Profile {
   return EqualUnmodifiableListView(_roles);
 }
 
-// Perfis específicos são nuláveis, refletindo a lógica do backend
-@override final  AthleteProfile? athleteProfile;
+@override final  AthleteDetails? athleteDetails;
 @override final  CoordinatorProfile? coordinatorProfile;
 
 /// Create a copy of Profile
@@ -261,16 +259,16 @@ _$ProfileCopyWith<_Profile> get copyWith => __$ProfileCopyWithImpl<_Profile>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Profile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.registration, registration) || other.registration == registration)&&const DeepCollectionEquality().equals(other._roles, _roles)&&(identical(other.athleteProfile, athleteProfile) || other.athleteProfile == athleteProfile)&&(identical(other.coordinatorProfile, coordinatorProfile) || other.coordinatorProfile == coordinatorProfile));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Profile&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.registration, registration) || other.registration == registration)&&const DeepCollectionEquality().equals(other._roles, _roles)&&(identical(other.athleteDetails, athleteDetails) || other.athleteDetails == athleteDetails)&&(identical(other.coordinatorProfile, coordinatorProfile) || other.coordinatorProfile == coordinatorProfile));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,userId,registration,const DeepCollectionEquality().hash(_roles),athleteProfile,coordinatorProfile);
+int get hashCode => Object.hash(runtimeType,userId,registration,const DeepCollectionEquality().hash(_roles),athleteDetails,coordinatorProfile);
 
 @override
 String toString() {
-  return 'Profile(userId: $userId, registration: $registration, roles: $roles, athleteProfile: $athleteProfile, coordinatorProfile: $coordinatorProfile)';
+  return 'Profile(userId: $userId, registration: $registration, roles: $roles, athleteDetails: $athleteDetails, coordinatorProfile: $coordinatorProfile)';
 }
 
 
@@ -281,11 +279,11 @@ abstract mixin class _$ProfileCopyWith<$Res> implements $ProfileCopyWith<$Res> {
   factory _$ProfileCopyWith(_Profile value, $Res Function(_Profile) _then) = __$ProfileCopyWithImpl;
 @override @useResult
 $Res call({
- int userId, String registration, List<String> roles, AthleteProfile? athleteProfile, CoordinatorProfile? coordinatorProfile
+ int userId, String registration, List<String> roles, AthleteDetails? athleteDetails, CoordinatorProfile? coordinatorProfile
 });
 
 
-@override $AthleteProfileCopyWith<$Res>? get athleteProfile;@override $CoordinatorProfileCopyWith<$Res>? get coordinatorProfile;
+@override $AthleteDetailsCopyWith<$Res>? get athleteDetails;@override $CoordinatorProfileCopyWith<$Res>? get coordinatorProfile;
 
 }
 /// @nodoc
@@ -298,13 +296,13 @@ class __$ProfileCopyWithImpl<$Res>
 
 /// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? registration = null,Object? roles = null,Object? athleteProfile = freezed,Object? coordinatorProfile = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? registration = null,Object? roles = null,Object? athleteDetails = freezed,Object? coordinatorProfile = freezed,}) {
   return _then(_Profile(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int,registration: null == registration ? _self.registration : registration // ignore: cast_nullable_to_non_nullable
 as String,roles: null == roles ? _self._roles : roles // ignore: cast_nullable_to_non_nullable
-as List<String>,athleteProfile: freezed == athleteProfile ? _self.athleteProfile : athleteProfile // ignore: cast_nullable_to_non_nullable
-as AthleteProfile?,coordinatorProfile: freezed == coordinatorProfile ? _self.coordinatorProfile : coordinatorProfile // ignore: cast_nullable_to_non_nullable
+as List<String>,athleteDetails: freezed == athleteDetails ? _self.athleteDetails : athleteDetails // ignore: cast_nullable_to_non_nullable
+as AthleteDetails?,coordinatorProfile: freezed == coordinatorProfile ? _self.coordinatorProfile : coordinatorProfile // ignore: cast_nullable_to_non_nullable
 as CoordinatorProfile?,
   ));
 }
@@ -313,13 +311,13 @@ as CoordinatorProfile?,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$AthleteProfileCopyWith<$Res>? get athleteProfile {
-    if (_self.athleteProfile == null) {
+$AthleteDetailsCopyWith<$Res>? get athleteDetails {
+    if (_self.athleteDetails == null) {
     return null;
   }
 
-  return $AthleteProfileCopyWith<$Res>(_self.athleteProfile!, (value) {
-    return _then(_self.copyWith(athleteProfile: value));
+  return $AthleteDetailsCopyWith<$Res>(_self.athleteDetails!, (value) {
+    return _then(_self.copyWith(athleteDetails: value));
   });
 }/// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.

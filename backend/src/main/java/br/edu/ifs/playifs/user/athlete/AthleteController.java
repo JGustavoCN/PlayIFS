@@ -5,6 +5,7 @@ import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.security.annotations.IsSelfOrCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
+import br.edu.ifs.playifs.shared.web.dto.IdBatchDTO;
 import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.user.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -83,10 +84,7 @@ public class AthleteController {
     @IsCoordinator
     public ResponseEntity<ApiResponseBody<List<AthleteDetailsDTO>>> batchInsert(@Valid @RequestBody AthleteInputBatchDTO batchDto) {
         List<AthleteDetailsDTO> newDtos = service.batchInsert(batchDto.getAthletes());
-
-        // Adiciona links HATEOAS a cada atleta criado
         newDtos.forEach(this::addLinksToAthleteDetails);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseBody<>(newDtos, newDtos.size() + " atletas cadastrados com sucesso!"));
     }
 
@@ -116,7 +114,7 @@ public class AthleteController {
             @ApiResponse(responseCode = "422", ref = "#/components/responses/UnprocessableEntityError")
     })
     @IsCoordinator
-    public ResponseEntity<Void> batchDelete(@Valid @RequestBody br.edu.ifs.playifs.shared.web.dto.IdBatchDTO batchDto) {
+    public ResponseEntity<Void> batchDelete(@Valid @RequestBody IdBatchDTO batchDto) {
         service.batchDelete(batchDto.getIds());
         return ResponseEntity.noContent().build();
     }

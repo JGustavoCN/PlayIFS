@@ -1,7 +1,7 @@
-// Ficheiro: lib/presentation/pages/home/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:playifs_frontend/core/routing/app_routes.dart';
 
 import '../../../domain/entities/user/profile.dart';
 import '../../providers/auth/auth_provider.dart';
@@ -17,15 +17,13 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meu Perfil'),
+        title: const Text('PlayIFS'),
         actions: [
           const ThemeToggleButton(),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
-            },
+            onPressed: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
       ),
@@ -41,20 +39,28 @@ class HomePage extends ConsumerWidget {
             ),
           ),
         ),
-        data: (profile) {
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              _buildProfileCard(context, profile),
-              // Adicione outros widgets do dashboard aqui
-            ],
-          );
-        },
+        data: (profile) => ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            _buildProfileCard(context, profile),
+            const SizedBox(height: 16),
+            // O card de navegação para a lista de atletas (geralmente para coordenadores)
+            // pode ser tornado condicional também, se necessário.
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.directions_run),
+                title: const Text('Gestão de Atletas'),
+                subtitle: const Text('Visualizar e gerir perfis de atletas'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.pushNamed(AppRoutes.athletes),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // Widget principal para o card de perfil.
   Widget _buildProfileCard(BuildContext context, Profile profile) {
     final textTheme = Theme.of(context).textTheme;
 
@@ -64,7 +70,27 @@ class HomePage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Informações Gerais', style: textTheme.titleLarge),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Informações Gerais', style: textTheme.titleLarge),
+                // ✅ 1. BOTÃO DE EDIÇÃO CONDICIONAL
+                // Só aparece se o utilizador tiver um perfil de atleta.
+                if (profile.athleteDetails != null)
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined),
+                    tooltip: 'Editar Meu Perfil de Atleta',
+                    onPressed: () {
+                      // ✅ 2. NAVEGAÇÃO PARA A TELA DE EDIÇÃO
+                      // Usa o ID do atleta que está no próprio perfil.
+                      context.pushNamed(
+                        AppRoutes.editAthlete,
+                        pathParameters: {'id': profile.athleteDetails!.id.toString()},
+                      );
+                    },
+                  ),
+              ],
+            ),
             const Divider(height: 24),
             _buildInfoRow(
               context,
@@ -78,9 +104,7 @@ class HomePage extends ConsumerWidget {
               label: 'Perfis de Acesso',
               value: profile.roles.join(', '),
             ),
-
-            // Renderização condicional para o perfil de atleta
-            if (profile.athleteProfile != null) ...[
+            if (profile.athleteDetails != null) ...[
               const Divider(height: 24),
               Text('Perfil de Atleta', style: textTheme.titleLarge),
               const SizedBox(height: 12),
@@ -88,17 +112,35 @@ class HomePage extends ConsumerWidget {
                 context,
                 icon: Icons.person_outline,
                 label: 'Nome Completo',
-                value: profile.athleteProfile!.fullName,
+                value: profile.athleteDetails!.fullName,
               ),
+              if (profile.athleteDetails!.nickname != null)
+                _buildInfoRow(
+                  context,
+                  icon: Icons.person_pin_outlined,
+                  label: 'Alcunha',
+                  value: profile.athleteDetails!.nickname!,
+                ),
+              if (profile.athleteDetails!.phone != null)
+                _buildInfoRow(
+                  context,
+                  icon: Icons.phone_outlined,
+                  label: 'Telefone',
+                  value: profile.athleteDetails!.phone!,
+                ),
               _buildInfoRow(
                 context,
                 icon: Icons.email_outlined,
                 label: 'Email',
-                value: profile.athleteProfile!.email,
+                value: profile.athleteDetails!.email,
+              ),
+              _buildInfoRow(
+                context,
+                icon: Icons.sports_soccer_outlined,
+                label: 'É Treinador?',
+                value: profile.athleteDetails!.isCoach ? 'Sim' : 'Não',
               ),
             ],
-
-            // Renderização condicional para o perfil de coordenador
             if (profile.coordinatorProfile != null) ...[
               const Divider(height: 24),
               Text('Perfil de Coordenador', style: textTheme.titleLarge),
@@ -109,6 +151,12 @@ class HomePage extends ConsumerWidget {
                 label: 'Nome',
                 value: profile.coordinatorProfile!.name,
               ),
+              _buildInfoRow(
+                context,
+                icon: Icons.email_outlined,
+                label: 'Email',
+                value: profile.coordinatorProfile!.email,
+              ),
             ],
           ],
         ),
@@ -116,8 +164,6 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  /// **MÉTODO AUXILIAR ATUALIZADO**
-  /// Constrói uma linha de informação com um ícone, um rótulo e um valor.
   Widget _buildInfoRow(BuildContext context,
       {required IconData icon, required String label, required String value}) {
     final textTheme = Theme.of(context).textTheme;
@@ -128,19 +174,12 @@ class HomePage extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ícone
-          Icon(
-            icon,
-            color: colorScheme.primary,
-            size: 24,
-          ),
+          Icon(icon, color: colorScheme.primary, size: 24),
           const SizedBox(width: 16.0),
-          // Coluna com o texto para permitir o alinhamento vertical
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // O RÓTULO (SUBTÍTULO)
                 Text(
                   label.toUpperCase(),
                   style: textTheme.labelMedium?.copyWith(
@@ -149,11 +188,7 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4.0),
-                // O VALOR (INFORMAÇÃO)
-                Text(
-                  value,
-                  style: textTheme.bodyLarge,
-                ),
+                Text(value, style: textTheme.bodyLarge),
               ],
             ),
           ),

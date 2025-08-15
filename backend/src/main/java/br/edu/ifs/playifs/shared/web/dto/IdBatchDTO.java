@@ -15,4 +15,4 @@ public class IdBatchDTO {
     @Schema(description = "Lista de IDs dos recursos a serem afetados pela operação.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty(message = "A lista de IDs não pode ser vazia.")
     private List<@NotNull @Positive Long> ids;
-}
+}   

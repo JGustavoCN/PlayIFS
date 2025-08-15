@@ -119,11 +119,11 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( T data)?  success,TResult Function( String message,  Object? error)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( T data)?  success,TResult Function( Exception error)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Success() when success != null:
 return success(_that.data);case Failure() when failure != null:
-return failure(_that.message,_that.error);case _:
+return failure(_that.error);case _:
   return orElse();
 
 }
@@ -141,11 +141,11 @@ return failure(_that.message,_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( T data)  success,required TResult Function( String message,  Object? error)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( T data)  success,required TResult Function( Exception error)  failure,}) {final _that = this;
 switch (_that) {
 case Success():
 return success(_that.data);case Failure():
-return failure(_that.message,_that.error);}
+return failure(_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -159,11 +159,11 @@ return failure(_that.message,_that.error);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( T data)?  success,TResult? Function( String message,  Object? error)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( T data)?  success,TResult? Function( Exception error)?  failure,}) {final _that = this;
 switch (_that) {
 case Success() when success != null:
 return success(_that.data);case Failure() when failure != null:
-return failure(_that.message,_that.error);case _:
+return failure(_that.error);case _:
   return null;
 
 }
@@ -241,11 +241,10 @@ as T,
 
 
 class Failure<T> implements Result<T> {
-  const Failure(this.message, {this.error});
+  const Failure(this.error);
   
 
- final  String message;
- final  Object? error;
+ final  Exception error;
 
 /// Create a copy of Result
 /// with the given fields replaced by the non-null parameter values.
@@ -257,16 +256,16 @@ $FailureCopyWith<T, Failure<T>> get copyWith => _$FailureCopyWithImpl<T, Failure
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Failure<T>&&(identical(other.message, message) || other.message == message)&&const DeepCollectionEquality().equals(other.error, error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Failure<T>&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message,const DeepCollectionEquality().hash(error));
+int get hashCode => Object.hash(runtimeType,error);
 
 @override
 String toString() {
-  return 'Result<$T>.failure(message: $message, error: $error)';
+  return 'Result<$T>.failure(error: $error)';
 }
 
 
@@ -277,7 +276,7 @@ abstract mixin class $FailureCopyWith<T,$Res> implements $ResultCopyWith<T, $Res
   factory $FailureCopyWith(Failure<T> value, $Res Function(Failure<T>) _then) = _$FailureCopyWithImpl;
 @useResult
 $Res call({
- String message, Object? error
+ Exception error
 });
 
 
@@ -294,10 +293,10 @@ class _$FailureCopyWithImpl<T,$Res>
 
 /// Create a copy of Result
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? error = null,}) {
   return _then(Failure<T>(
-null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,error: freezed == error ? _self.error : error ,
+null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as Exception,
   ));
 }
 

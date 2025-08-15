@@ -9,5 +9,5 @@ part 'result.freezed.dart';
 // A classe está correta em PascalCase, usando 'sealed'.
 sealed class Result<T> with _$Result<T> {
   const factory Result.success(T data) = Success<T>;
-  const factory Result.failure(String message, {Object? error}) = Failure<T>;
+  const factory Result.failure(Exception error) = Failure<T>;
 }
