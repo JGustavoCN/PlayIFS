@@ -1,42 +1,41 @@
 +++markdown
 
-# Manual de Arquitetura: A Jornada de um Erro *(Fluxo de Ponta a Ponta)*
+# Manual de Arquitetura — A Jornada de um Erro *(Fluxo de Ponta a Ponta)*
 
-*(v1.0)*
+**v2.0 - Revisado**
 
 ---
 
-## Prefácio: A Nossa Filosofia de Tratamento de Erros
+## 📜 Prefácio — A Nossa Filosofia de Tratamento de Erros
 
 Na arquitetura do **PlayIFS**, erros não são simples *crashs*.
-São **estados válidos** da aplicação.
+Eles representam **estados válidos e ricos em informação** dentro da aplicação.
 
-Objetivo:
+**Objetivo:**
 
-> Intercetar qualquer falha (rede, validação, negócio) **o mais cedo possível** e transformá-la em **objetos de estado claros e previsíveis**.
+> Intercetar qualquer falha (rede, validação, negócio) o mais cedo possível e transformá-la em **objetos de exceção específicos**, permitindo que a UI reaja de forma inteligente e contextual.
 
-Este manual documenta o **ciclo de vida completo** de um erro, usando o exemplo mais rico:
-**422 – Unprocessable Entity (Erro de Validação de Formulário)**
-
----
-
-## A Jornada de um Erro 422
+Este manual documenta o ciclo de vida completo de um erro usando o exemplo mais rico: **422 – Unprocessable Entity** (*Erro de Validação de Formulário*).
 
 ---
 
-### **Passo 1 — A Interceção** *(Camada de Rede — DioClient)*
+## 🚦 A Jornada de um Erro 422
 
-**Missão:** Detetar → Parsear → Enriquecer
+### **Passo 1 — A Interceção e Enriquecimento**
+
+**Camada:** Rede — `DioClient`
+**Missão:** *Detetar → Parsear → Enriquecer*
 
 **Fluxo:**
 
-1. O `Dio` faz uma requisição (ex.: login com campos vazios).
-2. O backend retorna **422** → `DioException`.
-3. O `onError` do **DioClient** captura a exceção.
-4. Verifica o `statusCode == 422`.
-5. Parseia o JSON de validação para `ApiValidationError`.
-6. Envolve numa `ValidationException` e insere em `error.error`.
-7. Rejeita a *Future* com a `DioException` enriquecida.
+1. O Dio faz uma requisição *(ex.: login com campos vazios)*.
+2. O backend retorna **422 → DioException**.
+3. O `onError` do `DioClient` captura a exceção.
+4. Verifica `statusCode == 422`.
+5. Parseia o JSON de validação para o DTO `ApiValidationError`.
+6. Cria uma exceção customizada `ValidationException` com os detalhes.
+7. Envolve essa exceção em uma nova `DioException` no campo `error`.
+8. Rejeita a `Future` com a `DioException` enriquecida.
 
 **Diagrama:**
 
@@ -44,137 +43,165 @@ Este manual documenta o **ciclo de vida completo** de um erro, usando o exemplo 
 Erro 422 API → DioException → [DioClient] → DioException(error: ValidationException)
 ```
 
-**Código-chave (`dio_client.dart`):**
+**Código-chave — `dio_client.dart`:**
 
 ```dart
 // onError: (error, handler)
 if (error.response?.statusCode == 422) {
-  final validationErrorData = error.response!.data;
+  final validationErrorData = error.response?.data;
   if (validationErrorData is Map<String, dynamic>) {
-    final validationError = ApiValidationError.fromJson(validationErrorData);
-    final customError = DioException(
-      requestOptions: error.requestOptions,
-      error: ValidationException(validationError), // O "enriquecimento"
-    );
-    return handler.reject(customError);
+    try {
+      final validationError = ApiValidationError.fromJson(validationErrorData);
+      final customError = DioException(
+        requestOptions: error.requestOptions,
+        error: ValidationException(validationError),
+      );
+      return handler.reject(customError);
+    } catch (e) { /*...*/ }
   }
 }
 ```
 
 ---
 
-### **Passo 2 — A Tradução** *(Camada de Dados — RepositoryImpl)*
+### **Passo 2 — A Tradução**
 
-**Missão:** Converter exceção de baixo nível em `Result` de negócio
+**Camada:** Dados — `RepositoryImpl`
+**Missão:** *Converter a exceção de rede em um `Result` de domínio, preservando o contexto.*
 
 **Fluxo:**
 
-1. O `catch` (`on DioException`) no `AuthRepositoryImpl` apanha a exceção enriquecida.
-2. Verifica:
-
-   ```dart
-   if (e.error is ValidationException)
-   ```
-
-3. Traduz para `Result.failure(...)`, passando a `DioException` original.
+1. O método `_handleApiCall` captura a `DioException` enriquecida.
+2. Inspeciona `e.error`.
+3. Se for `ValidationException`, passa direto para `Result.failure`.
+4. Caso contrário, cria uma `ApiException` genérica.
+5. Retorna um `Result` com exceção clara e tipada.
 
 **Diagrama:**
 
 ```
-DioException(error: ValidationException) → [RepositoryImpl] → Result.failure(...)
+DioException(error: ValidationException)
+→ [_handleApiCall]
+→ Result.failure(ValidationException)
 ```
 
-**Código-chave (`auth_repository_impl.dart`):**
+**Código-chave — `*_repository_impl.dart`:**
 
 ```dart
-// on DioException catch (e)
-if (e.error is ValidationException) {
-  return Result.failure('Dados inválidos. Verifique os campos.', error: e);
+Future<Result<T>> _handleApiCall<T>(Future<T> Function() apiCall) async {
+  try {
+    return Result.success(await apiCall());
+  } on DioException catch (e) {
+    if (e.error is ValidationException) {
+      return Result.failure(e.error as ValidationException);
+    }
+    final message = e.response?.data?['error'] ?? e.message;
+    return Result.failure(ApiException(message, statusCode: e.response?.statusCode));
+  } catch (e) {
+    return Result.failure(ApiException(e.toString()));
+  }
 }
 ```
 
 ---
 
-### **Passo 3 — A Distribuição** *(Camada de Apresentação — Provider)*
+### **Passo 3 — A Execução da Ação**
 
-**Missão:** Distribuir o erro para os estados corretos da UI
+**Camada:** Apresentação — `Provider`
+**Missão:** *Executar o UseCase e passar o `Result` adiante, sem decidir a UI.*
 
 **Fluxo:**
 
-1. O `AuthProvider.login` recebe `Result.failure`.
-2. O `.when()` executa a *callback* de falha.
-3. Ação dupla:
+1. Provider de ação *(ex.: `AthleteForm`)* chama o UseCase.
+2. Recebe o `Result` do repositório.
+3. Usa `.when()` para definir estado:
 
-   * **Erro Específico:** Extrai `fieldErrors` de `ValidationException` e atualiza `loginFormErrorsProvider`.
-   * **Erro Genérico:** Atualiza `authProvider.state` para `AuthState.failure`.
+   * **Sucesso:** invalida providers de dados relevantes.
+   * **Falha:** coloca provider em estado de erro, passando exceção adiante.
 
 **Diagrama:**
 
 ```
-Result.failure → [AuthProvider] →
-   loginFormErrorsProvider.state = {'password': 'O campo é obrigatório'}
-   authProvider.state = AuthState.failure(...)
+Result.failure(ValidationException)
+→ [AthleteForm Provider]
+→ state = AsyncValue.error(ValidationException)
 ```
 
-**Código-chave (`auth_provider.dart`):**
+**Código-chave — `athlete_form_provider.dart`:**
 
 ```dart
-// failure: (message, error)
-if (error is DioException && error.error is ValidationException) {
-  final validationErrors = (error.error as ValidationException).errorDetails.errors;
-  ref.read(loginFormErrorsProvider.notifier).setErrors(validationErrors);
-}
-state = AsyncValue.data(AuthState.failure(message));
+return result.when(
+  success: (_) {
+    ref.invalidate(athleteListProvider);
+    state = const AsyncValue.data(null);
+    return true;
+  },
+  failure: (err) {
+    state = AsyncValue.error(err, StackTrace.current);
+    return false;
+  },
+);
 ```
 
 ---
 
-### **Passo 4 — A Exibição** *(Camada de UI — Widget)*
+### **Passo 4 — A Exibição Contextual**
 
-**Missão:** Observar estados e apresentar feedback visual
+**Camada:** UI — `Widget`
+**Missão:** *Observar estado do provider e apresentar feedback visual correto.*
 
 **Fluxo:**
 
-1. **`ref.watch(loginFormErrorsProvider)`**
-   → Reconstrói campos com mensagens de erro (ex.: `errorText` do `TextFormField`).
-2. **`ref.listen(authProvider, ...)`**
-   → Ao mudar para `AuthState.failure`, mostra `SnackBar` genérico.
+1. Widget *(ex.: `EditAthletePage`)* usa `ref.listen` para observar `athleteFormProvider`.
+2. No callback de erro:
+
+   * Se `err is ValidationException`: extrai erros de campo e atualiza `_fieldErrors` para exibir em cada `TextFormField`.
+   * Se `err is ApiException`: mostra `SnackBar` com mensagem genérica.
 
 **Diagrama:**
 
 ```
-AuthState.failure → [ref.listen] → SnackBar
-loginFormErrorsProvider.state → [ref.watch] → TextFormField.errorText
+ValidationException → _fieldErrors → TextFormField.errorText
+ApiException       → SnackBar
 ```
 
-**Código-chave (`login_page.dart`):**
+**Código-chave — `edit_athlete_page.dart`:**
 
 ```dart
-final formErrors = ref.watch(loginFormErrorsProvider);
-
-ref.listen<AsyncValue<AuthState>>(authProvider, (previous, next) {
-  next.whenData((state) => state.whenOrNull(
-    failure: (message) => ScaffoldMessenger.of(context).showSnackBar(...),
-  ));
+ref.listen<AsyncValue<void>>(athleteFormProvider, (_, state) {
+  state.whenOrNull(
+    error: (err, stack) {
+      if (!mounted) return;
+      setState(() {
+        if (err is ValidationException) {
+          _fieldErrors = {
+            for (var e in err.errorDetails.errors) e.fieldName: e.message
+          };
+        } else if (err is ApiException) {
+          _fieldErrors = {'form': err.message};
+        }
+      });
+    },
+  );
 });
-
-TextFormField(
-  decoration: InputDecoration(
-    errorText: formErrors['password'],
-  ),
-)
 ```
 
 ---
 
-## Conclusão
+## ✅ Conclusão
 
-Este fluxo **de ponta a ponta** garante:
+Este fluxo **garante**:
 
-* Tratamento **robusto** e **em camadas**.
-* Mensagens **claras** para o utilizador.
-* Base de código **limpa e desacoplada**.
+* Tratamento robusto e em camadas.
+* Exceções **tipadas** e ricas em contexto.
+* UI capaz de **tomar decisões inteligentes**.
+* Base de código limpa, desacoplada e previsível.
 
+**Resumo do caminho:**
+
+```
 Erro 422 → Rede → Dados → Apresentação → UI
-Nada se perde, tudo é transformado.
-+++
+```
+
+> **Nada se perde, tudo é transformado.**
+> +++

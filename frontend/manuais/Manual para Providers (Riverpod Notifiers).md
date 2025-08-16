@@ -1,141 +1,89 @@
-+++markdown
+-----
 
 # Manual de Arquitetura: Padrão para Providers (Riverpod Notifiers)
 
-*(v1.2 - Revisado)*
+*(v2.0 - Revisado)*
 
----
+-----
 
 ## Prefácio: A Missão de um Provider
 
-Na nossa arquitetura, um **Notifier** (e seus derivados, como `AsyncNotifier`) é o **cérebro da UI**. Ele é o intermediário que:
+Na nossa arquitetura, um **Notifier** (e seus derivados, como `AsyncNotifier`) é o **cérebro do estado de uma funcionalidade**. Ele é o intermediário que:
 
-* Expõe o **estado da UI** (`loading`, `data`, `error`) de forma reativa
-* Recebe **eventos da UI** (ex: clique num botão)
-* Invoca **UseCases** da camada de Domínio
-* Atualiza o próprio estado com o resultado da operação, **reconstruindo automaticamente a UI**
+* Expõe o **estado** (`loading`, `data`, `error`) de forma reativa.
+* Recebe **eventos da UI** (ex: clique num botão).
+* Invoca **UseCases** da camada de Domínio.
+* Atualiza o seu próprio estado com o resultado, **reconstruindo a UI automaticamente**.
 
----
+-----
 
-## Regras de Arquitetura e Estilo para Notifiers
+## Orquestração de Estado: A Regra de Ouro (UI como Orquestrador)
 
-### Estrutura da Classe (`@riverpod`)
+A nossa lição mais importante foi a distinção entre `providers` que gerem dados e `providers` que executam ações, e quem é responsável por orquestrar as consequências.
 
-* **Localização:** `lib/presentation/providers/[feature]/`
-* **Nome do ficheiro:** `snake_case.dart` (ex: `auth_provider.dart`)
-* **Nome da classe:** `PascalCase`, terminando com `Notifier` ou com o nome da entidade (ex: `Auth`, `ProfileNotifier`)
-* **Implementação:** sempre com `riverpod_generator`
+### Providers de Dados vs. Providers de Ação
 
-  ```dart
-  @riverpod
-  class MinhaClasse extends _$MinhaClasse { ... }
-  ```
+1. **Provider de Dados (ex: `AthleteList`, `ProfileNotifier`)**
 
----
+      * **Missão:** Buscar e manter um estado de dados. Geralmente é um `AsyncNotifier`.
+      * O seu método `build` é a sua principal responsabilidade.
+      * Pode ter métodos para interações simples como `fetchNextPage` ou `refresh`.
 
-### Método `build()` — O Estado Inicial
+2. **Provider de Ação (ex: `AthleteForm`)**
 
-* **Obrigatório**
-* Define o estado inicial do provider
-* Para **providers assíncronos**:
+      * **Missão:** Executar uma única ação (mutação), como criar, atualizar ou apagar algo.
+      * O seu estado (ex: `AsyncValue<void>`) representa apenas o ciclo de vida dessa ação (`loading`, `error`, `success`).
+      * **Regra Crítica:** Em caso de sucesso, este `provider` deve invalidar **apenas** os `providers` de dados que ele afeta diretamente (ex: `ref.invalidate(athleteListProvider)`). Ele **não deve** tomar decisões sobre navegação ou sobre o estado de outras telas.
 
-  * `build` é `async` e retorna `Future<Estado>`
-  * O Riverpod define automaticamente `AsyncLoading` como estado inicial
-* Para **providers síncronos**:
+### A UI como Orquestrador
 
-  * Retorna diretamente o estado inicial
+A responsabilidade de orquestrar ações complexas pós-sucesso pertence **exclusivamente ao widget que iniciou a ação** (ex: o método `_submitForm` na `EditAthletePage`), pois só ele tem o contexto completo.
 
----
-
-### Métodos de Ação — Interface da UI
-
-* Criar **métodos públicos** (`async` ou não) para cada ação que a UI pode executar
-  (ex: `login()`, `logout()`, `refreshProfile()`)
-* Estes métodos são a **única forma** da UI alterar o estado do provider
-
----
-
-### Imutabilidade do Estado *(Regra Crítica)*
-
-* ❌ **Nunca** modificar o estado diretamente:
-
-  ```dart
-  state.value.name = 'novo nome';
-  ```
-
-* ✅ Sempre atribuir uma **nova instância**:
-
-  ```dart
-  state = const AsyncValue.loading();
-  state = novoEstado;
-  ```
-
----
-
-### Injeção de Dependência
-
-* O Notifier **não cria** suas dependências
-* Deve obtê-las de uma fonte externa, preferencialmente via **service locator** (`locator`)
-* Usar para acessar **UseCases** e **Services**
-
----
-
-### Composição de Providers (`ref.watch`)
-
-* Um provider pode depender de outro
-* No `build`, usar `ref.watch(outroProvider)` para criar dependência **reativa**
-* Quando o outro provider mudar, este será reconstruído
-
----
-
-## Exemplos Canónicos
-
-### Exemplo A — Provider de Estado Complexo *(AuthProvider)*
-
-**Ficheiro:** `lib/presentation/providers/auth/auth_provider.dart`
+**Exemplo Canónico (`edit_athlete_page.dart`):**
+Este é o padrão que evita *race conditions* e garante um fluxo de estado previsível.
 
 ```dart
-@riverpod
-class Auth extends _$Auth {
-  // build assíncrono para definir estado inicial
-  @override
-  Future<AuthState> build() async {
-    final tokenService = locator<TokenStorageService>();
-    final getProfileUseCase = locator<GetProfileUseCase>();
+// Future<void> _submitForm() async
+if (success && mounted) {
+  final authState = ref.read(authProvider).value;
+  final isEditingSelf = authState?.maybeWhen(
+    authenticated: (profile) => profile.athleteDetails?.id == widget.athlete.id,
+    orElse: () => false,
+  ) ?? false;
 
-    final tokens = await tokenService.getTokens();
-    if (tokens == null) {
-      return const AuthState.unauthenticated();
+  // Se a matrícula mudou E o utilizador está a editar o seu próprio perfil...
+  if (isEditingSelf && oldRegistration != newRegistration) {
+    // Ação da UI: Mostrar SnackBar e chamar o logout
+    scaffoldMessenger.showSnackBar(...);
+    await ref.read(authProvider.notifier).logout();
+  } else {
+    // Se não, a UI decide se precisa de atualizar a HomePage...
+    if (isEditingSelf) {
+      await ref.refresh(profileNotifierProvider.future);
     }
-
-    final profileResult = await getProfileUseCase.execute();
-    return switch (profileResult) {
-      Success(data: final profile) => AuthState.authenticated(profile),
-      Failure() => const AuthState.unauthenticated(),
-    };
+    // E então, a UI decide o que fazer a seguir (voltar).
+    scaffoldMessenger.showSnackBar(...);
+    navigator.pop();
   }
-
-  // Método público para ação da UI
-  Future<void> login(String registration, String password) async {
-    final loginUseCase = locator<LoginUseCase>();
-    final tokenService = locator<TokenStorageService>();
-    final getProfileUseCase = locator<GetProfileUseCase>();
-
-    ref.read(loginFormErrorsProvider.notifier).clearErrors();
-    state = const AsyncValue.loading();
-
-    final result = await loginUseCase.execute(/*...*/);
-
-    // ... lógica para tratar o resultado e atualizar o estado
-  }
-
-  // ... outros métodos
 }
 ```
 
----
+-----
 
-### Exemplo B — Provider Reativo a Outro Provider *(ProfileNotifier)*
+## Regras de Arquitetura e Estilo (Resumo)
+
+* **Localização:** `lib/presentation/providers/[feature]/`
+* **Nome do ficheiro:** `snake_case.dart`
+* **Estrutura:** Use sempre `@riverpod`.
+* **Imutabilidade:** Nunca modifique o estado diretamente (`state.value.name = ...`). Sempre atribua uma nova instância (`state = ...`).
+* **Dependências:** Use o `locator` para obter `UseCases`.
+* **Composição:** Use `ref.watch` no método `build` para reagir a outros `providers`.
+
+-----
+
+## Exemplos Canónicos Atualizados
+
+### Exemplo A — Provider de Dados Reativo *(ProfileNotifier)*
 
 **Ficheiro:** `lib/presentation/providers/profile/profile_provider.dart`
 
@@ -144,34 +92,58 @@ class Auth extends _$Auth {
 class ProfileNotifier extends _$ProfileNotifier {
   @override
   Future<Profile> build() async {
-    // Observa o 'authProvider' e reage a mudanças
-    final authStateAsync = ref.watch(authProvider);
+    // Observa o 'authProvider' para reagir a login/logout.
+    final authState = ref.watch(authProvider);
 
-    final isLoggedIn = authStateAsync.when(
-      data: (actualAuthState) => actualAuthState.maybeWhen(
-        authenticated: (_) => true,
-        orElse: () => false,
+    return authState.maybeWhen(
+      data: (state) => state.maybeWhen(
+        authenticated: (profile) => profile,
+        // Se não estiver autenticado, o provider entra em estado de erro.
+        orElse: () => throw Exception('Utilizador não autenticado.'),
       ),
-      loading: () => false,
-      error: (_, __) => false,
+      // Se o authProvider estiver a carregar ou em erro, propaga o erro.
+      orElse: () => throw Exception('Sessão de utilizador inválida.'),
     );
+  }
 
-    if (!isLoggedIn) {
-      throw Exception('Utilizador não autenticado.');
-    }
-    
-    final getProfileUseCase = locator<GetProfileUseCase>();
-    final result = await getProfileUseCase.execute();
-
-    return switch (result) {
-      Success(data: final profile) => profile,
-      Failure(message: final msg) => throw Exception(msg),
-    };
+  /// Permite uma atualização otimista do estado sem uma nova chamada à API.
+  void replace(Profile newProfile) {
+    state = AsyncValue.data(newProfile);
   }
 }
 ```
 
----
+### Exemplo B — Provider de Ação Simples *(AthleteForm)*
 
-Este manual **reflete com precisão** a arquitetura robusta e as **melhores práticas** aplicadas no código atual.
-+++
+**Ficheiro:** `lib/presentation/providers/athlete/athlete_form_provider.dart`
+
+```dart
+@riverpod
+class AthleteForm extends _$AthleteForm {
+  @override
+  AsyncValue<void> build() => const AsyncValue.data(null);
+
+  Future<bool> updateAthlete(int id, AthleteUpdate data) async {
+    state = const AsyncValue.loading();
+    final updateUseCase = locator<UpdateAthleteUseCase>();
+    final result = await updateUseCase.execute(id, data);
+
+    return result.when(
+      success: (updatedAthlete) {
+        // A única responsabilidade: invalidar a lista diretamente afetada.
+        ref.invalidate(athleteListProvider);
+        state = const AsyncValue.data(null);
+        return true;
+      },
+      failure: (err) {
+        state = AsyncValue.error(err, StackTrace.current);
+        return false;
+      },
+    );
+  }
+}
+```
+
+-----
+
+Este manual **reflete com precisão** a arquitetura robusta e as **melhores práticas** que estabelecemos, garantindo que os próximos ciclos de desenvolvimento sejam mais rápidos e consistentes.

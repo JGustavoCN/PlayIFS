@@ -1,161 +1,136 @@
 +++markdown
-
-# Manual de Arquitetura: Padrão para Implementação de Repositórios
-
-*(v2.0 - Revisado)*
+# Manual de Arquitetura — Padrão para Implementação de Repositórios  
+**v2.0 - Revisado**
 
 ---
 
-## Prefácio: A Missão do Repositório
-
-Enquanto o **Contrato do Repositório** (a `abstract class` no domínio) define **o que** a nossa aplicação precisa fazer, a **Implementação do Repositório** (`class ...Impl`) define **como** isso é feito.
+## 📜 Prefácio — A Missão do Repositório
+Enquanto o **Contrato do Repositório** (a *abstract class* no domínio) define **o que** a aplicação precisa fazer, a **Implementação do Repositório** (`class ...Impl`) define **como** isso é feito.
 
 Essa classe atua como um **"escudo protetor"** da aplicação. É responsabilidade dela:
 
-* Lidar com a complexidade da comunicação de rede
-* Traduzir **dados brutos** (DTOs) em **objetos de domínio**
-* Converter exceções de rede (`DioException`) em **estados previsíveis** `Result.failure` que o resto do sistema possa entender
+- Orquestrar a chamada à fonte de dados (**PlayifsApiService**).  
+- Traduzir **dados brutos (DTOs)** em **Entidades de Domínio**.  
+- Capturar exceções de rede (`DioException`) e traduzi-las em exceções de domínio previsíveis (`ApiException`, `ValidationException`) envolvidas em um `Result.failure`.
 
 ---
 
-## 1. As 3 Responsabilidades Principais
-
-1. **Concretizar o Contrato**
-   Implementar fielmente todos os métodos definidos na `abstract class` do repositório no domínio.
-
-2. **Orquestrar Fontes de Dados**
-   Chamar os métodos necessários da nossa fonte de dados (`PlayifsApiService`).
-
-3. **Traduzir e Proteger**
-   Converter DTOs da API em Entidades de Domínio e capturar exceções, evitando que erros brutos cheguem à lógica de negócio.
-
----
-
-## 2. O Padrão Arquitetural para Criação de `RepositoryImpl`
-
-### 2.1. Localização e Nomenclatura
-
-* **Localização:** `lib/data/repositories/`
-* **Nome do ficheiro:** `snake_case`, seguindo o padrão `[feature]_repository_impl.dart`
-
-**Exemplos:**
-
-* `auth_repository_impl.dart`
-* `profile_repository_impl.dart`
+## 1️⃣ Estrutura e Nomenclatura
+- **Localização:** `lib/data/repositories/`  
+- **Nome do ficheiro:** *snake_case*, seguindo o padrão  
+  ```
+  [feature]_repository_impl.dart
+  ```
+- **Estrutura da Classe:**
+  - Deve usar `implements` para aderir ao contrato do domínio.  
+  - Fonte de dados (`ApiService`) recebida via **injeção de dependência** no construtor.  
+  - Construtor deve ser o **primeiro membro** declarado.
 
 ---
 
-### 2.2. Estrutura da Classe
+## 2️⃣ O Padrão Arquitetural — O Helper `_handleApiCall`
+Para garantir **tratamento de erros consistente, centralizado e robusto**, todas as implementações de repositório devem usar um método helper privado chamado `_handleApiCall`.
 
-* A classe deve usar `implements` para aderir ao contrato do domínio.
-* **Injeção de Dependência:** a fonte de dados (`ApiService`) é recebida via construtor.
-* O **construtor** deve ser o primeiro membro declarado.
+**🎯 Justificativa Arquitetural:**
+- **Centralização:** evita repetição de blocos `try-catch` em todos os métodos.  
+- **Consistência:** todas as falhas seguem a *Jornada de um Erro*.  
+- **Clareza:** métodos públicos se tornam *one-liners* focados apenas na lógica de negócio.
+
+---
+
+### 2.1. Template Padrão do `_handleApiCall`
+Este método deve ser **copiado** para cada nova classe `RepositoryImpl`.  
+Ele é a implementação **canónica** da "tradução" de erros.
 
 ```dart
-class AuthRepositoryImpl implements AuthRepository {
-  // Construtor primeiro, para legibilidade.
-  AuthRepositoryImpl(this._apiService);
-
-  final PlayifsApiService _apiService;
-
-  // ... métodos ...
-}
-```
-
----
-
-## 3. A Anatomia de um Método de Repositório
-
-Todos os métodos que fazem chamadas de rede devem usar `try-catch` para lidar com sucesso e falha.
-Existem **dois cenários principais** para o tratamento de sucesso.
-
----
-
-### Cenário A — Resposta Padrão *(com `ApiResponseBody`)*
-
-Usado em endpoints como `GET /me`.
-
-```dart
-// Exemplo do ProfileRepositoryImpl
-@override
-Future<Result<Profile>> getProfile() async {
+// Template do método helper a ser incluído no repositório
+Future<Result<T>> _handleApiCall<T>(Future<T> Function() apiCall) async {
   try {
-    // 1. Chama o serviço da API.
-    final response = await _apiService.getMyProfile();
-    // 2. Converte o DTO em entidade de domínio.
-    final profileEntity = response.data.toEntity();
-    // 3. Retorna sucesso.
-    return Result.success(profileEntity);
+    return Result.success(await apiCall());
   } on DioException catch (e) {
-    return Result.failure('Falha ao buscar perfil.', error: e);
+    // Verifica se o DioClient enriqueceu o erro com a nossa ValidationException.
+    if (e.error is ValidationException) {
+      return Result.failure(e.error as ValidationException);
+    }
+    // Para outros erros do Dio, cria um ApiException genérico.
+    final message = e.response?.data?['error'] ?? e.message ?? 'Erro desconhecido';
+    return Result.failure(ApiException(
+      message,
+      statusCode: e.response?.statusCode,
+    ));
+  } catch (e) {
+    // Para erros inesperados (ex: erro de parsing no mapper).
+    return Result.failure(ApiException(e.toString()));
   }
 }
 ```
 
 ---
 
-### Cenário B — Resposta Direta *(sem `ApiResponseBody`)*
+## 3️⃣ A Anatomia de um Método de Repositório
+Com o `_handleApiCall`, os métodos públicos tornam-se **simples e declarativos**, usando **corpos de expressão** (`=>`).
 
-Usado em endpoints como `/login` e `/refreshToken`.
+---
+
+### **Cenário A — Resposta com Dados a Mapear**
+Usado na maioria dos endpoints `GET`, `POST` e `PUT` que retornam dados.
 
 ```dart
-// Exemplo do AuthRepositoryImpl
+// Exemplo do AthleteRepositoryImpl
 @override
-Future<Result<AuthTokens>> login(LoginCredentials credentials) async {
-  try {
-    final loginRequestDTO = credentials.toDTO();
-    // 1. A resposta da API já é o DTO final.
-    final responseDTO = await _apiService.login(loginRequestDTO);
-    // 2. Converte diretamente para entidade.
-    final authTokens = responseDTO.toEntity();
-    // 3. Retorna sucesso.
-    return Result.success(authTokens);
-  } on DioException catch (e) {
-    // ... tratamento de erro ...
-  }
-}
+Future<Result<Page<AthleteSummary>>> findAll({int page = 0, int size = 10, String? name}) =>
+    _handleApiCall<Page<AthleteSummary>>(() async {
+      // 1. Prepara a chamada à API.
+      final queries = {'page': page, 'size': size, if (name != null) 'name': name};
+      final response = await _apiService.findAllAthletes(queries);
+      
+      // 2. Mapeia o DTO para a Entidade de Domínio.
+      final pageDto = response.data;
+      final content = pageDto.content.map((dto) => dto.toEntity()).toList();
+      return Page(
+        content: content,
+        totalElements: pageDto.totalElements,
+        totalPages: pageDto.totalPages,
+        number: pageDto.pageNumber,
+      );
+    });
 ```
 
 ---
 
-### Tratamento de Erros Robusto *(Bloco `catch`)*
-
-O bloco `catch` deve priorizar **tipos específicos de erro**.
+### **Cenário B — Resposta sem Dados (`void`)**
+Usado em endpoints `DELETE` que retornam **204 No Content**.
 
 ```dart
-// Bloco 'catch' ideal, como implementado no AuthRepositoryImpl
-on DioException catch (e) {
-  // 1. Erros de validação (422)
-  if (e.error is ValidationException) {
-    return Result.failure('Dados inválidos. Verifique os campos.', error: e);
-  }
-  
-  // 2. Erros de autenticação (401 ou 403)
-  if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-    return Result.failure('Matrícula ou senha inválida.', error: e);
-  }
-  
-  // 3. Erros genéricos de rede
-  return Result.failure('Ocorreu um erro de rede. Tente novamente.', error: e);
-}
+// Exemplo do AthleteRepositoryImpl
+@override
+Future<Result<void>> delete(int id) =>
+    _handleApiCall<void>(() => _apiService.deleteAthlete(id));
 ```
 
 ---
 
-## 4. Os Exemplos Canónicos
+## 4️⃣ O Exemplo Canónico
+O ficheiro que **melhor representa** a implementação final e robusta deste padrão é:
 
-Os ficheiros:
+```
+athlete_repository_impl.dart
+```
 
-* `auth_repository_impl.dart`
-* `profile_repository_impl.dart`
+Ele contém exemplos de todos os cenários:
+- Listagem com mapeamento  
+- Busca por ID  
+- Criação  
+- Atualização  
+- Exclusão `void`  
+- Operações em massa  
 
-são as implementações perfeitas deste padrão no nosso projeto.
+Todos utilizando o `_handleApiCall` de forma **limpa e consistente**.
 
 ---
 
-**Seguir este manual garante que a camada de dados seja:**
-
-* **Resiliente**
-* **Testável**
-* **Desacoplada** da lógica de negócio e da UI
-  +++
+## ✅ Benefícios de Seguir Este Manual
+- **Resiliência:** erros tratados de forma centralizada e previsível.  
+- **Legibilidade:** intenção de cada método é clara.  
+- **Desacoplamento:** lógica de negócio e UI isoladas da camada de dados.
++++

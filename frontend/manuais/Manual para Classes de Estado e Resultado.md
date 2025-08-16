@@ -1,10 +1,10 @@
-+++markdown
+-----
 
 # Manual de Arquitetura: Padrão para Classes de Estado e Resultado
 
 *(v2.0 - Revisado)*
 
----
+-----
 
 ## Prefácio: O Propósito do Padrão de Resultado
 
@@ -16,12 +16,11 @@ Em uma aplicação conectada a uma API, qualquer operação pode ter diferentes 
 
 Lidar com isso usando `try/catch` na camada de UI ou retornando `null` é uma receita para **bugs** e **código instável**.
 
-O **padrão `Result`** (e outras classes de estado) resolve isso ao **transformar o desfecho de uma operação num tipo de dado explícito**.
-Em vez de a operação “lançar um erro”, ela **retorna uma falha**. Isso nos força a lidar com **todos os cenários possíveis** de forma segura no nosso código.
+O **padrão `Result`** (e outras classes de estado) resolve isso ao **transformar o desfecho de uma operação num tipo de dado explícito**. Em vez de a operação "lançar um erro", ela **retorna uma falha**. Isso nos força a lidar com **todos os cenários possíveis** de forma segura no nosso código.
 
----
+-----
 
-## 1. A Regra de Ouro: Quando Usar Este Padrão?
+## 1\. A Regra de Ouro: Quando Usar Este Padrão?
 
 Use o padrão `sealed class` sempre que **um valor, estado ou evento puder ser uma de várias coisas diferentes que se excluem mutuamente**.
 
@@ -29,42 +28,40 @@ Use o padrão `sealed class` sempre que **um valor, estado ou evento puder ser u
 
 * **Resultado de uma Operação:** um `Result` pode ser `Success` ou `Failure`.
 * **Estado de um Provider/Tela:** um `AuthState` pode ser `Initial`, `Loading`, `Authenticated`, `Unauthenticated` ou `Failure`.
-* **Eventos de um Formulário:** um `FormEvent` pode ser `Save` ou `Delete`.
 
----
+-----
 
-## 2. O Padrão Arquitetural para Criação de Sealed Classes
+## 2\. O Padrão Arquitetural para Criação de Sealed Classes
 
 ### 2.1. Localização e Nome do Ficheiro
 
 * **Classes de estado genéricas e reutilizáveis** (ex: `Result`) → camada core:
-  `lib/core/network/`
+    `lib/core/network/`
 * **Classes de estado específicas de uma feature** (ex: `AuthState`) → junto aos seus providers:
-  `lib/presentation/providers/auth/`
+    `lib/presentation/providers/auth/`
 
 **Convenção de Nomenclatura:**
 
 * **Ficheiro:** `snake_case.dart` (ex: `result.dart`, `auth_state.dart`)
 * **Classe:** `PascalCase` (ex: `Result`, `AuthState`)
 
----
-
 ### 2.2. Estrutura Interna e Sintaxe
 
 A estrutura deve seguir o padrão `freezed`:
 
-1. **Imports:**
-   `package:freezed_annotation/freezed_annotation.dart`
+1. **Imports:** `package:freezed_annotation/freezed_annotation.dart`
 2. **Diretiva `part`:** deve corresponder ao nome do ficheiro (`snake_case`).
 3. **Anotação `@freezed`:** acima da declaração da classe.
 4. **Declaração `sealed class`:** usando `with _$NomeDaClasse`.
-5. **Definição dos “Casos”**: cada estado é um `const factory` nomeado.
+5. **Definição dos "Casos"**: cada estado é um `const factory` nomeado.
 
----
+-----
 
-## 3. Os Exemplos Canónicos (O Nosso Código)
+## 3\. Os Exemplos Canónicos (O Nosso Código)
 
 ### Exemplo A — `result.dart` (Tipo genérico de Sucesso/Falha)
+
+*Esta é a nossa nova fonte da verdade para os resultados de operações de negócio.*
 
 ```dart
 // Ficheiro: lib/core/network/result.dart
@@ -76,13 +73,15 @@ part 'result.freezed.dart';
 @freezed
 sealed class Result<T> with _$Result<T> {
   const factory Result.success(T data) = Success<T>;
-  const factory Result.failure(String message, {Object? error}) = Failure<T>;
+
+  // ✅ CORREÇÃO: A falha agora carrega uma Exceção completa e tipada.
+  const factory Result.failure(Exception error) = Failure<T>;
 }
 ```
 
----
-
 ### Exemplo B — `auth_state.dart` (Máquina de estados específica)
+
+*Esta classe representa os estados finais que a UI pode assumir.*
 
 ```dart
 // Ficheiro: lib/presentation/providers/auth/auth_state.dart
@@ -102,56 +101,58 @@ sealed class AuthState with _$AuthState {
 }
 ```
 
----
+-----
 
-## 4. Como Utilizar na Prática (A Vantagem do Método `.when`)
+## 4\. Como Utilizar na Prática (A Vantagem do Método `.when`)
 
 O **freezed** gera um método `.when()` que **nos força a lidar com todos os casos** de forma segura e elegante.
 
----
+### Exemplo A — Consumindo um `Result` num Provider
 
-### Exemplo A — Consumindo um Estado Assíncrono (`AsyncValue`) com `Result`
+*O `provider` traduz o `Result` para o seu próprio estado (`AsyncValue`).*
 
 ```dart
 // Dentro de um método de Notifier
 final result = await getProfileUseCase.execute(); // Future<Result<Profile>>
 
 // Tratamento seguro usando switch expression
-state = switch (result) {
-  Success(data: final profile) => AsyncValue.data(AuthState.authenticated(profile)),
-  Failure(message: final msg) => AsyncValue.data(AuthState.failure(msg)),
+return switch (result) {
+  Success(data: final profile) => profile,
+  // ✅ CORREÇÃO: Extrai o objeto de exceção 'err'.
+  Failure(error: final err) => throw err, // Lança o erro para o AsyncNotifier tratar
 };
 ```
 
----
+### Exemplo B — Consumindo o Estado de Erro na UI
 
-### Exemplo B — Consumindo `AuthState` (uma Sealed Class)
+*A UI ouve as mudanças de estado do provider e reage de forma inteligente ao **tipo** do erro.*
 
 ```dart
-// No redirect do GoRouter ou num widget a observar o authProvider
-final authState = ref.read(authProvider); // AsyncValue<AuthState>
+// No método build de um ConsumerStatefulWidget (ex: EditAthletePage)
 
-return authState.when(
-  loading: () => Text('A carregar...'),
-  error: (e, s) => Text('Erro: $e'),
-  data: (actualAuthState) {
-    return actualAuthState.when(
-      initial: () => Text('Inicializando...'),
-      loading: () => Text('A fazer login...'),
-      authenticated: (profile) => Text('Bem-vindo, ${profile.athleteProfile?.nickname}!'),
-      unauthenticated: () => Text('Por favor, faça o login.'),
-      failure: (message) => Text('Falha no login: $message'),
-    );
-  },
-);
+ref.listen<AsyncValue<void>>(athleteFormProvider, (_, state) {
+  state.whenOrNull(
+    error: (err, stack) {
+      if (!mounted) return;
+      setState(() {
+        // ✅ CORREÇÃO: Verifica o TIPO da exceção para uma reação contextual.
+        if (err is ValidationException) {
+          // Se for um erro de validação, atualiza os campos do formulário.
+          _fieldErrors = {
+            for (var e in err.errorDetails.errors) e.fieldName: e.message
+          };
+        } else if (err is ApiException) {
+          // Se for outro erro da API, mostra uma mensagem genérica.
+          _fieldErrors = {'form': err.message};
+        }
+      });
+    },
+  );
+});
 ```
 
----
+-----
 
 ## Benefício Principal
 
-Com o `.when()`, **é impossível esquecer de tratar um dos casos**.
-Se você adicionar um novo estado à sua sealed class, **o código não compila** até que todos os pontos que usam `.when()` tratem o novo caso.
-
-Isso elimina **uma classe inteira de bugs** em tempo de execução.
-+++
+Com o `.when()` e exceções tipadas, **é impossível esquecer de tratar um dos casos**. Se o backend introduzir um novo tipo de erro, a nossa arquitetura está preparada para o "envolver" numa nova classe de exceção, e a UI poderá tratá-lo de forma específica, garantindo que a aplicação seja **robusta, previsível e fácil de depurar**.
