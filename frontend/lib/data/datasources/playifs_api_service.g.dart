@@ -322,6 +322,144 @@ class _PlayifsApiService implements PlayifsApiService {
     await _dio.fetch<void>(_options);
   }
 
+  @override
+  Future<ApiResponseBody<AppConfigDTO>> getAppConfig() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<ApiResponseBody<AppConfigDTO>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/config',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ApiResponseBody<AppConfigDTO> _value;
+    try {
+      _value = ApiResponseBody<AppConfigDTO>.fromJson(
+        _result.data!,
+        (json) => AppConfigDTO.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<ApiResponseBody<PageDTO<SportSummaryDTO>>> findAllSports(
+    Map<String, dynamic> queries,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.addAll(queries);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<ApiResponseBody<PageDTO<SportSummaryDTO>>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/sports',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ApiResponseBody<PageDTO<SportSummaryDTO>> _value;
+    try {
+      _value = ApiResponseBody<PageDTO<SportSummaryDTO>>.fromJson(
+        _result.data!,
+        (json) => PageDTO<SportSummaryDTO>.fromJson(
+          json as Map<String, dynamic>,
+          (json) => SportSummaryDTO.fromJson(json as Map<String, dynamic>),
+        ),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<ApiResponseBody<PageDTO<CampusSummaryDTO>>> findAllCampuses(
+    Map<String, dynamic> queries,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.addAll(queries);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<ApiResponseBody<PageDTO<CampusSummaryDTO>>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/campuses',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ApiResponseBody<PageDTO<CampusSummaryDTO>> _value;
+    try {
+      _value = ApiResponseBody<PageDTO<CampusSummaryDTO>>.fromJson(
+        _result.data!,
+        (json) => PageDTO<CampusSummaryDTO>.fromJson(
+          json as Map<String, dynamic>,
+          (json) => CampusSummaryDTO.fromJson(json as Map<String, dynamic>),
+        ),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<ApiResponseBody<PageDTO<CourseSummaryDTO>>> findAllCourses(
+    Map<String, dynamic> queries,
+  ) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.addAll(queries);
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<ApiResponseBody<PageDTO<CourseSummaryDTO>>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/courses',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late ApiResponseBody<PageDTO<CourseSummaryDTO>> _value;
+    try {
+      _value = ApiResponseBody<PageDTO<CourseSummaryDTO>>.fromJson(
+        _result.data!,
+        (json) => PageDTO<CourseSummaryDTO>.fromJson(
+          json as Map<String, dynamic>,
+          (json) => CourseSummaryDTO.fromJson(json as Map<String, dynamic>),
+        ),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

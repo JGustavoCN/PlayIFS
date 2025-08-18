@@ -83,4 +83,5 @@ class ApiConstants {
 
   // 9. Configuração da Aplicação
   static const String config = '/config';
+
 }

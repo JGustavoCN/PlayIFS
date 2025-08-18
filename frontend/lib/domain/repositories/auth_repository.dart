@@ -1,6 +1,6 @@
+import '../../core/network/result.dart'; // Assumindo que temos um tipo Result definido
 import '../entities/auth/auth_tokens.dart';
 import '../entities/auth/login_credentials.dart';
-import '../../core/network/result.dart'; // Assumindo que temos um tipo Result definido
 
 /// O Contrato (Abstração) do Repositório de Autenticação.
 ///

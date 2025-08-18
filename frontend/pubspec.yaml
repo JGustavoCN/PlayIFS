@@ -13,10 +13,12 @@ dependencies:
 
   google_fonts: ^6.3.0
 
+
   # Camada de Rede
   dio: ^5.8.0+1
   retrofit: ^4.7.0
   get_it: ^8.2.0
+  dio_cache_interceptor: ^4.0.3
 
   # Modelos de Dados e Serialização
   freezed_annotation: ^3.1.0

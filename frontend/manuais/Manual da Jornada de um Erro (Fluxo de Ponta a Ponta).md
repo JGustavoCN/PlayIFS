@@ -186,6 +186,56 @@ ref.listen<AsyncValue<void>>(athleteFormProvider, (_, state) {
 });
 ```
 
+ Secção 4: O Padrão BaseRepository
+
+4.1. Propósito
+Para garantir consistência e evitar a duplicação de código, toda a lógica de tratamento de erros da camada de dados deve ser centralizada numa classe abstrata BaseRepository. Todos os repositórios de implementação (...RepositoryImpl) DEVEM estender esta classe.
+
+4.2. Implementação Oficial do handleApiCall
+A BaseRepository deve conter o método handleApiCall, cuja implementação oficial e definitiva é a seguinte:
+
+Dart
+
+// Ficheiro: lib/data/repositories/base_repository.dart
+import 'package:dio/dio.dart';
+import 'package:playifs_frontend/core/network/exceptions.dart';
+import 'package:playifs_frontend/core/network/result.dart';
+
+abstract class BaseRepository {
+Future<Result> handleApiCall(Future Function() apiCall) async {
+try {
+return Result.success(await apiCall());
+} on DioException catch (e) {
+// 1. INSPECIONA O ERRO ENRIQUECIDO
+// Verifica se o DioClient já identificou e anexou uma ValidationException.
+if (e.error is ValidationException) {
+// 2. PRESERVA A EXCEÇÃO ESPECÍFICA
+// Se for um erro de validação, ele o passa adiante intacto.
+return Result.failure(e.error as ValidationException);
+}
+
+  // 3. TRADUZ OUTROS ERROS DE REDE
+  // Para outros erros (404, 500, etc.), cria uma ApiException.
+  final message = e.response?.data?['error'] ?? e.message ?? 'Erro desconhecido';
+  return Result.failure(ApiException(
+    message,
+    statusCode: e.response?.statusCode,
+  ));
+} catch (e) {
+  // 4. CAPTURA ERROS INESPERADOS
+  // Para qualquer outra coisa (erros de parsing, etc.), envolve numa ApiException.
+  return Result.failure(ApiException(e.toString()));
+}
+}
+}
+
+**4.3. Classes de Exceção Oficiais**
+O nosso projeto utiliza um conjunto definido e limitado de exceções de rede, localizadas em `lib/core/network/exceptions.dart`. As únicas classes oficiais são:
+ValidationException: Para erros de validação (HTTP 422), contendo detalhes dos campos.
+
+ApiException: Para todos os outros erros de API (HTTP 4xx, 5xx) ou erros de programação inesperados.
+
+NÃO fazem parte da nossa arquitetura classes como NetworkException, ClientException ou UnexpectedException. Qualquer referência a elas deve ser considerada um erro
 ---
 
 ## ✅ Conclusão

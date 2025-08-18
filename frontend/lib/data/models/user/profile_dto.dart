@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../shared/link_dto.dart';
+
 import '../athlete/athlete_details_dto.dart';
+import '../shared/link_dto.dart';
 import 'coordinator_details_dto.dart';
 
 part 'profile_dto.freezed.dart';

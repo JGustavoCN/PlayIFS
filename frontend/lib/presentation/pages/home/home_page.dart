@@ -1,3 +1,5 @@
+// Ficheiro: lib/presentation/pages/home/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,19 +46,64 @@ class HomePage extends ConsumerWidget {
           children: [
             _buildProfileCard(context, profile),
             const SizedBox(height: 16),
-            // O card de navegação para a lista de atletas (geralmente para coordenadores)
-            // pode ser tornado condicional também, se necessário.
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.directions_run),
-                title: const Text('Gestão de Atletas'),
-                subtitle: const Text('Visualizar e gerir perfis de atletas'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.pushNamed(AppRoutes.athletes),
-              ),
-            ),
+            _buildAdminPanel(context, profile),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Constrói o painel de navegação para funcionalidades de gestão.
+  /// Visível para utilizadores com o perfil de 'COORDINATOR' OU 'ATHLETE'.
+  Widget _buildAdminPanel(BuildContext context, Profile profile) {
+    // ✅ CORREÇÃO DEFINITIVA: Verificando os nomes exatos dos perfis ('roles')
+    // que vêm do backend, incluindo o prefixo "ROLE_".
+    final requiredRoles = {'ROLE_COORDINATOR', 'ROLE_ATHLETE'};
+    final userRoles = profile.roles.toSet();
+    final hasPermission = userRoles.intersection(requiredRoles).isNotEmpty;
+
+    if (!hasPermission) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'Painel de Gestão',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          const Divider(indent: 16, endIndent: 16),
+          ListTile(
+            leading: const Icon(Icons.directions_run),
+            title: const Text('Gerir Atletas'),
+            trailing: const Icon(Icons.chevron_right),
+            // ✅ CORREÇÃO: Usando pushNamed para obter a seta de 'voltar', conforme solicitado.
+            onTap: () => context.pushNamed(AppRoutes.athletes),
+          ),
+          ListTile(
+            leading: const Icon(Icons.sports_soccer),
+            title: const Text('Consultar Desportos'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.sports),
+          ),
+          ListTile(
+            leading: const Icon(Icons.school),
+            title: const Text('Consultar Campi'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.campuses),
+          ),
+          ListTile(
+            leading: const Icon(Icons.book),
+            title: const Text('Consultar Cursos'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.courses),
+          ),
+        ],
       ),
     );
   }
@@ -74,18 +121,16 @@ class HomePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Informações Gerais', style: textTheme.titleLarge),
-                // ✅ 1. BOTÃO DE EDIÇÃO CONDICIONAL
-                // Só aparece se o utilizador tiver um perfil de atleta.
                 if (profile.athleteDetails != null)
                   IconButton(
                     icon: const Icon(Icons.edit_outlined),
                     tooltip: 'Editar Meu Perfil de Atleta',
                     onPressed: () {
-                      // ✅ 2. NAVEGAÇÃO PARA A TELA DE EDIÇÃO
-                      // Usa o ID do atleta que está no próprio perfil.
                       context.pushNamed(
                         AppRoutes.editAthlete,
-                        pathParameters: {'id': profile.athleteDetails!.id.toString()},
+                        pathParameters: {
+                          'id': profile.athleteDetails!.id.toString()
+                        },
                       );
                     },
                   ),

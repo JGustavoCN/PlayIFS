@@ -12,9 +12,7 @@ part 'athlete_batch_form_provider.g.dart';
 @riverpod
 class AthleteBatchForm extends _$AthleteBatchForm {
   @override
-  AsyncValue<void> build() {
-    return const AsyncValue.data(null);
-  }
+  AsyncValue<void> build() => const AsyncValue.data(null);
 
   /// Tenta registar uma lista de atletas em massa.
   /// Retorna `true` em caso de sucesso, `false` em caso de falha.

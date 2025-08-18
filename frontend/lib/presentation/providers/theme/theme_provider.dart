@@ -10,9 +10,7 @@ class ThemeNotifier extends _$ThemeNotifier {
   // O método 'build' define o estado inicial do nosso provider.
   // Começamos com o tema do sistema.
   @override
-  ThemeMode build() {
-    return ThemeMode.system;
-  }
+  ThemeMode build() => ThemeMode.system;
 
   // Método público que a UI irá chamar para trocar o tema.
   void toggleTheme() {

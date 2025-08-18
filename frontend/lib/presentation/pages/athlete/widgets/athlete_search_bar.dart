@@ -36,8 +36,7 @@ class _AthleteSearchBarState extends ConsumerState<AthleteSearchBar> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
+  Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: TextField(
         controller: _textController,
@@ -52,5 +51,4 @@ class _AthleteSearchBarState extends ConsumerState<AthleteSearchBar> {
         ),
       ),
     );
-  }
 }

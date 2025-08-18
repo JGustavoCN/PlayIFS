@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:playifs_frontend/presentation/providers/auth/auth_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../presentation/pages/admin/campuses/campuses_page.dart';
+import '../../presentation/pages/admin/courses/courses_page.dart';
+import '../../presentation/pages/admin/sports/sports_page.dart';
 import '../../presentation/pages/athlete/athlete_page.dart';
 import '../../presentation/pages/athlete/batch_create_athlete_page.dart';
 import '../../presentation/pages/athlete/edit_athlete_page.dart';
@@ -26,6 +29,11 @@ class AppRoutes {
   static const String createAthlete = '/athletes/new';
   static const String editAthlete = '/athletes/:id/edit';
   static const String batchCreateAthlete = '/athletes/batch-create';
+
+  // ✅ 1. ADICIONAR AS NOVAS CONSTANTES DE ROTA ADMINISTRATIVAS
+  static const String sports = '/admin/sports';
+  static const String campuses = '/admin/campuses';
+  static const String courses = '/admin/courses';
 }
 
 class GoRouterRefreshNotifier extends ChangeNotifier {
@@ -102,6 +110,21 @@ GoRouter goRouter(Ref ref) {
         path: AppRoutes.batchCreateAthlete,
         name: AppRoutes.batchCreateAthlete,
         builder: (context, state) => const BatchCreateAthletePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.sports,
+        name: AppRoutes.sports,
+        builder: (context, state) => const SportsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.campuses,
+        name: AppRoutes.campuses,
+        builder: (context, state) => const CampusesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.courses,
+        name: AppRoutes.courses,
+        builder: (context, state) => const CoursesPage(),
       ),
 
     ],
