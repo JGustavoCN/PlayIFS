@@ -30,7 +30,7 @@ final class CampusesNotifierProvider
   CampusesNotifier create() => CampusesNotifier();
 }
 
-String _$campusesNotifierHash() => r'26db83712a052ce2af69ebbf249f6f41903133ff';
+String _$campusesNotifierHash() => r'0f1525740a41230844f4b6ea8dfdbf1f04bb2da4';
 
 abstract class _$CampusesNotifier extends $AsyncNotifier<Page<CampusSummary>> {
   FutureOr<Page<CampusSummary>> build();

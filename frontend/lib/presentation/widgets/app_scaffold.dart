@@ -8,19 +8,23 @@ class AppScaffold extends StatelessWidget {
     required this.title,
     required this.body,
     this.fab,
+    this.actions, // ✅ 1. ADICIONAR O PARÂMETRO 'actions'.
   });
 
   final String title;
   final Widget body;
   final FloatingActionButton? fab;
+  final List<Widget>? actions; // ✅ 2. ADICIONAR A PROPRIEDADE.
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        actions: actions, // ✅ 3. PASSAR AS AÇÕES PARA A APPBAR.
       ),
       body: body,
       floatingActionButton: fab,
     );
+  }
 }

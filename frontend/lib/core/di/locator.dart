@@ -22,16 +22,33 @@ import 'package:playifs_frontend/domain/usecases/auth/refresh_token_use_case.dar
 import 'package:playifs_frontend/domain/usecases/profile/get_profile_use_case.dart';
 
 import '../../data/repositories/campus_repository_impl.dart';
+import '../../data/repositories/competition_repository_impl.dart';
 import '../../data/repositories/config_repository_impl.dart'; // ✅ 1. Importar a implementação
 import '../../data/repositories/course_repository_impl.dart';
+import '../../data/repositories/designated_coach_repository_impl.dart';
 import '../../data/repositories/sport_repository_impl.dart';
 import '../../domain/repositories/campus_repository.dart';
+import '../../domain/repositories/competition_repository.dart';
 import '../../domain/repositories/config_repository.dart'; // ✅ 2. Importar o contrato
 import '../../domain/repositories/course_repository.dart';
+import '../../domain/repositories/designated_coach_repository.dart';
 import '../../domain/repositories/sport_repository.dart';
 import '../../domain/usecases/campus/find_all_campuses_use_case.dart';
+import '../../domain/usecases/competition/batch_delete_competitions_use_case.dart';
+import '../../domain/usecases/competition/delete_competition_use_case.dart';
+import '../../domain/usecases/competition/find_all_competitions_use_case.dart';
+import '../../domain/usecases/competition/find_competition_by_id_use_case.dart';
+import '../../domain/usecases/competition/insert_competition_use_case.dart';
+import '../../domain/usecases/competition/update_competition_use_case.dart';
 import '../../domain/usecases/config/get_app_config_use_case.dart';
 import '../../domain/usecases/course/find_all_courses_use_case.dart';
+import '../../domain/usecases/designated_coach/batch_remove_coaches_use_case.dart';
+import '../../domain/usecases/designated_coach/batch_upsert_coaches_use_case.dart';
+import '../../domain/usecases/designated_coach/define_coach_use_case.dart';
+import '../../domain/usecases/designated_coach/find_all_designated_coaches_use_case.dart';
+import '../../domain/usecases/designated_coach/find_designated_coach_by_id_use_case.dart';
+import '../../domain/usecases/designated_coach/remove_coach_use_case.dart';
+import '../../domain/usecases/designated_coach/update_coach_use_case.dart';
 import '../../domain/usecases/sport/find_all_sports_use_case.dart';
 
 final locator = GetIt.instance;
@@ -48,11 +65,12 @@ void setupLocator() {
   locator.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(locator()));
   locator.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(locator()));
   locator.registerLazySingleton<AthleteRepository>(() => AthleteRepositoryImpl(locator()));
-  // ✅ 3. Adicionar o registo do ConfigRepository que faltava
   locator.registerLazySingleton<ConfigRepository>(() => ConfigRepositoryImpl(locator()));
   locator.registerLazySingleton<SportRepository>(() => SportRepositoryImpl(locator()));
   locator.registerLazySingleton<CampusRepository>(() => CampusRepositoryImpl(locator()));
   locator.registerLazySingleton<CourseRepository>(() => CourseRepositoryImpl(locator()));
+  locator.registerLazySingleton<CompetitionRepository>(() => CompetitionRepositoryImpl(locator()));
+  locator.registerLazySingleton<DesignatedCoachRepository>(() => DesignatedCoachRepositoryImpl(locator()));
 
   // --- CAMADA DE DOMÍNIO: CASOS DE USO ---
   // Auth & Profile
@@ -76,4 +94,21 @@ void setupLocator() {
   locator.registerLazySingleton(() => FindAllSportsUseCase(locator()));
   locator.registerLazySingleton(() => FindAllCampusesUseCase(locator()));
   locator.registerLazySingleton(() => FindAllCoursesUseCase(locator()));
+
+  //COMPETIÇÃO
+  locator.registerLazySingleton(() => FindAllCompetitionsUseCase(locator()));
+  locator.registerLazySingleton(() => FindCompetitionByIdUseCase(locator()));
+  locator.registerLazySingleton(() => InsertCompetitionUseCase(locator()));
+  locator.registerLazySingleton(() => UpdateCompetitionUseCase(locator()));
+  locator.registerLazySingleton(() => DeleteCompetitionUseCase(locator()));
+  locator.registerLazySingleton(() => BatchDeleteCompetitionsUseCase(locator()));
+
+  // ✅ ADICIONAR REGISTOS DOS CASOS DE USO DE TÉCNICOS DESIGNADOS
+  locator.registerLazySingleton(() => FindAllDesignatedCoachesUseCase(locator()));
+  locator.registerLazySingleton(() => FindDesignatedCoachByIdUseCase(locator()));
+  locator.registerLazySingleton(() => DefineCoachUseCase(locator()));
+  locator.registerLazySingleton(() => UpdateCoachUseCase(locator()));
+  locator.registerLazySingleton(() => BatchUpsertCoachesUseCase(locator()));
+  locator.registerLazySingleton(() => RemoveCoachUseCase(locator()));
+  locator.registerLazySingleton(() => BatchRemoveCoachesUseCase(locator()));
 }

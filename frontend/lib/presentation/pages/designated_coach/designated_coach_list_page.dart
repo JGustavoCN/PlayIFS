@@ -1,0 +1,164 @@
+// Ficheiro: lib/presentation/pages/designated_coach/designated_coach_list_page.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:playifs_frontend/core/network/exceptions.dart';
+import 'package:playifs_frontend/core/routing/app_routes.dart';
+import 'package:playifs_frontend/domain/entities/designated_coach/designated_coach_summary.dart';
+import 'package:playifs_frontend/presentation/providers/designated_coach/designated_coach_form_provider.dart';
+import 'package:playifs_frontend/presentation/providers/designated_coach/designated_coach_form_state.dart';
+import 'package:playifs_frontend/presentation/providers/designated_coach/designated_coaches_provider.dart';
+import 'package:playifs_frontend/presentation/widgets/app_scaffold.dart';
+import 'package:playifs_frontend/presentation/widgets/error_display.dart';
+
+import 'widgets/designated_coach_form.dart';
+
+class DesignatedCoachListPage extends ConsumerWidget {
+  const DesignatedCoachListPage({super.key, required this.competitionId});
+  final int competitionId;
+
+  void _showDesignateCoachForm(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: DesignatedCoachForm(competitionId: competitionId),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(
+      BuildContext context,
+      WidgetRef ref,
+      DesignatedCoachSummary coach,
+      ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar Remoção'),
+        content: Text('Tem a certeza que deseja remover ${coach.athleteName}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Remover')),
+        ],
+      ),
+    );
+
+    if (confirm ?? false) {
+      await ref.read(designatedCoachFormNotifierProvider.notifier).removeById(coach.id, competitionId);
+      final state = ref.read(designatedCoachFormNotifierProvider);
+
+      if (context.mounted) {
+        state.whenOrNull(
+          success: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Designação removida com sucesso!')),
+          ),
+          failure: (error) {
+            // ✅ A LÓGICA INTELIGENTE
+            if (error is ApiException && error.statusCode == 422) {
+              // Se for um erro de negócio, mostra o dialog de substituição.
+              _showReplacementDialog(context, coach, error.message);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Erro ao remover: $error'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            }
+          },
+        );
+      }
+    }
+  }
+
+  // ✅ DIÁLOGO INTELIGENTE PARA O FLUXO DE SUBSTITUIÇÃO
+  void _showReplacementDialog(BuildContext context, DesignatedCoachSummary coach, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ação Requerida'),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop(); // Fecha o dialog de erro
+              // Navega para o ecrã de edição para permitir a substituição
+              context.pushNamed(
+                AppRoutes.editDesignatedCoach,
+                pathParameters: {'id': coach.id.toString()},
+              );
+            },
+            child: const Text('Substituir Técnico'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final designatedCoachesState = ref.watch(designatedCoachesNotifierProvider(competitionId));
+
+    return AppScaffold(
+      title: 'Técnicos Designados',
+      body: designatedCoachesState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => ErrorDisplay(
+          error: error,
+          onRetry: () => ref.invalidate(designatedCoachesNotifierProvider(competitionId)),
+        ),
+        data: (page) {
+          final coaches = page.content;
+          if (coaches.isEmpty) {
+            return const Center(child: Text('Nenhum técnico designado.'));
+          }
+          return ListView.builder(
+            itemCount: coaches.length,
+            itemBuilder: (context, index) {
+              final designatedCoach = coaches[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: ListTile(
+                  title: Text(designatedCoach.athleteName),
+                  subtitle: Text('${designatedCoach.sportName} - ${designatedCoach.courseName}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        tooltip: 'Editar Designação',
+                        onPressed: () => context.pushNamed(
+                          AppRoutes.editDesignatedCoach,
+                          pathParameters: {'id': designatedCoach.id.toString()},
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                        tooltip: 'Remover Designação',
+                        onPressed: () => _showDeleteConfirmation(context, ref, designatedCoach),
+                      ),
+                    ],
+                  ),
+                  onTap: () => context.pushNamed(
+                    AppRoutes.designatedCoachDetails,
+                    pathParameters: {'id': designatedCoach.id.toString()},
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      fab: FloatingActionButton(
+        onPressed: () => _showDesignateCoachForm(context),
+        tooltip: 'Designar Novo Técnico',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}

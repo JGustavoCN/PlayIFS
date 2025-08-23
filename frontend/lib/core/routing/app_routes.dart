@@ -12,6 +12,12 @@ import '../../presentation/pages/athlete/batch_create_athlete_page.dart';
 import '../../presentation/pages/athlete/edit_athlete_page.dart';
 import '../../presentation/pages/auth/login_page.dart';
 import '../../presentation/pages/auth/registration_page.dart';
+import '../../presentation/pages/competition/competition_details_page.dart';
+import '../../presentation/pages/competition/competition_form_page.dart';
+import '../../presentation/pages/competition/competition_list_page.dart';
+import '../../presentation/pages/designated_coach/designated_coach_details_page.dart';
+import '../../presentation/pages/designated_coach/designated_coach_list_page.dart';
+import '../../presentation/pages/designated_coach/edit_designated_coach_page.dart';
 import '../../presentation/pages/home/home_page.dart';
 import '../../presentation/pages/splash/splash_page.dart';
 import '../../presentation/providers/auth/auth_provider.dart';
@@ -34,6 +40,17 @@ class AppRoutes {
   static const String sports = '/admin/sports';
   static const String campuses = '/admin/campuses';
   static const String courses = '/admin/courses';
+
+  // ✅ 1. ADICIONAR AS NOVAS CONSTANTES DE ROTA PARA COMPETIÇÕES
+  static const String competitions = '/admin/competitions';
+  static const String competitionDetails = '/competitions/:id';
+  static const String createCompetition = '/competitions/new';
+  static const String editCompetition = '/competitions/:id/edit';
+
+  static const String designatedCoaches = '/competitions/:id/coaches';
+  static const String designatedCoachDetails = '/designated-coaches/:id';
+  static const String editDesignatedCoach = '/designated-coaches/:id/edit';
+
 }
 
 class GoRouterRefreshNotifier extends ChangeNotifier {
@@ -126,7 +143,59 @@ GoRouter goRouter(Ref ref) {
         name: AppRoutes.courses,
         builder: (context, state) => const CoursesPage(),
       ),
+      // ✅ 2. ADICIONAR AS NOVAS ROTAS DE COMPETIÇÃO
+      GoRoute(
+        path: AppRoutes.createCompetition,
+        name: AppRoutes.createCompetition,
+        builder: (context, state) => const CompetitionFormPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.editCompetition,
+        name: AppRoutes.editCompetition,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return CompetitionFormPage(competitionId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.competitions,
+        name: AppRoutes.competitions,
+        builder: (context, state) => const CompetitionListPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.competitionDetails,
+        name: AppRoutes.competitionDetails,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return CompetitionDetailsPage(competitionId: id);
+        },
+      ),
 
+      GoRoute(
+        path: AppRoutes.designatedCoaches,
+        name: AppRoutes.designatedCoaches,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return DesignatedCoachListPage(competitionId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.designatedCoachDetails,
+        name: AppRoutes.designatedCoachDetails,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return DesignatedCoachDetailsPage(designationId: id);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editDesignatedCoach,
+        name: AppRoutes.editDesignatedCoach,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          // Nota: A página de edição precisará de buscar os detalhes para passar ao formulário.
+          return EditDesignatedCoachPage(designationId: id);
+        },
+      ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
       final authState = ref.read(authProvider);

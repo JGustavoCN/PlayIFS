@@ -7,12 +7,19 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor; // Impo
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 // ADICIONE A EXTENSÃO JpaSpecificationExecutor<Team> AQUI
 public interface TeamRepository extends JpaRepository<Team, Long>, JpaSpecificationExecutor<Team> {
 
     boolean existsBySportIdAndCourseIdAndCompetitionId(Long sportId, Long courseId, Long competitionId);
     boolean existsByCompetitionIdAndSportIdAndCoachId(Long competitionId, Long sportId, Long coachId);
+
+
+    Optional<Team> findByCompetitionIdAndSportIdAndCourseIdAndCoach(Long competitionId, Long sportId, Long courseId, Athlete coach);
+
+
+    boolean existsByCompetitionIdAndSportIdAndCourseIdAndCoach(Long competitionId, Long sportId, Long courseId, Athlete coach);
 
     @Query("SELECT COUNT(t) > 0 FROM Team t WHERE t.competition.id = :competitionId AND t.coach.id IN :athleteIds")
     boolean anyOfTheseAthletesAreCoachesInCompetition(Long competitionId, List<Long> athleteIds);

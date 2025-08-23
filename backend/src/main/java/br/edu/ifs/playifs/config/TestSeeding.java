@@ -182,7 +182,7 @@ public class TestSeeding implements CommandLineRunner {
      */
     private void create9TeamFutsalTournamentScenario() {
         // Busca dados básicos
-        Campus c1 = campusRepository.findAll().get(0);
+        Campus c1 = campusRepository.findAll().getFirst();
         Competition comp1 = competitionRepository.findAll().get(0);
         Sport futsal = sportRepository.findById(1L).get();
         List<Athlete> athletes = athleteRepository.findAll();
@@ -210,9 +210,22 @@ public class TestSeeding implements CommandLineRunner {
             Athlete coach = athletes.get(athleteCounter);
             team.setCoach(coach);
 
+            // =================================================================
+            // === CORREÇÃO ADICIONADA AQUI ====================================
+            // =================================================================
+            // Para cada técnico atribuído a uma equipa, também criamos o registo
+            // de "Técnico Designado" correspondente.
+            DesignatedCoach dc = new DesignatedCoach(null, comp1, futsal, courses.get(i), coach);
+            designatedCoachRepository.save(dc);
+            // =================================================================
+            // =================================================================
+
             List<Athlete> teamMembers = new ArrayList<>();
             for(int j=0; j<5; j++) {
-                teamMembers.add(athletes.get(athleteCounter++));
+                // Garante que não tentamos aceder a um índice inválido se tivermos poucos atletas
+                if (athleteCounter < athletes.size()) {
+                    teamMembers.add(athletes.get(athleteCounter++));
+                }
             }
             team.getAthletes().addAll(teamMembers);
 

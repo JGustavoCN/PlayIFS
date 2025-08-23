@@ -54,10 +54,7 @@ class HomePage extends ConsumerWidget {
   }
 
   /// Constrói o painel de navegação para funcionalidades de gestão.
-  /// Visível para utilizadores com o perfil de 'COORDINATOR' OU 'ATHLETE'.
   Widget _buildAdminPanel(BuildContext context, Profile profile) {
-    // ✅ CORREÇÃO DEFINITIVA: Verificando os nomes exatos dos perfis ('roles')
-    // que vêm do backend, incluindo o prefixo "ROLE_".
     final requiredRoles = {'ROLE_COORDINATOR', 'ROLE_ATHLETE'};
     final userRoles = profile.roles.toSet();
     final hasPermission = userRoles.intersection(requiredRoles).isNotEmpty;
@@ -65,6 +62,10 @@ class HomePage extends ConsumerWidget {
     if (!hasPermission) {
       return const SizedBox.shrink();
     }
+
+    // Apenas Coordenadores podem ver o painel de gestão completo.
+    // Atletas verão um painel diferente no futuro.
+    final isCoordinator = profile.roles.contains('ROLE_COORDINATOR');
 
     return Card(
       child: Column(
@@ -78,13 +79,22 @@ class HomePage extends ConsumerWidget {
             ),
           ),
           const Divider(indent: 16, endIndent: 16),
-          ListTile(
-            leading: const Icon(Icons.directions_run),
-            title: const Text('Gerir Atletas'),
-            trailing: const Icon(Icons.chevron_right),
-            // ✅ CORREÇÃO: Usando pushNamed para obter a seta de 'voltar', conforme solicitado.
-            onTap: () => context.pushNamed(AppRoutes.athletes),
-          ),
+          // ✅ ADICIONADO: Link para Gestão de Competições
+          // Apenas para Coordenadores.
+          if (isCoordinator)
+            ListTile(
+              leading: const Icon(Icons.emoji_events_outlined),
+              title: const Text('Gerir Competições'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.competitions),
+            ),
+          if (isCoordinator)
+            ListTile(
+              leading: const Icon(Icons.directions_run),
+              title: const Text('Gerir Atletas'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.athletes),
+            ),
           ListTile(
             leading: const Icon(Icons.sports_soccer),
             title: const Text('Consultar Desportos'),

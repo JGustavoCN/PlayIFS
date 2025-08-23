@@ -38,7 +38,7 @@ final class AthleteBatchFormProvider
   }
 }
 
-String _$athleteBatchFormHash() => r'332010d49bf4efffbabf299416f3f2a06526b141';
+String _$athleteBatchFormHash() => r'c88cbc5f25f7cdc014881d2f0b91f33e3ab0c994';
 
 abstract class _$AthleteBatchForm extends $Notifier<AsyncValue<void>> {
   AsyncValue<void> build();
