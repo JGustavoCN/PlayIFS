@@ -15,10 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AthleteDetailsDTO {
 
- int get id; String get registration; String get fullName; String? get nickname; String? get phone; String get email;// CORREÇÃO APLICADA AQUI:
-// Usamos @JsonKey(name: '...') para dizer ao gerador que, no JSON,
-// este campo se chama 'coach'.
-@JsonKey(name: 'coach') bool get isCoach; DateTime? get createdAt; DateTime? get updatedAt; List<LinkDTO>? get links;
+ int get id; String get registration; String get fullName; String? get nickname; String? get phone; String get email;@JsonKey(name: 'coach') bool get isCoach; DateTime? get createdAt; DateTime? get updatedAt; List<LinkDTO>? get links;
 /// Create a copy of AthleteDetailsDTO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -230,9 +227,6 @@ class _AthleteDetailsDTO implements AthleteDetailsDTO {
 @override final  String? nickname;
 @override final  String? phone;
 @override final  String email;
-// CORREÇÃO APLICADA AQUI:
-// Usamos @JsonKey(name: '...') para dizer ao gerador que, no JSON,
-// este campo se chama 'coach'.
 @override@JsonKey(name: 'coach') final  bool isCoach;
 @override final  DateTime? createdAt;
 @override final  DateTime? updatedAt;

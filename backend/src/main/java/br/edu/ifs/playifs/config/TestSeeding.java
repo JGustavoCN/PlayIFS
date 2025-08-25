@@ -199,8 +199,8 @@ public class TestSeeding implements CommandLineRunner {
         courseRepository.saveAll(courses);
 
         // Cria e inscreve 9 equipas de Futsal, uma para cada curso, com atletas únicos
-        int athleteCounter = 0;
-        for (int i = 0; i < 9; i++) {
+        int athleteCounter = 5;
+        for (int i = 1; i < 9; i++) {
             Team team = new Team();
             team.setName("Equipa de Futsal " + (i + 1));
             team.setCourse(courses.get(i));

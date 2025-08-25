@@ -67,6 +67,20 @@ class CompetitionDetailsPage extends ConsumerWidget {
             ),
 
             // TODO: Adicionar botões de ação (ex: Gerir Equipas) e outras informações.
+            ListTile(
+              leading: const Icon(Icons.groups_outlined),
+              title: const Text('Ver Equipas Inscritas'),
+              subtitle: const Text('Acompanhe os participantes'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                // Navega para a lista de equipas, passando o ID da competição
+                // como um query parameter para que a lista já venha filtrada.
+                // (Isto requer que a TeamsListPage saiba ler este parâmetro)
+                debugPrint('------------- ID da competição: $competitionId');
+                context.push('${AppRoutes.teams}?competitionId=$competitionId');
+
+              },
+            ),
           ],
         ),
       ),

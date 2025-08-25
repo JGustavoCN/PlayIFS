@@ -24,6 +24,10 @@ import '../models/shared/api_response_body.dart';
 import '../models/shared/id_batch_dto.dart';
 import '../models/shared/page_dto.dart';
 import '../models/sport/sport_summary_dto.dart';
+import '../models/team/team_details_dto.dart';
+import '../models/team/team_input_dto.dart';
+import '../models/team/team_summary_dto.dart';
+import '../models/team/team_update_dto.dart';
 import '../models/user/profile_dto.dart';
 
 part 'playifs_api_service.g.dart';
@@ -164,4 +168,48 @@ abstract class PlayifsApiService {
   @POST('${ApiConstants.designatedCoaches}/batch-remove')
   Future<void> batchRemoveCoaches(@Body() IdBatchDTO batch);
 
+  //Teams
+
+  @GET(ApiConstants.teams)
+  Future<ApiResponseBody<PageDTO<TeamSummaryDTO>>> findAllTeams(
+      @Queries() Map<String, dynamic> queries,
+      );
+
+  @GET('${ApiConstants.teams}/{id}')
+  Future<ApiResponseBody<TeamDetailsDTO>> findTeamById(@Path('id') int id);
+
+  @POST(ApiConstants.teams)
+  Future<ApiResponseBody<TeamDetailsDTO>> insertTeam(
+      @Body() TeamInputDTO teamInput,
+      );
+
+  @PUT('${ApiConstants.teams}/{id}')
+  Future<ApiResponseBody<TeamDetailsDTO>> updateTeam(
+      @Path('id') int id,
+      @Body() TeamUpdateDTO teamUpdate,
+      );
+
+  @DELETE('${ApiConstants.teams}/{id}')
+  Future<ApiResponseBody<void>> deleteTeam(@Path('id') int id);
+
+  @POST('${ApiConstants.teams}/batch-delete')
+  Future<ApiResponseBody<void>> batchDeleteTeams(@Body() IdBatchDTO batchDto);
+
+  @POST('${ApiConstants.teams}/{id}/athletes/batch-add')
+  Future<ApiResponseBody<TeamDetailsDTO>> batchAddAthletes(
+      @Path('id') int teamId,
+      @Body() IdBatchDTO batchDto,
+      );
+
+  @POST('${ApiConstants.teams}/{id}/athletes/batch-remove')
+  Future<ApiResponseBody<void>> batchRemoveAthletes(
+      @Path('id') int teamId,
+      @Body() IdBatchDTO batchDto,
+      );
+
+  @DELETE('${ApiConstants.teams}/{id}/athletes/{athleteId}')
+  Future<ApiResponseBody<void>> removeAthlete(
+      @Path('id') int teamId,
+      @Path('athleteId') int athleteId,
+      );
 }

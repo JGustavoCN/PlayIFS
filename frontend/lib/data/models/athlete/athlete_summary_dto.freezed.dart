@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AthleteSummaryDTO {
 
- int get id; String get registration; String get fullName;// Estes campos vêm da API, mas não são necessários no domínio.
- DateTime? get createdAt; DateTime? get updatedAt;
+ int get id; String get registration; String get fullName; DateTime? get createdAt; DateTime? get updatedAt;
 /// Create a copy of AthleteSummaryDTO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -220,7 +219,6 @@ class _AthleteSummaryDTO implements AthleteSummaryDTO {
 @override final  int id;
 @override final  String registration;
 @override final  String fullName;
-// Estes campos vêm da API, mas não são necessários no domínio.
 @override final  DateTime? createdAt;
 @override final  DateTime? updatedAt;
 

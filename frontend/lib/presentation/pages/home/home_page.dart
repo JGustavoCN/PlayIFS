@@ -31,41 +31,30 @@ class HomePage extends ConsumerWidget {
       ),
       body: profileState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Padding(
+        error: (error, stackTrace) => Center(child: Text('Erro: $error')),
+        data: (profile) => RefreshIndicator(
+          onRefresh: () => ref.refresh(profileNotifierProvider.future),
+          child: ListView(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Ocorreu um erro ao buscar o seu perfil:\n${error.toString()}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            children: [
+              _buildProfileCard(context, profile),
+              const SizedBox(height: 16),
+              _buildManagementPanel(context, profile),
+            ],
           ),
-        ),
-        data: (profile) => ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            _buildProfileCard(context, profile),
-            const SizedBox(height: 16),
-            _buildAdminPanel(context, profile),
-          ],
         ),
       ),
     );
   }
 
-  /// Constrói o painel de navegação para funcionalidades de gestão.
-  Widget _buildAdminPanel(BuildContext context, Profile profile) {
-    final requiredRoles = {'ROLE_COORDINATOR', 'ROLE_ATHLETE'};
-    final userRoles = profile.roles.toSet();
-    final hasPermission = userRoles.intersection(requiredRoles).isNotEmpty;
+  Widget _buildManagementPanel(BuildContext context, Profile profile) {
+    final isCoordinator = profile.roles.contains('ROLE_COORDINATOR');
+    final isAthlete = profile.roles.contains('ROLE_ATHLETE');
 
-    if (!hasPermission) {
+    // O painel só aparece se o utilizador tiver pelo menos um dos perfis relevantes.
+    if (!isCoordinator && !isAthlete) {
       return const SizedBox.shrink();
     }
-
-    // Apenas Coordenadores podem ver o painel de gestão completo.
-    // Atletas verão um painel diferente no futuro.
-    final isCoordinator = profile.roles.contains('ROLE_COORDINATOR');
 
     return Card(
       child: Column(
@@ -74,50 +63,72 @@ class HomePage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'Painel de Gestão',
+              isCoordinator ? 'Painel de Gestão' : 'Painel do Atleta',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
           const Divider(indent: 16, endIndent: 16),
-          // ✅ ADICIONADO: Link para Gestão de Competições
-          // Apenas para Coordenadores.
-          if (isCoordinator)
+
+          if (isCoordinator) ...[
             ListTile(
               leading: const Icon(Icons.emoji_events_outlined),
               title: const Text('Gerir Competições'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.competitions),
             ),
-          if (isCoordinator)
+            // ✅ ADICIONADO: Link para Gestão de Equipas
+            ListTile(
+              leading: const Icon(Icons.groups_outlined),
+              title: const Text('Gerir Equipas'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.teams),
+            ),
             ListTile(
               leading: const Icon(Icons.directions_run),
               title: const Text('Gerir Atletas'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.athletes),
             ),
-          ListTile(
-            leading: const Icon(Icons.sports_soccer),
-            title: const Text('Consultar Desportos'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.pushNamed(AppRoutes.sports),
-          ),
-          ListTile(
-            leading: const Icon(Icons.school),
-            title: const Text('Consultar Campi'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.pushNamed(AppRoutes.campuses),
-          ),
-          ListTile(
-            leading: const Icon(Icons.book),
-            title: const Text('Consultar Cursos'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.pushNamed(AppRoutes.courses),
-          ),
+          ],
+
+          if (isAthlete)
+            ListTile(
+              leading: const Icon(Icons.assignment_ind_outlined),
+              title: const Text('Minhas Vagas de Técnico'),
+              subtitle: const Text('Inscreva e gira as suas equipas'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.myDesignations),
+            ),
+
+          if (isAthlete && !isCoordinator)
+            ListTile(
+              leading: const Icon(Icons.emoji_events_outlined),
+              title: const Text('Ver Competições'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.competitions),
+            ),
+            ListTile(
+              leading: const Icon(Icons.sports_soccer),
+              title: const Text('Consultar Desportos'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.sports),
+            ),
+            ListTile(
+              leading: const Icon(Icons.school),
+              title: const Text('Consultar Campi'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.campuses),
+            ),
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('Consultar Cursos'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoutes.courses),
+            ),
         ],
       ),
     );
   }
-
   Widget _buildProfileCard(BuildContext context, Profile profile) {
     final textTheme = Theme.of(context).textTheme;
 

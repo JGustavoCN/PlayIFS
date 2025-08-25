@@ -53,7 +53,7 @@ final class DesignatedCoachesNotifierProvider
 }
 
 String _$designatedCoachesNotifierHash() =>
-    r'18555995ecbc285123b6856a45310468d3f4c63b';
+    r'248655d7fc4cdc36a6de84e995a01df030b1a964';
 
 final class DesignatedCoachesNotifierFamily extends $Family
     with

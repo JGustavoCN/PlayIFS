@@ -14,6 +14,7 @@ class DesignatedCoachDetailsNotifier extends _$DesignatedCoachDetailsNotifier {
   late final FindDesignatedCoachByIdUseCase _findByIdUseCase =
   locator<FindDesignatedCoachByIdUseCase>();
 
+  @override
   Future<DesignatedCoachDetails> build(int designationId) => _fetchDetails(designationId);
 
   Future<DesignatedCoachDetails> _fetchDetails(int id) async {

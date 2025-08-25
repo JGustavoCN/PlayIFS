@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:playifs_frontend/domain/entities/athlete/athlete_details.dart';
 
 import '../../domain/entities/user/coordinator_profile.dart';
@@ -28,11 +29,27 @@ extension CoordinatorDetailsDTOToEntity on CoordinatorDetailsDTO {
 }
 
 extension ProfileDTOToEntity on ProfileDTO {
-  Profile toEntity() => Profile(
-    userId: userId,
-    registration: registration,
-    roles: roles,
-    athleteDetails: athleteProfile?.toEntity(),
-    coordinatorProfile: coordinatorProfile?.toEntity(),
-  );
+  Profile toEntity() {
+    // ✅ 2. ADICIONAR AS SONDAS DE DEPURAÇÃO
+    debugPrint('[Mapper] Mapeando ProfileDTO...');
+    debugPrint('[Mapper] DTO tem athleteProfile? ${athleteProfile != null}');
+    if (athleteProfile != null) {
+      debugPrint('[Mapper] DTO.athleteProfile.id = ${athleteProfile!.id}');
+    }
+
+    final entity = Profile(
+      userId: userId,
+      registration: registration,
+      roles: roles,
+      athleteDetails: athleteProfile?.toEntity(),
+      coordinatorProfile: coordinatorProfile?.toEntity(),
+    );
+
+    debugPrint('[Mapper] Entidade Mapeada tem athleteDetails? ${entity.athleteDetails != null}');
+    if (entity.athleteDetails != null) {
+      debugPrint('[Mapper] entity.athleteDetails.id = ${entity.athleteDetails!.id}');
+    }
+
+    return entity;
+  }
 }

@@ -14,9 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AthleteDetails {
 
- int get id; String get registration; String get fullName; String? get nickname;// Nulável para maior flexibilidade
- String? get phone;// Nulável para maior flexibilidade
- String get email; bool get isCoach;
+ int get id; String get registration; String get fullName; String? get nickname; String? get phone; String get email; bool get isCoach;
 /// Create a copy of AthleteDetails
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -221,9 +219,7 @@ class _AthleteDetails implements AthleteDetails {
 @override final  String registration;
 @override final  String fullName;
 @override final  String? nickname;
-// Nulável para maior flexibilidade
 @override final  String? phone;
-// Nulável para maior flexibilidade
 @override final  String email;
 @override final  bool isCoach;
 

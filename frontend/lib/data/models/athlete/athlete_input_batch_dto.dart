@@ -11,7 +11,6 @@ abstract class AthleteInputBatchDTO with _$AthleteInputBatchDTO {
     required List<AthleteInputDTO> athletes,
   }) = _AthleteInputBatchDTO;
 
-  // ✅ CORREÇÃO: Adicionar este construtor factory.
   factory AthleteInputBatchDTO.fromJson(Map<String, dynamic> json) =>
       _$AthleteInputBatchDTOFromJson(json);
 }

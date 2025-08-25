@@ -30,7 +30,6 @@ class AthleteRepositoryImpl extends BaseRepository implements AthleteRepository 
 
     return handleApiCall(() async {
       final response = await _apiService.findAllAthletes(queries);
-      // ✅ CORREÇÃO: Usando a nova sintaxe explícita do mapeador.
       return response.data.toEntity<AthleteSummary>((dto) => dto.toEntity());
     });
   }

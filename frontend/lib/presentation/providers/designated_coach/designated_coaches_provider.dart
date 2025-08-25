@@ -1,5 +1,3 @@
-// Ficheiro: lib/presentation/providers/designated_coach/designated_coaches_provider.dart
-
 import 'dart:async';
 
 import 'package:playifs_frontend/core/di/locator.dart';
@@ -11,33 +9,67 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'designated_coaches_provider.g.dart';
 
-// Este é um provider de "família", pois o seu estado depende de um competitionId.
 @riverpod
 class DesignatedCoachesNotifier extends _$DesignatedCoachesNotifier {
-  late final FindAllDesignatedCoachesUseCase _findAllUseCase = locator<FindAllDesignatedCoachesUseCase>();
+  final _findAllUseCase = locator<FindAllDesignatedCoachesUseCase>();
+  String _currentSearchTerm = '';
 
   @override
-  Future<Page<DesignatedCoachSummary>> build(int competitionId) {
-    // A busca inicial é sempre filtrada pela competição.
-    return _fetchPage(0, competitionId: competitionId);
-  }
-
-  Future<Page<DesignatedCoachSummary>> _fetchPage(
-      int page, {
-        required int competitionId,
-        Map<String, dynamic>? otherFilters,
-      }) async {
-    final filters = {
-      'competitionId': competitionId,
-      ...?otherFilters,
-    };
-
-    final result = await _findAllUseCase.execute(page: page, filters: filters);
+  Future<Page<DesignatedCoachSummary>> build(int competitionId) async {
+    final result = await _fetchPage(page: 0, competitionId: competitionId);
     return result.when(
-      success: (data) => data,
+      success: (page) => page,
       failure: (error) => throw error,
     );
   }
 
-// A lógica de paginação e busca pode ser adicionada aqui, similar aos outros notifiers de lista.
+  Future<Result<Page<DesignatedCoachSummary>>> _fetchPage({
+    required int page,
+    required int competitionId,
+    String? athleteName,
+  }) =>
+      // ✅ CORREÇÃO: Chamando o método '.execute()' explicitamente.
+  _findAllUseCase.execute(
+    page: page,
+    competitionId: competitionId,
+    athleteName: athleteName?.isEmpty ?? true ? null : athleteName,
+  );
+
+  Future<void> fetchNextPage() async {
+    final currentState = state.value;
+    if (currentState == null || (currentState.number >= currentState.totalPages - 1)) {
+      return;
+    }
+
+    final nextPage = currentState.number + 1;
+    final result = await _fetchPage(
+      page: nextPage,
+      competitionId: competitionId,
+      athleteName: _currentSearchTerm,
+    );
+
+    result.when(
+      success: (newPage) {
+        final combinedList = [...currentState.content, ...newPage.content];
+        state = AsyncData(newPage.copyWith(content: combinedList));
+      },
+      failure: (error) { /* Tratar erro de paginação se necessário */ },
+    );
+  }
+
+  Future<void> searchByName(String name) async {
+    _currentSearchTerm = name;
+    state = const AsyncLoading();
+
+    final result = await _fetchPage(
+      page: 0,
+      competitionId: competitionId,
+      athleteName: name,
+    );
+
+    state = result.when(
+      success: (page) => AsyncData(page),
+      failure: (error) => AsyncError(error, StackTrace.current),
+    );
+  }
 }

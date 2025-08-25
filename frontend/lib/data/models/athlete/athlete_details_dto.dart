@@ -1,5 +1,3 @@
-// Ficheiro: lib/data/models/user/athlete_details_dto.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../shared/link_dto.dart';
 
@@ -15,12 +13,7 @@ abstract class AthleteDetailsDTO with _$AthleteDetailsDTO {
     String? nickname,
     String? phone,
     required String email,
-
-    // CORREÇÃO APLICADA AQUI:
-    // Usamos @JsonKey(name: '...') para dizer ao gerador que, no JSON,
-    // este campo se chama 'coach'.
     @JsonKey(name: 'coach') required bool isCoach,
-
     DateTime? createdAt,
     DateTime? updatedAt,
     List<LinkDTO>? links,

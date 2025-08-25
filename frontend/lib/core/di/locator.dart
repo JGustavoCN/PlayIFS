@@ -27,12 +27,14 @@ import '../../data/repositories/config_repository_impl.dart'; // ✅ 1. Importar
 import '../../data/repositories/course_repository_impl.dart';
 import '../../data/repositories/designated_coach_repository_impl.dart';
 import '../../data/repositories/sport_repository_impl.dart';
+import '../../data/repositories/team_repository_impl.dart';
 import '../../domain/repositories/campus_repository.dart';
 import '../../domain/repositories/competition_repository.dart';
 import '../../domain/repositories/config_repository.dart'; // ✅ 2. Importar o contrato
 import '../../domain/repositories/course_repository.dart';
 import '../../domain/repositories/designated_coach_repository.dart';
 import '../../domain/repositories/sport_repository.dart';
+import '../../domain/repositories/team_repository.dart';
 import '../../domain/usecases/campus/find_all_campuses_use_case.dart';
 import '../../domain/usecases/competition/batch_delete_competitions_use_case.dart';
 import '../../domain/usecases/competition/delete_competition_use_case.dart';
@@ -50,6 +52,15 @@ import '../../domain/usecases/designated_coach/find_designated_coach_by_id_use_c
 import '../../domain/usecases/designated_coach/remove_coach_use_case.dart';
 import '../../domain/usecases/designated_coach/update_coach_use_case.dart';
 import '../../domain/usecases/sport/find_all_sports_use_case.dart';
+import '../../domain/usecases/team/batch_add_athletes_use_case.dart';
+import '../../domain/usecases/team/batch_delete_teams_use_case.dart';
+import '../../domain/usecases/team/batch_remove_athletes_use_case.dart';
+import '../../domain/usecases/team/delete_team_use_case.dart';
+import '../../domain/usecases/team/find_all_teams_use_case.dart';
+import '../../domain/usecases/team/find_team_by_id_use_case.dart';
+import '../../domain/usecases/team/insert_team_use_case.dart';
+import '../../domain/usecases/team/remove_athlete_from_team_use_case.dart';
+import '../../domain/usecases/team/update_team_use_case.dart';
 
 final locator = GetIt.instance;
 
@@ -71,6 +82,7 @@ void setupLocator() {
   locator.registerLazySingleton<CourseRepository>(() => CourseRepositoryImpl(locator()));
   locator.registerLazySingleton<CompetitionRepository>(() => CompetitionRepositoryImpl(locator()));
   locator.registerLazySingleton<DesignatedCoachRepository>(() => DesignatedCoachRepositoryImpl(locator()));
+  locator.registerLazySingleton<TeamRepository>(() => TeamRepositoryImpl(locator()));
 
   // --- CAMADA DE DOMÍNIO: CASOS DE USO ---
   // Auth & Profile
@@ -111,4 +123,17 @@ void setupLocator() {
   locator.registerLazySingleton(() => BatchUpsertCoachesUseCase(locator()));
   locator.registerLazySingleton(() => RemoveCoachUseCase(locator()));
   locator.registerLazySingleton(() => BatchRemoveCoachesUseCase(locator()));
+
+  // Registra os Casos de Uso da funcionalidade de Equipas
+  locator.registerLazySingleton(() => FindAllTeamsUseCase(locator()));
+  locator.registerLazySingleton(() => FindTeamByIdUseCase(locator()));
+  locator.registerLazySingleton(() => InsertTeamUseCase(locator()));
+  locator.registerLazySingleton(() => UpdateTeamUseCase(locator()));
+  locator.registerLazySingleton(() => DeleteTeamUseCase(locator()));
+  locator.registerLazySingleton(() => BatchDeleteTeamsUseCase(locator()));
+  locator.registerLazySingleton(() => BatchAddAthletesUseCase(locator()));
+  locator.registerLazySingleton(() => BatchRemoveAthletesUseCase(locator()));
+  locator.registerLazySingleton(() => RemoveAthleteFromTeamUseCase(locator()));
+
+
 }

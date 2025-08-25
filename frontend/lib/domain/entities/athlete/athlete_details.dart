@@ -1,5 +1,3 @@
-// Ficheiro: lib/domain/entities/athlete/athlete_details.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'athlete_details.freezed.dart';
@@ -10,8 +8,8 @@ abstract class AthleteDetails with _$AthleteDetails {
     required int id,
     required String registration,
     required String fullName,
-    String? nickname, // Nulável para maior flexibilidade
-    String? phone,    // Nulável para maior flexibilidade
+    String? nickname,
+    String? phone,
     required String email,
     required bool isCoach,
   }) = _AthleteDetails;

@@ -1,8 +1,5 @@
-// lib/domain/entities/athlete/athlete_summary.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-// Diretiva 'part' atualizada para o novo nome do ficheiro
 part 'athlete_summary.freezed.dart';
 
 @freezed

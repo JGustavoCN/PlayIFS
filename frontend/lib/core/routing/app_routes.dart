@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:playifs_frontend/presentation/providers/auth/auth_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../domain/entities/team/team_details.dart';
 import '../../presentation/pages/admin/campuses/campuses_page.dart';
 import '../../presentation/pages/admin/courses/courses_page.dart';
 import '../../presentation/pages/admin/sports/sports_page.dart';
 import '../../presentation/pages/athlete/athlete_page.dart';
+import '../../presentation/pages/athlete/athlete_selection_page.dart';
 import '../../presentation/pages/athlete/batch_create_athlete_page.dart';
 import '../../presentation/pages/athlete/edit_athlete_page.dart';
 import '../../presentation/pages/auth/login_page.dart';
@@ -18,8 +20,12 @@ import '../../presentation/pages/competition/competition_list_page.dart';
 import '../../presentation/pages/designated_coach/designated_coach_details_page.dart';
 import '../../presentation/pages/designated_coach/designated_coach_list_page.dart';
 import '../../presentation/pages/designated_coach/edit_designated_coach_page.dart';
+import '../../presentation/pages/designated_coach/my_designations_page.dart';
 import '../../presentation/pages/home/home_page.dart';
 import '../../presentation/pages/splash/splash_page.dart';
+import '../../presentation/pages/team/team_details_page.dart';
+import '../../presentation/pages/team/team_form_page.dart';
+import '../../presentation/pages/team/teams_list_page.dart';
 import '../../presentation/providers/auth/auth_provider.dart';
 
 part 'app_routes.g.dart';
@@ -50,6 +56,14 @@ class AppRoutes {
   static const String designatedCoaches = '/competitions/:id/coaches';
   static const String designatedCoachDetails = '/designated-coaches/:id';
   static const String editDesignatedCoach = '/designated-coaches/:id/edit';
+  static const String myDesignations = '/my-designations';
+
+
+  static const String teams = '/teams';
+  static const String teamCreate = '/teams/new';
+  static const String teamDetails = '/teams/:teamId';
+  static const String teamEdit = '/teams/:teamId/edit';
+  static const String athleteSelection = '/athlete-selection';
 
 }
 
@@ -195,6 +209,65 @@ GoRouter goRouter(Ref ref) {
           // Nota: A página de edição precisará de buscar os detalhes para passar ao formulário.
           return EditDesignatedCoachPage(designationId: id);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.myDesignations,
+        name: AppRoutes.myDesignations,
+        builder: (context, state) => const MyDesignationsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.athleteSelection,
+        name: AppRoutes.athleteSelection,
+        // Usamos um PageBuilder para uma transição de baixo para cima (modal).
+        pageBuilder: (context, state) => const MaterialPage(
+          child: AthleteSelectionPage(),
+          fullscreenDialog: true,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.teams,
+        name: AppRoutes.teams,
+        builder: (context, state) {
+          // ✅ 1. Extrai o 'competitionId' dos parâmetros da query da URL.
+          final competitionIdString = state.uri.queryParameters['competitionId'];
+          final competitionId = competitionIdString != null
+              ? int.tryParse(competitionIdString)
+              : null;
+
+          // ✅ 2. Passa o ID para o construtor da página.
+          return TeamsListPage(competitionId: competitionId);
+        },        routes: [
+          GoRoute(
+            path: 'new', // Caminho relativo a /teams
+            name: AppRoutes.teamCreate,
+            builder: (context, state) {
+              final contextData = state.extra as Map<String, int>? ?? {};
+              return TeamFormPage(
+                competitionId: contextData['competitionId'],
+                sportId: contextData['sportId'],
+                courseId: contextData['courseId'],
+            );},
+          ),
+          GoRoute(
+            path: ':teamId', // Caminho relativo: /teams/:teamId
+            name: AppRoutes.teamDetails,
+            builder: (context, state) {
+              final teamId = int.parse(state.pathParameters['teamId']!);
+              return TeamDetailsPage(teamId: teamId);
+            },
+            routes: [
+              GoRoute(
+                path: 'edit', // Caminho relativo: /teams/:teamId/edit
+                name: AppRoutes.teamEdit,
+                builder: (context, state) {
+                  // Veja o Destaque Arquitetural abaixo sobre o uso de 'extra'
+                  final team = state.extra as TeamDetails?;
+                  return TeamFormPage(team: team);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     ],
     redirect: (BuildContext context, GoRouterState state) {

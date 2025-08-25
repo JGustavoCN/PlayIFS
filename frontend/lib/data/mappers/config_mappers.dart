@@ -12,7 +12,7 @@ extension AppConfigDTOToEntity on AppConfigDTO {
   AppConfig toEntity() {
     // Função auxiliar para extrair e mapear a lista de valores de um enum.
     // É mais robusta, pois retorna uma lista vazia se a chave não for encontrada.
-    List<String> _extractEnumValues(String key) {
+    List<String> extractEnumValues(String key) {
       final List<EnumValueDTO>? enumList = enums[key];
       if (enumList == null) {
         return [];
@@ -21,9 +21,9 @@ extension AppConfigDTOToEntity on AppConfigDTO {
     }
 
     return AppConfig(
-      courseLevels: _extractEnumValues('CourseLevel'),
-      gamePhases: _extractEnumValues('GamePhase'),
-      gameStatuses: _extractEnumValues('GameStatus'),
+      courseLevels: extractEnumValues('CourseLevel'),
+      gamePhases: extractEnumValues('GamePhase'),
+      gameStatuses: extractEnumValues('GameStatus'),
     );
   }
 }

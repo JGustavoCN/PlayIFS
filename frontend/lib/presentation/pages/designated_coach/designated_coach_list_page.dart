@@ -1,5 +1,3 @@
-// Ficheiro: lib/presentation/pages/designated_coach/designated_coach_list_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +16,7 @@ class DesignatedCoachListPage extends ConsumerWidget {
   const DesignatedCoachListPage({super.key, required this.competitionId});
   final int competitionId;
 
+  // As suas funções de helper estão perfeitas e foram mantidas.
   void _showDesignateCoachForm(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -48,18 +47,19 @@ class DesignatedCoachListPage extends ConsumerWidget {
     );
 
     if (confirm ?? false) {
-      await ref.read(designatedCoachFormNotifierProvider.notifier).removeById(coach.id, competitionId);
-      final state = ref.read(designatedCoachFormNotifierProvider);
+      // Usar 'ref.read' dentro de callbacks assíncronos
+      final notifier = ref.read(designatedCoachFormNotifierProvider.notifier);
+      await notifier.removeById(coach.id, competitionId);
 
+      // Ler o estado final após a operação para mostrar o feedback correto.
+      final state = ref.read(designatedCoachFormNotifierProvider);
       if (context.mounted) {
         state.whenOrNull(
           success: () => ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Designação removida com sucesso!')),
           ),
           failure: (error) {
-            // ✅ A LÓGICA INTELIGENTE
             if (error is ApiException && error.statusCode == 422) {
-              // Se for um erro de negócio, mostra o dialog de substituição.
               _showReplacementDialog(context, coach, error.message);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +75,6 @@ class DesignatedCoachListPage extends ConsumerWidget {
     }
   }
 
-  // ✅ DIÁLOGO INTELIGENTE PARA O FLUXO DE SUBSTITUIÇÃO
   void _showReplacementDialog(BuildContext context, DesignatedCoachSummary coach, String message) {
     showDialog(
       context: context,
@@ -86,8 +85,7 @@ class DesignatedCoachListPage extends ConsumerWidget {
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
           FilledButton(
             onPressed: () {
-              Navigator.of(ctx).pop(); // Fecha o dialog de erro
-              // Navega para o ecrã de edição para permitir a substituição
+              Navigator.of(ctx).pop();
               context.pushNamed(
                 AppRoutes.editDesignatedCoach,
                 pathParameters: {'id': coach.id.toString()},
@@ -106,53 +104,78 @@ class DesignatedCoachListPage extends ConsumerWidget {
 
     return AppScaffold(
       title: 'Técnicos Designados',
-      body: designatedCoachesState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => ErrorDisplay(
-          error: error,
-          onRetry: () => ref.invalidate(designatedCoachesNotifierProvider(competitionId)),
-        ),
-        data: (page) {
-          final coaches = page.content;
-          if (coaches.isEmpty) {
-            return const Center(child: Text('Nenhum técnico designado.'));
-          }
-          return ListView.builder(
-            itemCount: coaches.length,
-            itemBuilder: (context, index) {
-              final designatedCoach = coaches[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: ListTile(
-                  title: Text(designatedCoach.athleteName),
-                  subtitle: Text('${designatedCoach.sportName} - ${designatedCoach.courseName}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        tooltip: 'Editar Designação',
-                        onPressed: () => context.pushNamed(
-                          AppRoutes.editDesignatedCoach,
+      // ✅ ESTRUTURA CORRIGIDA: O body agora é uma Column.
+      body: Column(
+        children: [
+          // ✅ BARRA DE PESQUISA: Agora está no topo da tela, fora da lista.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'Buscar por nome do técnico',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                ref.read(designatedCoachesNotifierProvider(competitionId).notifier).searchByName(value);
+              },
+            ),
+          ),
+          // ✅ A lista agora ocupa o espaço restante.
+          Expanded(
+            child: designatedCoachesState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => ErrorDisplay(
+                error: error,
+                onRetry: () => ref.invalidate(designatedCoachesNotifierProvider(competitionId)),
+              ),
+              data: (page) {
+                final coaches = page.content;
+                if (coaches.isEmpty) {
+                  return const Center(child: Text('Nenhum técnico encontrado.'));
+                }
+                return ListView.builder(
+                  // Adiciona padding à lista para consistência
+                  padding: const EdgeInsets.only(bottom: 80), // Espaço para o FAB
+                  itemCount: coaches.length,
+                  itemBuilder: (context, index) {
+                    final designatedCoach = coaches[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: ListTile(
+                        title: Text(designatedCoach.athleteName),
+                        subtitle: Text('${designatedCoach.sportName} - ${designatedCoach.courseName}'),
+                        // ✅ O trailing agora está mais limpo, sem o TextField.
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined),
+                              tooltip: 'Editar Designação',
+                              onPressed: () => context.pushNamed(
+                                AppRoutes.editDesignatedCoach,
+                                pathParameters: {'id': designatedCoach.id.toString()},
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                              tooltip: 'Remover Designação',
+                              onPressed: () => _showDeleteConfirmation(context, ref, designatedCoach),
+                            ),
+                          ],
+                        ),
+                        onTap: () => context.pushNamed(
+                          AppRoutes.designatedCoachDetails,
                           pathParameters: {'id': designatedCoach.id.toString()},
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
-                        tooltip: 'Remover Designação',
-                        onPressed: () => _showDeleteConfirmation(context, ref, designatedCoach),
-                      ),
-                    ],
-                  ),
-                  onTap: () => context.pushNamed(
-                    AppRoutes.designatedCoachDetails,
-                    pathParameters: {'id': designatedCoach.id.toString()},
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       fab: FloatingActionButton(
         onPressed: () => _showDesignateCoachForm(context),
