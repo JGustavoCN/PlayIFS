@@ -1,5 +1,3 @@
-// Ficheiro: lib/data/models/competition/competition_input_dto.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'competition_input_dto.freezed.dart';
@@ -12,6 +10,8 @@ abstract class CompetitionInputDTO with _$CompetitionInputDTO {
   const factory CompetitionInputDTO({
     required String name,
     required String level,
+    // ADICIONADO: Lista de IDs de desportos (Long no Java -> int no Dart).
+    required List<int> sportIds,
   }) = _CompetitionInputDTO;
 
   /// Construtor factory para serialização para JSON.

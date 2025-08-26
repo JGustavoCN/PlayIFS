@@ -47,7 +47,7 @@ final class TeamsNotifierProvider
   }
 }
 
-String _$teamsNotifierHash() => r'831e36490ee7be8709a4f5b468692b55e12fa915';
+String _$teamsNotifierHash() => r'09f8b4449808e9875c3f9b3f70a7ab070ada854b';
 
 final class TeamsNotifierFamily extends $Family
     with

@@ -1,5 +1,3 @@
-// Ficheiro: lib/domain/entities/competition/competition_input.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'competition_input.freezed.dart';
@@ -11,5 +9,7 @@ abstract class CompetitionInput with _$CompetitionInput {
   const factory CompetitionInput({
     required String name,
     required String level,
+    // ADICIONADO: Lista de IDs de desportos associados.
+    required List<int> sportIds,
   }) = _CompetitionInput;
 }

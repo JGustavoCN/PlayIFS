@@ -1,5 +1,3 @@
-// Ficheiro: lib/presentation/providers/competition/competition_form_provider.dart
-
 import 'package:playifs_frontend/core/di/locator.dart';
 import 'package:playifs_frontend/core/network/result.dart';
 import 'package:playifs_frontend/domain/entities/competition/competition_input.dart';
@@ -16,16 +14,17 @@ part 'competition_form_provider.g.dart';
 
 @riverpod
 class CompetitionFormNotifier extends _$CompetitionFormNotifier {
-  late final InsertCompetitionUseCase _insertUseCase = locator<InsertCompetitionUseCase>();
-  late final UpdateCompetitionUseCase _updateUseCase = locator<UpdateCompetitionUseCase>();
-  late final DeleteCompetitionUseCase _deleteUseCase = locator<DeleteCompetitionUseCase>();
+  late final InsertCompetitionUseCase _insertUseCase =
+  locator<InsertCompetitionUseCase>();
+  late final UpdateCompetitionUseCase _updateUseCase =
+  locator<UpdateCompetitionUseCase>();
+  late final DeleteCompetitionUseCase _deleteUseCase =
+  locator<DeleteCompetitionUseCase>();
 
   @override
   CompetitionFormState build() => const CompetitionFormState.initial();
 
-  void reset() {
-    state = const CompetitionFormState.initial();
-  }
+  void reset() => state = const CompetitionFormState.initial();
 
   Future<void> create(CompetitionInput input) async {
     state = const CompetitionFormState.loading();
@@ -44,6 +43,7 @@ class CompetitionFormNotifier extends _$CompetitionFormNotifier {
     final result = await _updateUseCase.execute(id, input);
     state = result.when(
       success: (competition) {
+        // CORREÇÃO: Nomes dos providers em camelCase.
         ref.invalidate(competitionsNotifierProvider);
         ref.invalidate(competitionDetailsNotifierProvider(id));
         return CompetitionFormState.success(competition);
@@ -58,7 +58,6 @@ class CompetitionFormNotifier extends _$CompetitionFormNotifier {
     state = result.when(
       success: (_) {
         ref.invalidate(competitionsNotifierProvider);
-        // ✅ CORREÇÃO: Usando o novo estado específico para o sucesso da exclusão.
         return const CompetitionFormState.deleteSuccess();
       },
       failure: (error) => CompetitionFormState.failure(error),

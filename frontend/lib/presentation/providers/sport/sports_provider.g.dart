@@ -30,7 +30,7 @@ final class SportsNotifierProvider
   SportsNotifier create() => SportsNotifier();
 }
 
-String _$sportsNotifierHash() => r'76c5cd864c8d717119a8c932dacae9baf8c0f518';
+String _$sportsNotifierHash() => r'70e77faac11f53ff949d8d60cf83d58a68c661b7';
 
 abstract class _$SportsNotifier extends $AsyncNotifier<Page<SportSummary>> {
   FutureOr<Page<SportSummary>> build();

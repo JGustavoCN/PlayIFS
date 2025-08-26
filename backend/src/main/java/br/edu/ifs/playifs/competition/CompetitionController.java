@@ -1,12 +1,11 @@
 package br.edu.ifs.playifs.competition;
 
+import br.edu.ifs.playifs.competition.dto.*;
 import br.edu.ifs.playifs.config.SecurityConstants;
-import br.edu.ifs.playifs.competition.dto.CompetitionDetailsDTO;
-import br.edu.ifs.playifs.competition.dto.CompetitionInputDTO;
-import br.edu.ifs.playifs.competition.dto.CompetitionSummaryDTO;
 import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.game.GameController;
 import br.edu.ifs.playifs.game.dto.GameDetailsDTO;
+import br.edu.ifs.playifs.report.ReportController;
 import br.edu.ifs.playifs.security.annotations.IsAuthenticated;
 import br.edu.ifs.playifs.security.annotations.IsCoordinator;
 import br.edu.ifs.playifs.shared.web.dto.ApiResponseBody;
@@ -139,6 +138,50 @@ public class CompetitionController {
         );
         return ResponseEntity.ok(new ApiResponseBody<>(eliminationGames, "Fase eliminatória gerada com sucesso!"));
     }
+
+    @GetMapping("/{competitionId}/sports/{sportId}/group-stage")
+    @Operation(summary = "Busca a visualização completa da fase de grupos")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Fase de grupos retornada com sucesso."), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
+    @IsAuthenticated
+    public ResponseEntity<ApiResponseBody<GroupStageViewDTO>> getGroupStage(
+            @PathVariable @Positive Long competitionId,
+            @PathVariable @Positive Long sportId) {
+
+        GroupStageViewDTO dto = service.getGroupStageView(competitionId, sportId);
+
+        // Adiciona um link para o próprio recurso
+        dto.add(linkTo(methodOn(CompetitionController.class).getGroupStage(competitionId, sportId)).withSelfRel());
+
+        // Adiciona links para cada grupo, apontando para o relatório de classificação daquele grupo
+        dto.getGroups().forEach(group ->
+                group.add(linkTo(methodOn(ReportController.class).getGroupStandings(group.getGroupId())).withSelfRel())
+        );
+
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
+    }
+
+    @GetMapping("/{competitionId}/sports/{sportId}/elimination-bracket")
+    @Operation(summary = "Busca a visualização do chaveamento (bracket) do mata-mata")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Chaveamento retornado com sucesso."), @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFoundError")})
+    @IsAuthenticated
+    public ResponseEntity<ApiResponseBody<EliminationBracketDTO>> getEliminationBracket(
+            @PathVariable @Positive Long competitionId,
+            @PathVariable @Positive Long sportId) {
+
+        EliminationBracketDTO dto = service.getEliminationBracketView(competitionId, sportId);
+
+        // Adiciona um link para o próprio recurso
+        dto.add(linkTo(methodOn(CompetitionController.class).getEliminationBracket(competitionId, sportId)).withSelfRel());
+
+        // Para cada jogo em cada rodada, adiciona um link para os detalhes daquele jogo
+        dto.getRounds().values().forEach(games ->
+                games.forEach(game ->
+                        game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
+                )
+        );
+
+        return ResponseEntity.ok(new ApiResponseBody<>(dto));
+    }   
 
     private void addLinksToCompetitionDetails(CompetitionDetailsDTO dto) {
         dto.add(linkTo(methodOn(CompetitionController.class).findById(dto.getId())).withSelfRel());

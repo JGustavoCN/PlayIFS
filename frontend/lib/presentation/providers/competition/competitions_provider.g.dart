@@ -32,7 +32,7 @@ final class CompetitionsNotifierProvider
 }
 
 String _$competitionsNotifierHash() =>
-    r'75f5dd3c9b32298c1d887e079898248959ef517b';
+    r'8fbfe75a766312944ee4ee94553777b58dcc93c2';
 
 abstract class _$CompetitionsNotifier
     extends $AsyncNotifier<Page<CompetitionSummary>> {

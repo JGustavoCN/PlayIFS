@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CompetitionDetails {
 
- int get id; String get name; String get level;
+ int get id; String get name; String get level;// CORREÇÃO: O status pode ser nulo.
+ String? get status; List<SportSummary> get associatedSports;
 /// Create a copy of CompetitionDetails
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $CompetitionDetailsCopyWith<CompetitionDetails> get copyWith => _$CompetitionDet
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CompetitionDetails&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.level, level) || other.level == level));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CompetitionDetails&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.level, level) || other.level == level)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other.associatedSports, associatedSports));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,level);
+int get hashCode => Object.hash(runtimeType,id,name,level,status,const DeepCollectionEquality().hash(associatedSports));
 
 @override
 String toString() {
-  return 'CompetitionDetails(id: $id, name: $name, level: $level)';
+  return 'CompetitionDetails(id: $id, name: $name, level: $level, status: $status, associatedSports: $associatedSports)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $CompetitionDetailsCopyWith<$Res>  {
   factory $CompetitionDetailsCopyWith(CompetitionDetails value, $Res Function(CompetitionDetails) _then) = _$CompetitionDetailsCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String level
+ int id, String name, String level, String? status, List<SportSummary> associatedSports
 });
 
 
@@ -62,12 +63,14 @@ class _$CompetitionDetailsCopyWithImpl<$Res>
 
 /// Create a copy of CompetitionDetails
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? level = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? level = null,Object? status = freezed,Object? associatedSports = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
-as String,
+as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,associatedSports: null == associatedSports ? _self.associatedSports : associatedSports // ignore: cast_nullable_to_non_nullable
+as List<SportSummary>,
   ));
 }
 
@@ -152,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String level)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String level,  String? status,  List<SportSummary> associatedSports)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CompetitionDetails() when $default != null:
-return $default(_that.id,_that.name,_that.level);case _:
+return $default(_that.id,_that.name,_that.level,_that.status,_that.associatedSports);case _:
   return orElse();
 
 }
@@ -173,10 +176,10 @@ return $default(_that.id,_that.name,_that.level);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String level)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String level,  String? status,  List<SportSummary> associatedSports)  $default,) {final _that = this;
 switch (_that) {
 case _CompetitionDetails():
-return $default(_that.id,_that.name,_that.level);case _:
+return $default(_that.id,_that.name,_that.level,_that.status,_that.associatedSports);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +196,10 @@ return $default(_that.id,_that.name,_that.level);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String level)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String level,  String? status,  List<SportSummary> associatedSports)?  $default,) {final _that = this;
 switch (_that) {
 case _CompetitionDetails() when $default != null:
-return $default(_that.id,_that.name,_that.level);case _:
+return $default(_that.id,_that.name,_that.level,_that.status,_that.associatedSports);case _:
   return null;
 
 }
@@ -208,12 +211,21 @@ return $default(_that.id,_that.name,_that.level);case _:
 
 
 class _CompetitionDetails implements CompetitionDetails {
-  const _CompetitionDetails({required this.id, required this.name, required this.level});
+  const _CompetitionDetails({required this.id, required this.name, required this.level, required this.status, required final  List<SportSummary> associatedSports}): _associatedSports = associatedSports;
   
 
 @override final  int id;
 @override final  String name;
 @override final  String level;
+// CORREÇÃO: O status pode ser nulo.
+@override final  String? status;
+ final  List<SportSummary> _associatedSports;
+@override List<SportSummary> get associatedSports {
+  if (_associatedSports is EqualUnmodifiableListView) return _associatedSports;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_associatedSports);
+}
+
 
 /// Create a copy of CompetitionDetails
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +237,16 @@ _$CompetitionDetailsCopyWith<_CompetitionDetails> get copyWith => __$Competition
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CompetitionDetails&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.level, level) || other.level == level));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CompetitionDetails&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.level, level) || other.level == level)&&(identical(other.status, status) || other.status == status)&&const DeepCollectionEquality().equals(other._associatedSports, _associatedSports));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,name,level);
+int get hashCode => Object.hash(runtimeType,id,name,level,status,const DeepCollectionEquality().hash(_associatedSports));
 
 @override
 String toString() {
-  return 'CompetitionDetails(id: $id, name: $name, level: $level)';
+  return 'CompetitionDetails(id: $id, name: $name, level: $level, status: $status, associatedSports: $associatedSports)';
 }
 
 
@@ -245,7 +257,7 @@ abstract mixin class _$CompetitionDetailsCopyWith<$Res> implements $CompetitionD
   factory _$CompetitionDetailsCopyWith(_CompetitionDetails value, $Res Function(_CompetitionDetails) _then) = __$CompetitionDetailsCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String level
+ int id, String name, String level, String? status, List<SportSummary> associatedSports
 });
 
 
@@ -262,12 +274,14 @@ class __$CompetitionDetailsCopyWithImpl<$Res>
 
 /// Create a copy of CompetitionDetails
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? level = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? level = null,Object? status = freezed,Object? associatedSports = null,}) {
   return _then(_CompetitionDetails(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
-as String,
+as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,associatedSports: null == associatedSports ? _self._associatedSports : associatedSports // ignore: cast_nullable_to_non_nullable
+as List<SportSummary>,
   ));
 }
 

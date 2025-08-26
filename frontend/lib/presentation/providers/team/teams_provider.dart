@@ -36,11 +36,11 @@ class TeamsNotifier extends _$TeamsNotifier {
   /// A UI deve usar um try/catch para exibir feedback de erro.
   Future<void> fetchNextPage() async {
     final currentState = state.value;
-    if (currentState == null || (currentState.number >= currentState.totalPages - 1)) {
+    if (currentState == null || (currentState.pageNumber >= currentState.totalPages - 1)) {
       return;
     }
 
-    final nextPage = currentState.number + 1;
+    final nextPage = currentState.pageNumber + 1;
 
     final filters = <String, dynamic>{
       'competitionId': competitionId,

@@ -40,6 +40,10 @@ import '../../domain/usecases/competition/batch_delete_competitions_use_case.dar
 import '../../domain/usecases/competition/delete_competition_use_case.dart';
 import '../../domain/usecases/competition/find_all_competitions_use_case.dart';
 import '../../domain/usecases/competition/find_competition_by_id_use_case.dart';
+import '../../domain/usecases/competition/generate_elimination_stage_use_case.dart';
+import '../../domain/usecases/competition/generate_group_stage_use_case.dart';
+import '../../domain/usecases/competition/get_elimination_bracket_use_case.dart';
+import '../../domain/usecases/competition/get_group_stage_view_use_case.dart';
 import '../../domain/usecases/competition/insert_competition_use_case.dart';
 import '../../domain/usecases/competition/update_competition_use_case.dart';
 import '../../domain/usecases/config/get_app_config_use_case.dart';
@@ -114,6 +118,12 @@ void setupLocator() {
   locator.registerLazySingleton(() => UpdateCompetitionUseCase(locator()));
   locator.registerLazySingleton(() => DeleteCompetitionUseCase(locator()));
   locator.registerLazySingleton(() => BatchDeleteCompetitionsUseCase(locator()));
+
+  locator.registerLazySingleton(() => GetGroupStageViewUseCase(locator()));
+  locator.registerLazySingleton(() => GenerateGroupStageUseCase(locator()));
+  locator.registerLazySingleton(() => GetEliminationBracketUseCase(locator()));
+  locator.registerLazySingleton(() => GenerateEliminationStageUseCase(locator()));
+
 
   // ✅ ADICIONAR REGISTOS DOS CASOS DE USO DE TÉCNICOS DESIGNADOS
   locator.registerLazySingleton(() => FindAllDesignatedCoachesUseCase(locator()));

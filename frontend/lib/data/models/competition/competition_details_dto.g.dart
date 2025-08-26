@@ -12,6 +12,10 @@ _CompetitionDetailsDTO _$CompetitionDetailsDTOFromJson(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
   level: json['level'] as String,
+  status: json['status'] as String?,
+  associatedSports: (json['associatedSports'] as List<dynamic>)
+      .map((e) => SportSummaryDTO.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$CompetitionDetailsDTOToJson(
@@ -20,4 +24,6 @@ Map<String, dynamic> _$CompetitionDetailsDTOToJson(
   'id': instance.id,
   'name': instance.name,
   'level': instance.level,
+  'status': instance.status,
+  'associatedSports': instance.associatedSports,
 };

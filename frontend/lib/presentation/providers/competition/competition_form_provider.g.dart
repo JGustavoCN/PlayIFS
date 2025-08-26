@@ -39,7 +39,7 @@ final class CompetitionFormNotifierProvider
 }
 
 String _$competitionFormNotifierHash() =>
-    r'93790b0cf642f14b177d41649fbf09d713bed48d';
+    r'485d2ee3132cc80d7a1aecdfe3731ecef22c29bf';
 
 abstract class _$CompetitionFormNotifier
     extends $Notifier<CompetitionFormState> {

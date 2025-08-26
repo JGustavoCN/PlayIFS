@@ -13,6 +13,6 @@ abstract class Page<T> with _$Page<T> {
     @Default([]) List<T> content,
     required int totalElements,
     required int totalPages,
-    required int number, // Nome padronizado no domínio (vem de 'pageNumber' do DTO)
+    required int pageNumber,
   }) = _Page<T>;
 }

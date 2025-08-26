@@ -1,5 +1,4 @@
-// Ficheiro: lib/data/mappers/competition_mappers.dart
-
+import 'package:playifs_frontend/data/mappers/sport_mappers.dart';
 import 'package:playifs_frontend/data/models/competition/competition_details_dto.dart';
 import 'package:playifs_frontend/data/models/competition/competition_input_dto.dart';
 import 'package:playifs_frontend/data/models/competition/competition_summary_dto.dart';
@@ -21,6 +20,11 @@ extension CompetitionDetailsDTOToEntity on CompetitionDetailsDTO {
     id: id,
     name: name,
     level: level,
+    // ADICIONADO: Mapeamento do novo campo de status.
+    status: status,
+    // ADICIONADO: Mapeamento da lista de desportos.
+    // Isto assume que existe um mapeador 'toEntity()' para SportSummaryDTO.
+    associatedSports: associatedSports.map((dto) => dto.toEntity()).toList(),
   );
 }
 
@@ -29,5 +33,7 @@ extension CompetitionInputToDTO on CompetitionInput {
   CompetitionInputDTO toDTO() => CompetitionInputDTO(
     name: name,
     level: level,
+    // ADICIONADO: Mapeamento da lista de IDs.
+    sportIds: sportIds,
   );
 }

@@ -51,15 +51,15 @@ class SportsNotifier extends _$SportsNotifier {
 
     final currentPage = state.value!;
     // Verifica se já está na última página.
-    if (currentPage.number >= currentPage.totalPages - 1) return;
+    if (currentPage.pageNumber >= currentPage.totalPages - 1) return;
 
-    final nextPageData = await _fetchSports(page: currentPage.number + 1);
+    final nextPageData = await _fetchSports(page: currentPage.pageNumber + 1);
 
     // Atualiza o estado com a nova página, anexando o novo conteúdo.
     state = AsyncData(
       currentPage.copyWith(
         content: [...currentPage.content, ...nextPageData.content],
-        number: nextPageData.number,
+        pageNumber: nextPageData.pageNumber,
       ),
     );
   }

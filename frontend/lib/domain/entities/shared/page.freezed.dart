@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$Page<T> {
 
 // A anotação `@Default([])` garante que a lista nunca seja nula.
- List<T> get content; int get totalElements; int get totalPages; int get number;
+ List<T> get content; int get totalElements; int get totalPages; int get pageNumber;
 /// Create a copy of Page
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $PageCopyWith<T, Page<T>> get copyWith => _$PageCopyWithImpl<T, Page<T>>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Page<T>&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.totalElements, totalElements) || other.totalElements == totalElements)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.number, number) || other.number == number));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Page<T>&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.totalElements, totalElements) || other.totalElements == totalElements)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.pageNumber, pageNumber) || other.pageNumber == pageNumber));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(content),totalElements,totalPages,number);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(content),totalElements,totalPages,pageNumber);
 
 @override
 String toString() {
-  return 'Page<$T>(content: $content, totalElements: $totalElements, totalPages: $totalPages, number: $number)';
+  return 'Page<$T>(content: $content, totalElements: $totalElements, totalPages: $totalPages, pageNumber: $pageNumber)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $PageCopyWith<T,$Res>  {
   factory $PageCopyWith(Page<T> value, $Res Function(Page<T>) _then) = _$PageCopyWithImpl;
 @useResult
 $Res call({
- List<T> content, int totalElements, int totalPages, int number
+ List<T> content, int totalElements, int totalPages, int pageNumber
 });
 
 
@@ -63,12 +63,12 @@ class _$PageCopyWithImpl<T,$Res>
 
 /// Create a copy of Page
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? content = null,Object? totalElements = null,Object? totalPages = null,Object? number = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? content = null,Object? totalElements = null,Object? totalPages = null,Object? pageNumber = null,}) {
   return _then(_self.copyWith(
 content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as List<T>,totalElements: null == totalElements ? _self.totalElements : totalElements // ignore: cast_nullable_to_non_nullable
 as int,totalPages: null == totalPages ? _self.totalPages : totalPages // ignore: cast_nullable_to_non_nullable
-as int,number: null == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
+as int,pageNumber: null == pageNumber ? _self.pageNumber : pageNumber // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -154,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<T> content,  int totalElements,  int totalPages,  int number)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<T> content,  int totalElements,  int totalPages,  int pageNumber)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Page() when $default != null:
-return $default(_that.content,_that.totalElements,_that.totalPages,_that.number);case _:
+return $default(_that.content,_that.totalElements,_that.totalPages,_that.pageNumber);case _:
   return orElse();
 
 }
@@ -175,10 +175,10 @@ return $default(_that.content,_that.totalElements,_that.totalPages,_that.number)
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<T> content,  int totalElements,  int totalPages,  int number)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<T> content,  int totalElements,  int totalPages,  int pageNumber)  $default,) {final _that = this;
 switch (_that) {
 case _Page():
-return $default(_that.content,_that.totalElements,_that.totalPages,_that.number);case _:
+return $default(_that.content,_that.totalElements,_that.totalPages,_that.pageNumber);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +195,10 @@ return $default(_that.content,_that.totalElements,_that.totalPages,_that.number)
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<T> content,  int totalElements,  int totalPages,  int number)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<T> content,  int totalElements,  int totalPages,  int pageNumber)?  $default,) {final _that = this;
 switch (_that) {
 case _Page() when $default != null:
-return $default(_that.content,_that.totalElements,_that.totalPages,_that.number);case _:
+return $default(_that.content,_that.totalElements,_that.totalPages,_that.pageNumber);case _:
   return null;
 
 }
@@ -210,7 +210,7 @@ return $default(_that.content,_that.totalElements,_that.totalPages,_that.number)
 
 
 class _Page<T> implements Page<T> {
-  const _Page({final  List<T> content = const [], required this.totalElements, required this.totalPages, required this.number}): _content = content;
+  const _Page({final  List<T> content = const [], required this.totalElements, required this.totalPages, required this.pageNumber}): _content = content;
   
 
 // A anotação `@Default([])` garante que a lista nunca seja nula.
@@ -224,7 +224,7 @@ class _Page<T> implements Page<T> {
 
 @override final  int totalElements;
 @override final  int totalPages;
-@override final  int number;
+@override final  int pageNumber;
 
 /// Create a copy of Page
 /// with the given fields replaced by the non-null parameter values.
@@ -236,16 +236,16 @@ _$PageCopyWith<T, _Page<T>> get copyWith => __$PageCopyWithImpl<T, _Page<T>>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Page<T>&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.totalElements, totalElements) || other.totalElements == totalElements)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.number, number) || other.number == number));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Page<T>&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.totalElements, totalElements) || other.totalElements == totalElements)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.pageNumber, pageNumber) || other.pageNumber == pageNumber));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_content),totalElements,totalPages,number);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_content),totalElements,totalPages,pageNumber);
 
 @override
 String toString() {
-  return 'Page<$T>(content: $content, totalElements: $totalElements, totalPages: $totalPages, number: $number)';
+  return 'Page<$T>(content: $content, totalElements: $totalElements, totalPages: $totalPages, pageNumber: $pageNumber)';
 }
 
 
@@ -256,7 +256,7 @@ abstract mixin class _$PageCopyWith<T,$Res> implements $PageCopyWith<T, $Res> {
   factory _$PageCopyWith(_Page<T> value, $Res Function(_Page<T>) _then) = __$PageCopyWithImpl;
 @override @useResult
 $Res call({
- List<T> content, int totalElements, int totalPages, int number
+ List<T> content, int totalElements, int totalPages, int pageNumber
 });
 
 
@@ -273,12 +273,12 @@ class __$PageCopyWithImpl<T,$Res>
 
 /// Create a copy of Page
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? content = null,Object? totalElements = null,Object? totalPages = null,Object? number = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? content = null,Object? totalElements = null,Object? totalPages = null,Object? pageNumber = null,}) {
   return _then(_Page<T>(
 content: null == content ? _self._content : content // ignore: cast_nullable_to_non_nullable
 as List<T>,totalElements: null == totalElements ? _self.totalElements : totalElements // ignore: cast_nullable_to_non_nullable
 as int,totalPages: null == totalPages ? _self.totalPages : totalPages // ignore: cast_nullable_to_non_nullable
-as int,number: null == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
+as int,pageNumber: null == pageNumber ? _self.pageNumber : pageNumber // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

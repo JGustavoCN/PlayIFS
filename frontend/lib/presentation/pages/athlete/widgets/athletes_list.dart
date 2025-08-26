@@ -74,7 +74,7 @@ class _AthletesListState extends ConsumerState<AthletesList> {
             itemCount: page.content.length + 1,
             itemBuilder: (context, index) {
               if (index == page.content.length) {
-                if (page.number < page.totalPages - 1) {
+                if (page.pageNumber < page.totalPages - 1) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(8.0),

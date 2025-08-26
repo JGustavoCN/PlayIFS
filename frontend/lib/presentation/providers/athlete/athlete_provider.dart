@@ -40,13 +40,13 @@ class AthleteList extends _$AthleteList {
   Future<void> fetchNextPage() async {
     final currentState = state.asData?.value;
     if (currentState == null ||
-        currentState.number >= currentState.totalPages - 1) {
+        currentState.pageNumber >= currentState.totalPages - 1) {
       return;
     }
 
     final findAllAthletes = locator<FindAllAthletesUseCase>();
     final searchQuery = ref.read(athleteSearchQueryProvider);
-    final nextPage = currentState.number + 1;
+    final nextPage = currentState.pageNumber + 1;
 
     final result = await findAllAthletes.execute(
       page: nextPage,

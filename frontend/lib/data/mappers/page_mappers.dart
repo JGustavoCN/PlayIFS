@@ -10,6 +10,6 @@ extension PageDtoToEntityExtension<DTO> on PageDTO<DTO> {
       totalPages: totalPages,
       totalElements: totalElements,
       // O nome da propriedade no PageDTO é 'pageNumber' e na Entidade é 'number'.
-      number: pageNumber,
+      pageNumber: pageNumber,
     );
 }

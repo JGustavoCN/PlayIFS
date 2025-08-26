@@ -89,7 +89,7 @@ public class TestSeeding implements CommandLineRunner {
         Coordinator coord1 = new Coordinator(null, "Prof. Nelio Alves", "nelio@ifs.edu.br", userCoord1);
         coordinatorRepository.save(coord1);
 
-        // Criar 45 Atletas (suficiente para o cenário de 9 equipas de futsal)
+        // Criar 45 Atletas
         for (int i = 1; i <= 45; i++) {
             User user = new User(null, "2023" + String.format("%02d", i), passwordEncoder.encode("pass123"), null, null, new HashSet<>());
             user.getRoles().add(roleAthlete);
@@ -117,6 +117,14 @@ public class TestSeeding implements CommandLineRunner {
         Competition comp1 = new Competition();
         comp1.setName("Jogos do Integrado 2025");
         comp1.setLevel(CourseLevel.INTEGRADO);
+
+        // =================================================================
+        // === CORREÇÃO ADICIONADA AQUI ====================================
+        // =================================================================
+        // Associa os desportos criados à competição antes de a salvar.
+        comp1.getSports().addAll(Arrays.asList(s1, s2));
+        // =================================================================
+
         competitionRepository.save(comp1);
     }
 
@@ -125,7 +133,7 @@ public class TestSeeding implements CommandLineRunner {
      */
     private void createDefaultCompetitionScenario() {
         // Busca os dados básicos que já foram criados
-        Campus c1 = campusRepository.findAll().get(0);
+        Campus c1 = campusRepository.findAll().getFirst();
         Competition comp1 = competitionRepository.findAll().get(0);
         Sport futsal = sportRepository.findById(1L).get();
         Sport voleibol = sportRepository.findById(2L).get();
@@ -199,8 +207,8 @@ public class TestSeeding implements CommandLineRunner {
         courseRepository.saveAll(courses);
 
         // Cria e inscreve 9 equipas de Futsal, uma para cada curso, com atletas únicos
-        int athleteCounter = 5;
-        for (int i = 1; i < 9; i++) {
+        int athleteCounter = 0;
+        for (int i = 0; i < 9; i++) {
             Team team = new Team();
             team.setName("Equipa de Futsal " + (i + 1));
             team.setCourse(courses.get(i));

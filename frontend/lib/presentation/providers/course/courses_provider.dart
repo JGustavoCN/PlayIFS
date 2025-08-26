@@ -33,14 +33,14 @@ class CoursesNotifier extends _$CoursesNotifier {
   Future<void> loadNextPage() async {
     if (state.isLoading || !state.hasValue) return;
     final currentPage = state.value!;
-    if (currentPage.number >= currentPage.totalPages - 1) return;
+    if (currentPage.pageNumber >= currentPage.totalPages - 1) return;
 
     // TODO: Adicionar lógica para preservar filtros ao paginar.
-    final nextPageData = await _fetchCourses(page: currentPage.number + 1);
+    final nextPageData = await _fetchCourses(page: currentPage.pageNumber + 1);
     state = AsyncData(
       currentPage.copyWith(
         content: [...currentPage.content, ...nextPageData.content],
-        number: nextPageData.number,
+        pageNumber: nextPageData.pageNumber,
       ),
     );
   }

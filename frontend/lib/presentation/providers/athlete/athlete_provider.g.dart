@@ -84,7 +84,7 @@ final class AthleteListProvider
   AthleteList create() => AthleteList();
 }
 
-String _$athleteListHash() => r'c9984ede2d4956e9cad30271e0c61126249ccb1f';
+String _$athleteListHash() => r'd6d08b9cb5fa9bfefb9b28a62300234271d9da53';
 
 abstract class _$AthleteList extends $AsyncNotifier<Page<AthleteSummary>> {
   FutureOr<Page<AthleteSummary>> build();

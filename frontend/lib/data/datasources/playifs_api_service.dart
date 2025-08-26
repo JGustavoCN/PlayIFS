@@ -1,215 +1,189 @@
 import 'package:dio/dio.dart';
+import 'package:playifs_frontend/core/constants/api_constants.dart';
+import 'package:playifs_frontend/data/models/athlete/athlete_details_dto.dart';
+import 'package:playifs_frontend/data/models/athlete/athlete_input_batch_dto.dart';
+import 'package:playifs_frontend/data/models/athlete/athlete_input_dto.dart';
+import 'package:playifs_frontend/data/models/athlete/athlete_summary_dto.dart';
+import 'package:playifs_frontend/data/models/athlete/athlete_update_dto.dart';
+import 'package:playifs_frontend/data/models/auth/auth_tokens_dto.dart';
+import 'package:playifs_frontend/data/models/auth/login_request_dto.dart';
+import 'package:playifs_frontend/data/models/auth/refresh_token_request_dto.dart';
+import 'package:playifs_frontend/data/models/campus/campus_summary_dto.dart';
+import 'package:playifs_frontend/data/models/competition/competition_details_dto.dart';
+import 'package:playifs_frontend/data/models/competition/competition_input_dto.dart';
+import 'package:playifs_frontend/data/models/competition/competition_summary_dto.dart';
+import 'package:playifs_frontend/data/models/competition/elimination_bracket_dto.dart';
+import 'package:playifs_frontend/data/models/competition/group_stage_view_dto.dart';
+import 'package:playifs_frontend/data/models/config/app_config_dto.dart';
+import 'package:playifs_frontend/data/models/course/course_summary_dto.dart';
+import 'package:playifs_frontend/data/models/designated_coach/designated_coach_details_dto.dart';
+import 'package:playifs_frontend/data/models/designated_coach/designated_coach_input_batch_dto.dart';
+import 'package:playifs_frontend/data/models/designated_coach/designated_coach_input_dto.dart';
+import 'package:playifs_frontend/data/models/designated_coach/designated_coach_summary_dto.dart';
+import 'package:playifs_frontend/data/models/game/game_details_dto.dart';
+import 'package:playifs_frontend/data/models/shared/api_response_body.dart';
+import 'package:playifs_frontend/data/models/shared/id_batch_dto.dart';
+import 'package:playifs_frontend/data/models/shared/page_dto.dart';
+import 'package:playifs_frontend/data/models/sport/sport_summary_dto.dart';
+import 'package:playifs_frontend/data/models/team/team_details_dto.dart';
+import 'package:playifs_frontend/data/models/team/team_input_dto.dart';
+import 'package:playifs_frontend/data/models/team/team_summary_dto.dart';
+import 'package:playifs_frontend/data/models/team/team_update_dto.dart';
+import 'package:playifs_frontend/data/models/user/profile_dto.dart';
 import 'package:retrofit/retrofit.dart';
-
-import '../../core/constants/api_constants.dart';
-import '../models/athlete/athlete_details_dto.dart';
-import '../models/athlete/athlete_input_batch_dto.dart';
-import '../models/athlete/athlete_input_dto.dart';
-import '../models/athlete/athlete_summary_dto.dart';
-import '../models/athlete/athlete_update_dto.dart';
-import '../models/auth/auth_tokens_dto.dart';
-import '../models/auth/login_request_dto.dart';
-import '../models/auth/refresh_token_request_dto.dart';
-import '../models/campus/campus_summary_dto.dart';
-import '../models/competition/competition_details_dto.dart';
-import '../models/competition/competition_input_dto.dart';
-import '../models/competition/competition_summary_dto.dart';
-import '../models/config/app_config_dto.dart';
-import '../models/course/course_summary_dto.dart';
-import '../models/designated_coach/designated_coach_details_dto.dart';
-import '../models/designated_coach/designated_coach_input_batch_dto.dart';
-import '../models/designated_coach/designated_coach_input_dto.dart';
-import '../models/designated_coach/designated_coach_summary_dto.dart';
-import '../models/shared/api_response_body.dart';
-import '../models/shared/id_batch_dto.dart';
-import '../models/shared/page_dto.dart';
-import '../models/sport/sport_summary_dto.dart';
-import '../models/team/team_details_dto.dart';
-import '../models/team/team_input_dto.dart';
-import '../models/team/team_summary_dto.dart';
-import '../models/team/team_update_dto.dart';
-import '../models/user/profile_dto.dart';
 
 part 'playifs_api_service.g.dart';
 
-@RestApi(baseUrl: ApiConstants.baseUrl)
+@RestApi()
 abstract class PlayifsApiService {
   factory PlayifsApiService(Dio dio, {String baseUrl}) = _PlayifsApiService;
 
-  // --- MÉTODOS DE AUTENTICAÇÃO ---
-
-  /// Realiza a autenticação do utilizador.
+  // --- 0. Autenticação ---
   @POST(ApiConstants.authLogin)
-  // CORREÇÃO: A resposta agora é o AuthTokensDTO diretamente, sem o invólucro.
-  Future<AuthTokensDTO> login(
-      @Body() LoginRequestDTO loginRequest,
-      );
+  Future<AuthTokensDTO> login(@Body() LoginRequestDTO loginRequest);
 
-  // O método refreshToken provavelmente tem o mesmo problema e deve ser corrigido.
   @POST(ApiConstants.authRefreshToken)
-  Future<AuthTokensDTO> refreshToken(
-      @Body() RefreshTokenRequestDTO refreshTokenRequest,
-      );
+  Future<AuthTokensDTO> refreshToken(@Body() RefreshTokenRequestDTO refreshTokenRequest);
 
-  // O método getMyProfile está correto, pois ele USA o invólucro.
+  // --- 1. Perfil e Configurações ---
   @GET(ApiConstants.me)
   Future<ApiResponseBody<ProfileDTO>> getMyProfile();
-
-// --- Athlete Endpoints ---
-
-  @GET('/athletes')
-  Future<ApiResponseBody<PageDTO<AthleteSummaryDTO>>> findAllAthletes(
-      @Queries() Map<String, dynamic> queries,
-      );
-
-  @GET('/athletes/{id}')
-  Future<ApiResponseBody<AthleteDetailsDTO>> findAthleteById(@Path('id') int id);
-
-  @POST('/athletes')
-  Future<ApiResponseBody<AthleteDetailsDTO>> insertAthlete(
-      @Body() AthleteInputDTO athleteInput,
-      );
-
-  @POST('/athletes/batch-create')
-  Future<ApiResponseBody<List<AthleteDetailsDTO>>> batchInsertAthletes(
-      @Body() AthleteInputBatchDTO batchInput,
-      );
-
-  @PUT('/athletes/{id}')
-  Future<ApiResponseBody<AthleteDetailsDTO>> updateAthlete(
-      @Path('id') int id,
-      @Body() AthleteUpdateDTO athleteUpdate,
-      );
-
-  @DELETE('/athletes/{id}')
-  Future<void> deleteAthlete(@Path('id') int id);
-
-  @POST('/athletes/batch-delete')
-  Future<void> batchDeleteAthletes(@Body() IdBatchDTO batchDelete);
 
   @GET(ApiConstants.config)
   Future<ApiResponseBody<AppConfigDTO>> getAppConfig();
 
-  @GET(ApiConstants.sports)
-  Future<ApiResponseBody<PageDTO<SportSummaryDTO>>> findAllSports(
-      @Queries() Map<String, dynamic> queries,
-      );
+  // --- 2. Atletas ---
+  @GET(ApiConstants.athletes)
+  Future<ApiResponseBody<PageDTO<AthleteSummaryDTO>>> findAllAthletes(@Queries() Map<String, dynamic> queries);
 
-  /// Busca uma lista paginada de campi.
-  @GET(ApiConstants.campuses)
-  Future<ApiResponseBody<PageDTO<CampusSummaryDTO>>> findAllCampuses(
-      @Queries() Map<String, dynamic> queries,
-      );
+  @GET(ApiConstants.athleteById)
+  Future<ApiResponseBody<AthleteDetailsDTO>> findAthleteById(@Path('id') int id);
 
-  /// Busca uma lista paginada de cursos.
-  @GET(ApiConstants.courses)
-  Future<ApiResponseBody<PageDTO<CourseSummaryDTO>>> findAllCourses(
-      @Queries() Map<String, dynamic> queries,
-      );
+  @POST(ApiConstants.athletes)
+  Future<ApiResponseBody<AthleteDetailsDTO>> insertAthlete(@Body() AthleteInputDTO athleteInput);
 
+  @POST(ApiConstants.athletesBatchCreate)
+  Future<ApiResponseBody<List<AthleteDetailsDTO>>> batchInsertAthletes(@Body() AthleteInputBatchDTO batchInput);
+
+  @PUT(ApiConstants.athleteById)
+  Future<ApiResponseBody<AthleteDetailsDTO>> updateAthlete(@Path('id') int id, @Body() AthleteUpdateDTO athleteUpdate);
+
+  @DELETE(ApiConstants.athleteById)
+  Future<void> deleteAthlete(@Path('id') int id);
+
+  @POST(ApiConstants.athletesBatchDelete)
+  Future<void> batchDeleteAthletes(@Body() IdBatchDTO batchDelete);
+
+  // --- 3. Competições ---
   @GET(ApiConstants.competitions)
-  Future<ApiResponseBody<PageDTO<CompetitionSummaryDTO>>> findAllCompetitions(
-      @Queries() Map<String, dynamic> queries,
-      );
+  Future<ApiResponseBody<PageDTO<CompetitionSummaryDTO>>> findAllCompetitions(@Queries() Map<String, dynamic> queries);
 
-  @GET('${ApiConstants.competitions}/{id}')
-  Future<ApiResponseBody<CompetitionDetailsDTO>> findCompetitionById(
-      @Path('id') int id,
-      );
+  @GET(ApiConstants.competitionById)
+  Future<ApiResponseBody<CompetitionDetailsDTO>> findCompetitionById(@Path('id') int id);
 
   @POST(ApiConstants.competitions)
-  Future<ApiResponseBody<CompetitionDetailsDTO>> insertCompetition(
-      @Body() CompetitionInputDTO competition,
-      );
+  Future<ApiResponseBody<CompetitionDetailsDTO>> insertCompetition(@Body() CompetitionInputDTO competition);
 
-  @PUT('${ApiConstants.competitions}/{id}')
-  Future<ApiResponseBody<CompetitionDetailsDTO>> updateCompetition(
-      @Path('id') int id,
-      @Body() CompetitionInputDTO competition,
-      );
+  @PUT(ApiConstants.competitionById)
+  Future<ApiResponseBody<CompetitionDetailsDTO>> updateCompetition(@Path('id') int id, @Body() CompetitionInputDTO competition);
 
-  @DELETE('${ApiConstants.competitions}/{id}')
+  @DELETE(ApiConstants.competitionById)
   Future<void> deleteCompetition(@Path('id') int id);
 
-  @POST('${ApiConstants.competitions}/batch-delete')
+  @POST(ApiConstants.competitionsBatchDelete)
   Future<void> batchDeleteCompetitions(@Body() IdBatchDTO batchDto);
 
-
-  // =================== DESIGNATED COACHES ===================
-
-  @GET(ApiConstants.designatedCoaches)
-  Future<ApiResponseBody<PageDTO<DesignatedCoachSummaryDTO>>> findAllDesignatedCoaches(
-      @Queries() Map<String, dynamic> queries,
+  // --- 3.1 Fases da Competição (NOVOS) ---
+  @POST(ApiConstants.generateGroups)
+  Future<ApiResponseBody<List<GameDetailsDTO>>> generateGroupStage(
+      @Path('competitionId') int competitionId,
+      @Path('sportId') int sportId,
       );
 
-  @GET('${ApiConstants.designatedCoaches}/{id}')
-  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> findDesignatedCoachById(
-      @Path('id') int id,
+  @POST(ApiConstants.generateElimination)
+  Future<ApiResponseBody<List<GameDetailsDTO>>> generateEliminationStage(
+      @Path('competitionId') int competitionId,
+      @Path('sportId') int sportId,
       );
 
-  @POST(ApiConstants.designatedCoaches)
-  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> defineCoach(
-      @Body() DesignatedCoachInputDTO input,
+  @GET(ApiConstants.groupStage)
+  Future<ApiResponseBody<GroupStageViewDTO>> getGroupStage(
+      @Path('competitionId') int competitionId,
+      @Path('sportId') int sportId,
       );
 
-  @PUT(ApiConstants.designatedCoaches)
-  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> updateCoach(
-      @Body() DesignatedCoachInputDTO input,
+  @GET(ApiConstants.eliminationBracket)
+  Future<ApiResponseBody<EliminationBracketDTO>> getEliminationBracket(
+      @Path('competitionId') int competitionId,
+      @Path('sportId') int sportId,
       );
 
-  @POST('${ApiConstants.designatedCoaches}/batch-upsert')
-  Future<ApiResponseBody<List<DesignatedCoachDetailsDTO>>> batchUpsertCoaches(
-      @Body() DesignatedCoachInputBatchDTO batch,
-      );
-
-  @DELETE(ApiConstants.designatedCoaches)
-  Future<void> removeCoach(@Queries() Map<String, dynamic> queries);
-
-  @POST('${ApiConstants.designatedCoaches}/batch-remove')
-  Future<void> batchRemoveCoaches(@Body() IdBatchDTO batch);
-
-  //Teams
-
+  // --- 4. Equipas (Teams) ---
   @GET(ApiConstants.teams)
-  Future<ApiResponseBody<PageDTO<TeamSummaryDTO>>> findAllTeams(
-      @Queries() Map<String, dynamic> queries,
-      );
+  Future<ApiResponseBody<PageDTO<TeamSummaryDTO>>> findAllTeams(@Queries() Map<String, dynamic> queries);
 
-  @GET('${ApiConstants.teams}/{id}')
+  @GET(ApiConstants.teamById)
   Future<ApiResponseBody<TeamDetailsDTO>> findTeamById(@Path('id') int id);
 
   @POST(ApiConstants.teams)
-  Future<ApiResponseBody<TeamDetailsDTO>> insertTeam(
-      @Body() TeamInputDTO teamInput,
-      );
+  Future<ApiResponseBody<TeamDetailsDTO>> insertTeam(@Body() TeamInputDTO teamInput);
 
-  @PUT('${ApiConstants.teams}/{id}')
-  Future<ApiResponseBody<TeamDetailsDTO>> updateTeam(
-      @Path('id') int id,
-      @Body() TeamUpdateDTO teamUpdate,
-      );
+  @PUT(ApiConstants.teamById)
+  Future<ApiResponseBody<TeamDetailsDTO>> updateTeam(@Path('id') int id, @Body() TeamUpdateDTO teamUpdate);
 
-  @DELETE('${ApiConstants.teams}/{id}')
-  Future<ApiResponseBody<void>> deleteTeam(@Path('id') int id);
+  @DELETE(ApiConstants.teamById)
+  Future<void> deleteTeam(@Path('id') int id);
 
-  @POST('${ApiConstants.teams}/batch-delete')
-  Future<ApiResponseBody<void>> batchDeleteTeams(@Body() IdBatchDTO batchDto);
+  @POST(ApiConstants.teamsBatchDelete)
+  Future<void> batchDeleteTeams(@Body() IdBatchDTO batchDto);
 
-  @POST('${ApiConstants.teams}/{id}/athletes/batch-add')
+  @POST(ApiConstants.teamAthletesBatchAdd)
   Future<ApiResponseBody<TeamDetailsDTO>> batchAddAthletes(
       @Path('id') int teamId,
       @Body() IdBatchDTO batchDto,
       );
 
-  @POST('${ApiConstants.teams}/{id}/athletes/batch-remove')
-  Future<ApiResponseBody<void>> batchRemoveAthletes(
+  @POST(ApiConstants.teamAthletesBatchRemove)
+  Future<void> batchRemoveAthletes(
       @Path('id') int teamId,
       @Body() IdBatchDTO batchDto,
       );
 
-  @DELETE('${ApiConstants.teams}/{id}/athletes/{athleteId}')
-  Future<ApiResponseBody<void>> removeAthlete(
+  @DELETE(ApiConstants.teamAthleteById)
+  Future<void> removeAthlete(
       @Path('id') int teamId,
       @Path('athleteId') int athleteId,
       );
+
+  // --- 5. Técnicos Designados ---
+  @GET(ApiConstants.designatedCoaches)
+  Future<ApiResponseBody<PageDTO<DesignatedCoachSummaryDTO>>> findAllDesignatedCoaches(@Queries() Map<String, dynamic> queries);
+
+  @GET(ApiConstants.designatedCoachById)
+  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> findDesignatedCoachById(@Path('id') int id);
+
+  @POST(ApiConstants.designatedCoaches)
+  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> defineCoach(@Body() DesignatedCoachInputDTO input);
+
+  @PUT(ApiConstants.designatedCoaches)
+  Future<ApiResponseBody<DesignatedCoachDetailsDTO>> updateCoach(@Body() DesignatedCoachInputDTO input);
+
+  @POST(ApiConstants.designatedCoachesBatchUpsert)
+  Future<ApiResponseBody<List<DesignatedCoachDetailsDTO>>> batchUpsertCoaches(@Body() DesignatedCoachInputBatchDTO batch);
+
+  @DELETE(ApiConstants.designatedCoaches)
+  Future<void> removeCoach(@Queries() Map<String, dynamic> queries);
+
+  @POST(ApiConstants.designatedCoachesBatchRemove)
+  Future<void> batchRemoveCoaches(@Body() IdBatchDTO batch);
+
+  // --- 6. Dados de Administração ---
+  @GET(ApiConstants.campuses)
+  Future<ApiResponseBody<PageDTO<CampusSummaryDTO>>> findAllCampuses(@Queries() Map<String, dynamic> queries);
+
+  @GET(ApiConstants.courses)
+  Future<ApiResponseBody<PageDTO<CourseSummaryDTO>>> findAllCourses(@Queries() Map<String, dynamic> queries);
+
+  @GET(ApiConstants.sports)
+  Future<ApiResponseBody<PageDTO<SportSummaryDTO>>> findAllSports(@Queries() Map<String, dynamic> queries);
 }

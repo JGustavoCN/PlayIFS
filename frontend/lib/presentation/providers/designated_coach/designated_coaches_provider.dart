@@ -37,11 +37,11 @@ class DesignatedCoachesNotifier extends _$DesignatedCoachesNotifier {
 
   Future<void> fetchNextPage() async {
     final currentState = state.value;
-    if (currentState == null || (currentState.number >= currentState.totalPages - 1)) {
+    if (currentState == null || (currentState.pageNumber >= currentState.totalPages - 1)) {
       return;
     }
 
-    final nextPage = currentState.number + 1;
+    final nextPage = currentState.pageNumber + 1;
     final result = await _fetchPage(
       page: nextPage,
       competitionId: competitionId,
