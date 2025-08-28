@@ -1,3 +1,5 @@
+// lib/presentation/pages/auth/login_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -85,6 +87,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
+                      // ✅ CHAVE ADICIONADA PARA O TESTE
+                      key: const ValueKey('login_username_field'),
                       controller: _registrationController,
                       enabled: !isLoading,
                       decoration: InputDecoration(
@@ -101,6 +105,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
+                      // ✅ CHAVE ADICIONADA PARA O TESTE
+                      key: const ValueKey('login_password_field'),
                       controller: _passwordController,
                       enabled: !isLoading,
                       obscureText: true,
@@ -118,6 +124,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
+                      // ✅ CHAVE ADICIONADA PARA O TESTE
+                      key: const ValueKey('login_button'),
                       onPressed: isLoading ? null : _login,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),

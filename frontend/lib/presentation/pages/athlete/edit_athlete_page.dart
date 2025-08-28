@@ -1,3 +1,5 @@
+// lib/presentation/pages/athlete/edit_athlete_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -94,14 +96,17 @@ class __EditAthleteFormState extends ConsumerState<_EditAthleteForm> {
     if (success && mounted) {
       final authState = ref.read(authProvider).value;
       final isEditingSelf = authState?.maybeWhen(
-        authenticated: (profile) => profile.athleteDetails?.id == widget.athlete.id,
+        authenticated: (profile) =>
+        profile.athleteDetails?.id == widget.athlete.id,
         orElse: () => false,
-      ) ?? false;
+      ) ??
+          false;
 
       if (isEditingSelf && oldRegistration != newRegistration) {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
-            content: Text('Matrícula atualizada! Por favor, faça login novamente.'),
+            content:
+            Text('Matrícula atualizada! Por favor, faça login novamente.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -135,8 +140,11 @@ class __EditAthleteFormState extends ConsumerState<_EditAthleteForm> {
               };
             } else if (err is ApiException) {
               if (err.statusCode == 403) {
-                _fieldErrors = {'form': 'Você não tem permissão para editar este perfil.'};
-              } else if (err.message.contains('matrícula informada já existe')) {
+                _fieldErrors = {
+                  'form': 'Você não tem permissão para editar este perfil.'
+                };
+              } else if (err.message
+                  .contains('matrícula informada já existe')) {
                 _fieldErrors = {'registration': err.message};
               } else {
                 _fieldErrors = {'form': err.message};
@@ -175,6 +183,8 @@ class __EditAthleteFormState extends ConsumerState<_EditAthleteForm> {
             ),
             const SizedBox(height: 16),
             TextFormField(
+              // ✅ CHAVE ADICIONADA PARA O TESTE
+              key: const ValueKey('edit_athlete_fullName_field'),
               controller: _fullNameController,
               enabled: !isLoading,
               decoration: InputDecoration(
@@ -213,9 +223,12 @@ class __EditAthleteFormState extends ConsumerState<_EditAthleteForm> {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
+              // ✅ CHAVE ADICIONADA PARA O TESTE
+              key: const ValueKey('edit_athlete_save_button'),
               onPressed: isLoading ? null : _submitForm,
               child: isLoading
-                  ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator())
+                  ? const SizedBox.square(
+                  dimension: 24, child: CircularProgressIndicator())
                   : const Text('Salvar Alterações'),
             ),
           ],

@@ -69,6 +69,12 @@ import '../../domain/usecases/team/update_team_use_case.dart';
 final locator = GetIt.instance;
 
 void setupLocator() {
+
+
+  if (locator.isRegistered<Dio>()) {
+    return;
+  }
+
   // --- CAMADA DE REDE E SERVIÇOS DE BASE ---
   locator.registerLazySingleton<FlutterSecureStorage>(() => const FlutterSecureStorage());
   final configuredDio = DioClient(Dio(), locator<FlutterSecureStorage>()).dio;

@@ -1,3 +1,5 @@
+// lib/presentation/pages/athlete/widgets/athlete_search_bar.dart
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +19,6 @@ class _AthleteSearchBarState extends ConsumerState<AthleteSearchBar> {
   @override
   void initState() {
     super.initState();
-    // Inicia o campo com o valor atual do provider, caso exista.
     _textController.text = ref.read(athleteSearchQueryProvider);
   }
 
@@ -37,18 +38,20 @@ class _AthleteSearchBarState extends ConsumerState<AthleteSearchBar> {
 
   @override
   Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: TextField(
-        controller: _textController,
-        onChanged: _onSearchChanged,
-        decoration: InputDecoration(
-          hintText: 'Pesquisar por nome...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          contentPadding: EdgeInsets.zero,
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    child: TextField(
+      // ✅ CHAVE ADICIONADA PARA O TESTE
+      key: const ValueKey('athlete_search_field'),
+      controller: _textController,
+      onChanged: _onSearchChanged,
+      decoration: InputDecoration(
+        hintText: 'Pesquisar por nome...',
+        prefixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
         ),
+        contentPadding: EdgeInsets.zero,
       ),
-    );
+    ),
+  );
 }

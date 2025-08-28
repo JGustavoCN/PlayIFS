@@ -1,4 +1,4 @@
-// Ficheiro: lib/presentation/pages/home/home_page.dart
+// lib/presentation/pages/home/home_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,7 +51,6 @@ class HomePage extends ConsumerWidget {
     final isCoordinator = profile.roles.contains('ROLE_COORDINATOR');
     final isAthlete = profile.roles.contains('ROLE_ATHLETE');
 
-    // O painel só aparece se o utilizador tiver pelo menos um dos perfis relevantes.
     if (!isCoordinator && !isAthlete) {
       return const SizedBox.shrink();
     }
@@ -68,7 +67,6 @@ class HomePage extends ConsumerWidget {
             ),
           ),
           const Divider(indent: 16, endIndent: 16),
-
           if (isCoordinator) ...[
             ListTile(
               leading: const Icon(Icons.emoji_events_outlined),
@@ -76,7 +74,6 @@ class HomePage extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.competitions),
             ),
-            // ✅ ADICIONADO: Link para Gestão de Equipas
             ListTile(
               leading: const Icon(Icons.groups_outlined),
               title: const Text('Gerir Equipas'),
@@ -84,13 +81,13 @@ class HomePage extends ConsumerWidget {
               onTap: () => context.pushNamed(AppRoutes.teams),
             ),
             ListTile(
+              key: const ValueKey('home_manage_athletes_item'),
               leading: const Icon(Icons.directions_run),
               title: const Text('Gerir Atletas'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.athletes),
             ),
           ],
-
           if (isAthlete)
             ListTile(
               leading: const Icon(Icons.assignment_ind_outlined),
@@ -99,7 +96,6 @@ class HomePage extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.myDesignations),
             ),
-
           if (isAthlete && !isCoordinator)
             ListTile(
               leading: const Icon(Icons.emoji_events_outlined),
@@ -107,28 +103,29 @@ class HomePage extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.pushNamed(AppRoutes.competitions),
             ),
-            ListTile(
-              leading: const Icon(Icons.sports_soccer),
-              title: const Text('Consultar Desportos'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.sports),
-            ),
-            ListTile(
-              leading: const Icon(Icons.school),
-              title: const Text('Consultar Campi'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.campuses),
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Consultar Cursos'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoutes.courses),
-            ),
+          ListTile(
+            leading: const Icon(Icons.sports_soccer),
+            title: const Text('Consultar Desportos'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.sports),
+          ),
+          ListTile(
+            leading: const Icon(Icons.school),
+            title: const Text('Consultar Campi'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.campuses),
+          ),
+          ListTile(
+            leading: const Icon(Icons.book),
+            title: const Text('Consultar Cursos'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoutes.courses),
+          ),
         ],
       ),
     );
   }
+
   Widget _buildProfileCard(BuildContext context, Profile profile) {
     final textTheme = Theme.of(context).textTheme;
 
@@ -144,6 +141,8 @@ class HomePage extends ConsumerWidget {
                 Text('Informações Gerais', style: textTheme.titleLarge),
                 if (profile.athleteDetails != null)
                   IconButton(
+                    // ✅ CHAVE ADICIONADA PARA O TESTE
+                    key: const ValueKey('edit_profile_button'),
                     icon: const Icon(Icons.edit_outlined),
                     tooltip: 'Editar Meu Perfil de Atleta',
                     onPressed: () {
