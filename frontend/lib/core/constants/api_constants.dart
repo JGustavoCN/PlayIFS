@@ -45,6 +45,15 @@ class ApiConstants {
   static const String designatedCoachesBatchUpsert = '/designated-coaches/batch-upsert';
   static const String designatedCoachesBatchRemove = '/designated-coaches/batch-remove';
 
+  static const String games = '/games';
+  static const String gameById = '$games/{id}';
+  static const String gameResult = '$games/{id}/result';
+  static const String gameWo = '$games/{id}/wo';
+  static const String gameUndoWo = '$games/{id}/undo-wo';
+  static const String gameBatchDelete = '$games/batch-delete';
+  static const String gameBatchReschedule = '$games/datetime/batch-update';
+  static const String gameBatchResults = '$games/results/batch-update';
+
   // 6. Dados de Administração (Campi, Cursos, Desportos)
   static const String campuses = '/campuses';
   static const String courses = '/courses';

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:playifs_frontend/core/network/exceptions.dart';
 import 'package:playifs_frontend/domain/entities/competition/competition_input.dart';
-import 'package:playifs_frontend/domain/entities/sport/sport_summary.dart'; // NOVO: Importar entidade de desporto
+// NOVO: Importar entidade de desporto
 import 'package:playifs_frontend/presentation/providers/competition/competition_details_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/competition_form_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/competition_form_state.dart';

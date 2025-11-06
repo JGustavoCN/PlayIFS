@@ -170,7 +170,7 @@ public class CompetitionController {
 
         EliminationBracketDTO dto = service.getEliminationBracketView(competitionId, sportId);
 
-        // Adiciona um link para o próprio recurso
+        //        // Adiciona um link para o próprio recurso
         dto.add(linkTo(methodOn(CompetitionController.class).getEliminationBracket(competitionId, sportId)).withSelfRel());
 
         // Para cada jogo em cada rodada, adiciona um link para os detalhes daquele jogo

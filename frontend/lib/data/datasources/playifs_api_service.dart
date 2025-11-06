@@ -21,6 +21,9 @@ import 'package:playifs_frontend/data/models/designated_coach/designated_coach_i
 import 'package:playifs_frontend/data/models/designated_coach/designated_coach_input_dto.dart';
 import 'package:playifs_frontend/data/models/designated_coach/designated_coach_summary_dto.dart';
 import 'package:playifs_frontend/data/models/game/game_details_dto.dart';
+import 'package:playifs_frontend/data/models/game/game_summary_dto.dart';
+import 'package:playifs_frontend/data/models/game/game_update_dto.dart';
+import 'package:playifs_frontend/data/models/game/game_wo_dto.dart';
 import 'package:playifs_frontend/data/models/shared/api_response_body.dart';
 import 'package:playifs_frontend/data/models/shared/id_batch_dto.dart';
 import 'package:playifs_frontend/data/models/shared/page_dto.dart';
@@ -30,7 +33,12 @@ import 'package:playifs_frontend/data/models/team/team_input_dto.dart';
 import 'package:playifs_frontend/data/models/team/team_summary_dto.dart';
 import 'package:playifs_frontend/data/models/team/team_update_dto.dart';
 import 'package:playifs_frontend/data/models/user/profile_dto.dart';
+import 'package:playifs_frontend/domain/entities/game/game_summary.dart';
 import 'package:retrofit/retrofit.dart';
+
+import '../models/game/game_reschedule_batch_dto.dart';
+import '../models/game/game_result_batch_dto.dart';
+import '../models/game/game_result_dto.dart';
 
 part 'playifs_api_service.g.dart';
 
@@ -186,4 +194,59 @@ abstract class PlayifsApiService {
 
   @GET(ApiConstants.sports)
   Future<ApiResponseBody<PageDTO<SportSummaryDTO>>> findAllSports(@Queries() Map<String, dynamic> queries);
+
+  @GET(ApiConstants.games)
+  Future<ApiResponseBody<PageDTO<GameSummaryDTO>>> findAllGames(
+      @Query('page') int page,
+      @Query('teamId') int? teamId,
+      @Query('competitionId') int? competitionId,
+      @Query('sportId') int? sportId,
+      @Query('status') String? status,
+      @Query('phase') String? phase,
+      );
+
+  @GET(ApiConstants.gameById)
+  Future<ApiResponseBody<GameDetailsDTO>> findGameById(
+      @Path('id') int gameId,
+      );
+
+  @PUT(ApiConstants.gameById)
+  Future<ApiResponseBody<GameDetailsDTO>> rescheduleGame(
+      @Path('id') int gameId,
+      @Body() GameUpdateDTO input,
+      );
+
+  @DELETE(ApiConstants.gameById)
+  Future<void> deleteGame(@Path('id') int gameId);
+
+  @POST(ApiConstants.gameBatchDelete)
+  Future<void> batchDeleteGames(@Body() IdBatchDTO input);
+
+  @PATCH(ApiConstants.gameResult)
+  Future<ApiResponseBody<GameDetailsDTO>> updateResult(
+      @Path('id') int gameId,
+      @Body() GameResultDTO input,
+      );
+
+  @PATCH(ApiConstants.gameBatchResults)
+  Future<ApiResponseBody<List<GameDetailsDTO>>> batchUpdateResults(
+      @Body() GameResultBatchDTO input,
+      );
+
+  @PATCH(ApiConstants.gameWo)
+  Future<ApiResponseBody<GameDetailsDTO>> registerWo(
+      @Path('id') int gameId,
+      @Body() GameWoDTO input,
+      );
+
+  @PATCH(ApiConstants.gameUndoWo)
+  Future<ApiResponseBody<GameDetailsDTO>> undoWo(
+      @Path('id') int gameId,
+      );
+
+  @PATCH(ApiConstants.gameBatchReschedule)
+  Future<ApiResponseBody<List<GameDetailsDTO>>> batchReschedule(
+      @Body() GameRescheduleBatchDTO input,
+      );
+
 }

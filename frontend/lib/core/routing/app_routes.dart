@@ -27,6 +27,8 @@ import '../../presentation/pages/team/team_details_page.dart';
 import '../../presentation/pages/team/team_form_page.dart';
 import '../../presentation/pages/team/teams_list_page.dart';
 import '../../presentation/providers/auth/auth_provider.dart';
+import '../../presentation/pages/game/games_list_page.dart';
+import '../../presentation/pages/game/game_details_page.dart';
 
 part 'app_routes.g.dart';
 
@@ -65,6 +67,9 @@ class AppRoutes {
   static const String teamEdit = '/teams/:teamId/edit';
   static const String athleteSelection = '/athlete-selection';
 
+  static const String games = '/games';
+  static const String gameDetails = '/games/:id';
+
 }
 
 class GoRouterRefreshNotifier extends ChangeNotifier {
@@ -97,6 +102,38 @@ GoRouter goRouter(Ref ref) {
     initialLocation: AppRoutes.splash,
     refreshListenable: refreshNotifier,
     routes: [
+      GoRoute(
+        path: AppRoutes.games,
+        name: AppRoutes.games,
+        builder: (context, state) {
+          // Permite filtrar a lista de jogos, por exemplo: /games?competitionId=1
+          final competitionIdString = state.uri.queryParameters['competitionId'];
+          final teamIdString = state.uri.queryParameters['teamId'];
+
+          final competitionId = competitionIdString != null
+              ? int.tryParse(competitionIdString)
+              : null;
+          final teamId = teamIdString != null
+              ? int.tryParse(teamIdString)
+              : null;
+
+          // Assumindo que sua página de lista de jogos aceita estes filtros
+          return GamesListPage(
+            competitionId: competitionId,
+            teamId: teamId,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.gameDetails,
+        name: AppRoutes.gameDetails,
+        builder: (context, state) {
+          // Extrai o 'id' da URL (ex: /games/10)
+          final gameId = int.parse(state.pathParameters['id']!);
+          // Assumindo que sua página de detalhes se chama GameDetailsPage
+          return GameDetailsPage(gameId: gameId);
+        },
+      ),
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashPage(),

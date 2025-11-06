@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GroupStageView {
 
- List<GroupStandingsReport> get groups;
+/// A lista de classificações de cada grupo.
+ List<GroupStandingsReport> get groups;/// ✅ NOVO: A lista de todos os jogos desta fase.
+ List<GameSummary> get games;
 /// Create a copy of GroupStageView
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $GroupStageViewCopyWith<GroupStageView> get copyWith => _$GroupStageViewCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupStageView&&const DeepCollectionEquality().equals(other.groups, groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupStageView&&const DeepCollectionEquality().equals(other.groups, groups)&&const DeepCollectionEquality().equals(other.games, games));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups),const DeepCollectionEquality().hash(games));
 
 @override
 String toString() {
-  return 'GroupStageView(groups: $groups)';
+  return 'GroupStageView(groups: $groups, games: $games)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $GroupStageViewCopyWith<$Res>  {
   factory $GroupStageViewCopyWith(GroupStageView value, $Res Function(GroupStageView) _then) = _$GroupStageViewCopyWithImpl;
 @useResult
 $Res call({
- List<GroupStandingsReport> groups
+ List<GroupStandingsReport> groups, List<GameSummary> games
 });
 
 
@@ -62,10 +64,11 @@ class _$GroupStageViewCopyWithImpl<$Res>
 
 /// Create a copy of GroupStageView
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,Object? games = null,}) {
   return _then(_self.copyWith(
 groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
-as List<GroupStandingsReport>,
+as List<GroupStandingsReport>,games: null == games ? _self.games : games // ignore: cast_nullable_to_non_nullable
+as List<GameSummary>,
   ));
 }
 
@@ -150,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupStandingsReport> groups)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupStandingsReport> groups,  List<GameSummary> games)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupStageView() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   return orElse();
 
 }
@@ -171,10 +174,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupStandingsReport> groups)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupStandingsReport> groups,  List<GameSummary> games)  $default,) {final _that = this;
 switch (_that) {
 case _GroupStageView():
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -191,10 +194,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupStandingsReport> groups)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupStandingsReport> groups,  List<GameSummary> games)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupStageView() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   return null;
 
 }
@@ -206,14 +209,25 @@ return $default(_that.groups);case _:
 
 
 class _GroupStageView implements GroupStageView {
-  const _GroupStageView({required final  List<GroupStandingsReport> groups}): _groups = groups;
+  const _GroupStageView({required final  List<GroupStandingsReport> groups, required final  List<GameSummary> games}): _groups = groups,_games = games;
   
 
+/// A lista de classificações de cada grupo.
  final  List<GroupStandingsReport> _groups;
+/// A lista de classificações de cada grupo.
 @override List<GroupStandingsReport> get groups {
   if (_groups is EqualUnmodifiableListView) return _groups;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_groups);
+}
+
+/// ✅ NOVO: A lista de todos os jogos desta fase.
+ final  List<GameSummary> _games;
+/// ✅ NOVO: A lista de todos os jogos desta fase.
+@override List<GameSummary> get games {
+  if (_games is EqualUnmodifiableListView) return _games;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_games);
 }
 
 
@@ -227,16 +241,16 @@ _$GroupStageViewCopyWith<_GroupStageView> get copyWith => __$GroupStageViewCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupStageView&&const DeepCollectionEquality().equals(other._groups, _groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupStageView&&const DeepCollectionEquality().equals(other._groups, _groups)&&const DeepCollectionEquality().equals(other._games, _games));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups),const DeepCollectionEquality().hash(_games));
 
 @override
 String toString() {
-  return 'GroupStageView(groups: $groups)';
+  return 'GroupStageView(groups: $groups, games: $games)';
 }
 
 
@@ -247,7 +261,7 @@ abstract mixin class _$GroupStageViewCopyWith<$Res> implements $GroupStageViewCo
   factory _$GroupStageViewCopyWith(_GroupStageView value, $Res Function(_GroupStageView) _then) = __$GroupStageViewCopyWithImpl;
 @override @useResult
 $Res call({
- List<GroupStandingsReport> groups
+ List<GroupStandingsReport> groups, List<GameSummary> games
 });
 
 
@@ -264,10 +278,11 @@ class __$GroupStageViewCopyWithImpl<$Res>
 
 /// Create a copy of GroupStageView
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,Object? games = null,}) {
   return _then(_GroupStageView(
 groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
-as List<GroupStandingsReport>,
+as List<GroupStandingsReport>,games: null == games ? _self._games : games // ignore: cast_nullable_to_non_nullable
+as List<GameSummary>,
   ));
 }
 

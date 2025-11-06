@@ -46,19 +46,23 @@ public class GameController {
             parameters = {
                     @Parameter(name = "teamId", description = "ID da equipa para filtrar os jogos."),
                     @Parameter(name = "competitionId", description = "ID da competição para filtrar os jogos."),
+                    @Parameter(name = "sportId", description = "ID do desporto para filtrar os jogos."),
                     @Parameter(name = "status", description = "Status do jogo para filtrar.", schema = @Schema(implementation = GameStatus.class)),
                     @Parameter(name = "phase", description = "Fase do jogo para filtrar.", schema = @Schema(implementation = GamePhase.class)),
                     @Parameter(name = "pageable", hidden = true)
             }
-    )@IsAuthenticated
+    )
+    @IsAuthenticated
     public ResponseEntity<ApiResponseBody<PageDTO<GameSummaryDTO>>> findAll(
             @RequestParam(required = false) @Positive Long teamId,
             @RequestParam(required = false) @Positive Long competitionId,
+            @RequestParam(required = false) @Positive Long sportId,
             @RequestParam(required = false) GameStatus status,
             @RequestParam(required = false) GamePhase phase,
             Pageable pageable) {
 
-        PageDTO<GameSummaryDTO> page = service.findAll(teamId, competitionId, status, phase, pageable);
+        PageDTO<GameSummaryDTO> page = service.findAll(teamId, competitionId, sportId, status, phase, pageable);
+
         page.getContent().forEach(game ->
                 game.add(linkTo(methodOn(GameController.class).findById(game.getId())).withSelfRel())
         );
@@ -117,10 +121,7 @@ public class GameController {
             @Valid @RequestBody GameRescheduleBatchDTO batchDto) {
 
         List<GameDetailsDTO> updatedGames = service.batchUpdateDateTime(batchDto.getSchedules());
-
-        // Adicionar links HATEOAS a cada jogo atualizado
         updatedGames.forEach(this::addLinksToGameDetails);
-
         return ResponseEntity.ok(new ApiResponseBody<>(updatedGames, updatedGames.size() + " jogos foram reagendados com sucesso!"));
     }
 
@@ -174,7 +175,7 @@ public class GameController {
 
     private void addLinksToGameDetails(GameDetailsDTO dto) {
         dto.add(linkTo(methodOn(GameController.class).findById(dto.getId())).withSelfRel());
-        dto.add(linkTo(methodOn(GameController.class).findAll(null, null, null, null, Pageable.unpaged())).withRel("games"));
+        dto.add(linkTo(methodOn(GameController.class).findAll(null, null, null, null, null, Pageable.unpaged())).withRel("games"));
 
         if (dto.getTeamA() != null) {
             dto.getTeamA().add(linkTo(methodOn(TeamController.class).findById(dto.getTeamA().getId())).withSelfRel());

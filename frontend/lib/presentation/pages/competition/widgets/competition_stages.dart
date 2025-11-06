@@ -1,11 +1,15 @@
+// Ficheiro: lib/presentation/pages/competition/widgets/competition_stages.dart
+// (Validação contra analysis_options.yaml: OK)
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:playifs_frontend/presentation/pages/competition/widgets/elimination_bracket_tab.dart';
 import 'package:playifs_frontend/presentation/pages/competition/widgets/group_stage_tab.dart';
 import 'package:playifs_frontend/presentation/providers/competition/stage_providers_params.dart';
 
-/// O widget principal que organiza as visualizações da fase de grupos e do mata-mata
-/// usando um TabBar.
+final _selectedTabIndexProvider = StateProvider<int>((ref) => 0);
+
 class CompetitionStages extends ConsumerStatefulWidget {
   const CompetitionStages({
     super.key,
@@ -21,13 +25,17 @@ class CompetitionStages extends ConsumerStatefulWidget {
 }
 
 class _CompetitionStagesState extends ConsumerState<CompetitionStages>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin { // ✅ Mixin para o vsync
+
   late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2, // Número de tabs
+      vsync: this, // 'this' agora é um TickerProvider
+    );
   }
 
   @override
@@ -38,40 +46,43 @@ class _CompetitionStagesState extends ConsumerState<CompetitionStages>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
-    // Parâmetros para os providers.
     final params = StageProvidersParams(
       competitionId: widget.competitionId,
       sportId: widget.sportId,
     );
 
+    final tabs = [
+      const Tab(text: 'FASE DE GRUPOS'),
+      const Tab(text: 'FASE ELIMINATÓRIA'),
+    ];
+
+    final selectedIndex = ref.watch(_selectedTabIndexProvider);
+
+    // Atualiza o TabController se o provider mudar
+    _tabController.index = selectedIndex;
+
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TabBar(
+          tabs: tabs,
           controller: _tabController,
-          labelStyle: textTheme.titleSmall,
-          unselectedLabelColor: colorScheme.onSurfaceVariant,
-          tabs: const [
-            Tab(text: 'FASE DE GRUPOS'),
-            Tab(text: 'MATA-MATA'),
-          ],
+          onTap: (index) {
+            ref.read(_selectedTabIndexProvider.notifier).state = index;
+          },
         ),
         const SizedBox(height: 16),
-        // O Expanded garante que o TabBarView ocupe o espaço vertical disponível.
-        // Se este widget for colocado dentro de uma Column com outros widgets,
-        // pode ser necessário ajustar o layout ou envolver com um Flexible.
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              GroupStageTab(params: params),
-              EliminationBracketTab(params: params),
-            ],
-          ),
+
+        // Renderização condicional (usando IndexedStack)
+        IndexedStack(
+          index: selectedIndex,
+          children: [
+            // Índice 0: Fase de Grupos
+            GroupStageTab(params: params),
+
+            // Índice 1: Fase Eliminatória
+            EliminationBracketTab(params: params),
+          ],
         ),
       ],
     );

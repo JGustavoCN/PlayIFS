@@ -19,20 +19,23 @@ import 'package:playifs_frontend/domain/usecases/athlete/insert_athlete_use_case
 import 'package:playifs_frontend/domain/usecases/athlete/update_athlete_use_case.dart';
 import 'package:playifs_frontend/domain/usecases/auth/login_use_case.dart';
 import 'package:playifs_frontend/domain/usecases/auth/refresh_token_use_case.dart';
+import 'package:playifs_frontend/domain/usecases/game/find_game_by_id_use_case.dart';
 import 'package:playifs_frontend/domain/usecases/profile/get_profile_use_case.dart';
 
 import '../../data/repositories/campus_repository_impl.dart';
 import '../../data/repositories/competition_repository_impl.dart';
-import '../../data/repositories/config_repository_impl.dart'; // ✅ 1. Importar a implementação
+import '../../data/repositories/config_repository_impl.dart';
 import '../../data/repositories/course_repository_impl.dart';
 import '../../data/repositories/designated_coach_repository_impl.dart';
+import '../../data/repositories/game_repository_impl.dart'; // ✅ Import está correto
 import '../../data/repositories/sport_repository_impl.dart';
 import '../../data/repositories/team_repository_impl.dart';
 import '../../domain/repositories/campus_repository.dart';
 import '../../domain/repositories/competition_repository.dart';
-import '../../domain/repositories/config_repository.dart'; // ✅ 2. Importar o contrato
+import '../../domain/repositories/config_repository.dart';
 import '../../domain/repositories/course_repository.dart';
 import '../../domain/repositories/designated_coach_repository.dart';
+import '../../domain/repositories/game_repository.dart'; // ✅ Import está correto
 import '../../domain/repositories/sport_repository.dart';
 import '../../domain/repositories/team_repository.dart';
 import '../../domain/usecases/campus/find_all_campuses_use_case.dart';
@@ -55,6 +58,15 @@ import '../../domain/usecases/designated_coach/find_all_designated_coaches_use_c
 import '../../domain/usecases/designated_coach/find_designated_coach_by_id_use_case.dart';
 import '../../domain/usecases/designated_coach/remove_coach_use_case.dart';
 import '../../domain/usecases/designated_coach/update_coach_use_case.dart';
+import '../../domain/usecases/game/batch_delete_games_use_case.dart';
+import '../../domain/usecases/game/batch_reschedule_games_use_case.dart';
+import '../../domain/usecases/game/batch_update_results_use_case.dart';
+import '../../domain/usecases/game/delete_game_use_case.dart';
+import '../../domain/usecases/game/find_all_games_use_case.dart';
+import '../../domain/usecases/game/register_wo_use_case.dart';
+import '../../domain/usecases/game/reschedule_game_use_case.dart';
+import '../../domain/usecases/game/undo_wo_use_case.dart';
+import '../../domain/usecases/game/update_game_result_use_case.dart';
 import '../../domain/usecases/sport/find_all_sports_use_case.dart';
 import '../../domain/usecases/team/batch_add_athletes_use_case.dart';
 import '../../domain/usecases/team/batch_delete_teams_use_case.dart';
@@ -93,6 +105,10 @@ void setupLocator() {
   locator.registerLazySingleton<CompetitionRepository>(() => CompetitionRepositoryImpl(locator()));
   locator.registerLazySingleton<DesignatedCoachRepository>(() => DesignatedCoachRepositoryImpl(locator()));
   locator.registerLazySingleton<TeamRepository>(() => TeamRepositoryImpl(locator()));
+
+  // ✅ CORREÇÃO: ADICIONAR O REGISTO DO GAME REPOSITORY
+  locator.registerLazySingleton<GameRepository>(() => GameRepositoryImpl(locator()));
+
 
   // --- CAMADA DE DOMÍNIO: CASOS DE USO ---
   // Auth & Profile
@@ -152,4 +168,15 @@ void setupLocator() {
   locator.registerLazySingleton(() => RemoveAthleteFromTeamUseCase(locator()));
 
 
+  // Use Cases - Game
+  locator.registerLazySingleton(() => FindGameByIdUseCase(locator()));
+  locator.registerLazySingleton(() => FindAllGamesUseCase(locator()));
+  locator.registerLazySingleton(() => RescheduleGameUseCase(locator()));
+  locator.registerLazySingleton(() => DeleteGameUseCase(locator()));
+  locator.registerLazySingleton(() => BatchDeleteGamesUseCase(locator()));
+  locator.registerLazySingleton(() => UpdateGameResultUseCase(locator()));
+  locator.registerLazySingleton(() => BatchUpdateResultsUseCase(locator()));
+  locator.registerLazySingleton(() => RegisterWoUseCase(locator()));
+  locator.registerLazySingleton(() => UndoWoUseCase(locator()));
+  locator.registerLazySingleton(() => BatchRescheduleGamesUseCase(locator()));
 }

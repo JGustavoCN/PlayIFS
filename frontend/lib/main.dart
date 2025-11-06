@@ -13,7 +13,7 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-// MyApp agora é um ConsumerWidget, mais simples e reativo.
+// MyApp agora é um ConsumerWidget, mais simples e r.eativo.
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 

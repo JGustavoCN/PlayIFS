@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GroupStageViewDTO {
 
- List<GroupStandingsReportDTO> get groups;
+/// A lista de classificações de cada grupo.
+ List<GroupStandingsReportDTO> get groups;/// ✅ NOVO: A lista de todos os jogos desta fase.
+ List<GameSummaryDTO> get games;
 /// Create a copy of GroupStageViewDTO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $GroupStageViewDTOCopyWith<GroupStageViewDTO> get copyWith => _$GroupStageViewDT
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupStageViewDTO&&const DeepCollectionEquality().equals(other.groups, groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupStageViewDTO&&const DeepCollectionEquality().equals(other.groups, groups)&&const DeepCollectionEquality().equals(other.games, games));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(groups),const DeepCollectionEquality().hash(games));
 
 @override
 String toString() {
-  return 'GroupStageViewDTO(groups: $groups)';
+  return 'GroupStageViewDTO(groups: $groups, games: $games)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $GroupStageViewDTOCopyWith<$Res>  {
   factory $GroupStageViewDTOCopyWith(GroupStageViewDTO value, $Res Function(GroupStageViewDTO) _then) = _$GroupStageViewDTOCopyWithImpl;
 @useResult
 $Res call({
- List<GroupStandingsReportDTO> groups
+ List<GroupStandingsReportDTO> groups, List<GameSummaryDTO> games
 });
 
 
@@ -65,10 +67,11 @@ class _$GroupStageViewDTOCopyWithImpl<$Res>
 
 /// Create a copy of GroupStageViewDTO
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? groups = null,Object? games = null,}) {
   return _then(_self.copyWith(
 groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
-as List<GroupStandingsReportDTO>,
+as List<GroupStandingsReportDTO>,games: null == games ? _self.games : games // ignore: cast_nullable_to_non_nullable
+as List<GameSummaryDTO>,
   ));
 }
 
@@ -153,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupStandingsReportDTO> groups)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupStandingsReportDTO> groups,  List<GameSummaryDTO> games)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupStageViewDTO() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   return orElse();
 
 }
@@ -174,10 +177,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupStandingsReportDTO> groups)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupStandingsReportDTO> groups,  List<GameSummaryDTO> games)  $default,) {final _that = this;
 switch (_that) {
 case _GroupStageViewDTO():
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +197,10 @@ return $default(_that.groups);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupStandingsReportDTO> groups)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupStandingsReportDTO> groups,  List<GameSummaryDTO> games)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupStageViewDTO() when $default != null:
-return $default(_that.groups);case _:
+return $default(_that.groups,_that.games);case _:
   return null;
 
 }
@@ -206,17 +209,28 @@ return $default(_that.groups);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _GroupStageViewDTO implements GroupStageViewDTO {
-  const _GroupStageViewDTO({required final  List<GroupStandingsReportDTO> groups}): _groups = groups;
+  const _GroupStageViewDTO({required final  List<GroupStandingsReportDTO> groups, required final  List<GameSummaryDTO> games}): _groups = groups,_games = games;
   factory _GroupStageViewDTO.fromJson(Map<String, dynamic> json) => _$GroupStageViewDTOFromJson(json);
 
+/// A lista de classificações de cada grupo.
  final  List<GroupStandingsReportDTO> _groups;
+/// A lista de classificações de cada grupo.
 @override List<GroupStandingsReportDTO> get groups {
   if (_groups is EqualUnmodifiableListView) return _groups;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_groups);
+}
+
+/// ✅ NOVO: A lista de todos os jogos desta fase.
+ final  List<GameSummaryDTO> _games;
+/// ✅ NOVO: A lista de todos os jogos desta fase.
+@override List<GameSummaryDTO> get games {
+  if (_games is EqualUnmodifiableListView) return _games;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_games);
 }
 
 
@@ -233,16 +247,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupStageViewDTO&&const DeepCollectionEquality().equals(other._groups, _groups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupStageViewDTO&&const DeepCollectionEquality().equals(other._groups, _groups)&&const DeepCollectionEquality().equals(other._games, _games));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_groups),const DeepCollectionEquality().hash(_games));
 
 @override
 String toString() {
-  return 'GroupStageViewDTO(groups: $groups)';
+  return 'GroupStageViewDTO(groups: $groups, games: $games)';
 }
 
 
@@ -253,7 +267,7 @@ abstract mixin class _$GroupStageViewDTOCopyWith<$Res> implements $GroupStageVie
   factory _$GroupStageViewDTOCopyWith(_GroupStageViewDTO value, $Res Function(_GroupStageViewDTO) _then) = __$GroupStageViewDTOCopyWithImpl;
 @override @useResult
 $Res call({
- List<GroupStandingsReportDTO> groups
+ List<GroupStandingsReportDTO> groups, List<GameSummaryDTO> games
 });
 
 
@@ -270,10 +284,11 @@ class __$GroupStageViewDTOCopyWithImpl<$Res>
 
 /// Create a copy of GroupStageViewDTO
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? groups = null,Object? games = null,}) {
   return _then(_GroupStageViewDTO(
 groups: null == groups ? _self._groups : groups // ignore: cast_nullable_to_non_nullable
-as List<GroupStandingsReportDTO>,
+as List<GroupStandingsReportDTO>,games: null == games ? _self._games : games // ignore: cast_nullable_to_non_nullable
+as List<GameSummaryDTO>,
   ));
 }
 

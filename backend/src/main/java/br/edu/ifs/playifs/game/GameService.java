@@ -27,11 +27,12 @@ public class GameService {
     private GameRepository repository;
 
     @Transactional(readOnly = true)
-    public PageDTO<GameSummaryDTO> findAll(Long teamId, Long competitionId, GameStatus status, GamePhase phase, Pageable pageable) {
+    public PageDTO<GameSummaryDTO> findAll(Long teamId, Long competitionId, Long sportId, GameStatus status, GamePhase phase, Pageable pageable) {
 
         // Combina as especificações para construir a query dinâmica
         Specification<Game> spec = GameSpecification.hasTeam(teamId)
                 .and(GameSpecification.inCompetition(competitionId))
+                .and(GameSpecification.hasSport(sportId))
                 .and(GameSpecification.hasStatus(status))
                 .and(GameSpecification.hasPhase(phase));
 
@@ -96,7 +97,9 @@ public class GameService {
         // Busca o jogo no banco de dados. Se não encontrar, lança exceção.
         Game entity = repository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Jogo não encontrado"));
-
+        if (entity.getStatus() == GameStatus.WO || entity.getTeamB() == null) {
+            throw new BusinessException("Não é permitido alterar o resultado de um jogo decidido por W.O. (Bye).");
+        }
         // Atualiza os placares
         entity.setScoreTeamA(dto.getScoreTeamA());
         entity.setScoreTeamB(dto.getScoreTeamB());

@@ -65,7 +65,7 @@ public class CampusController {
         dto.add(linkTo(methodOn(CampusController.class).findById(id)).withSelfRel());
         dto.add(linkTo(methodOn(CampusController.class).findAll(null, Pageable.unpaged())).withRel("campuses"));
         return ResponseEntity.ok(new ApiResponseBody<>(dto));
-    }
+    }//HATEOAS
 
     @PostMapping
     @Operation(summary = "Cria um novo campus (Coordenador)")

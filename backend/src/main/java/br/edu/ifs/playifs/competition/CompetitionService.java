@@ -7,7 +7,10 @@ import br.edu.ifs.playifs.data.course.model.enums.CourseLevel;
 import br.edu.ifs.playifs.data.sport.SportRepository;
 import br.edu.ifs.playifs.data.sport.model.Sport;
 import br.edu.ifs.playifs.game.GameRepository;
+import br.edu.ifs.playifs.game.GameService;
+import br.edu.ifs.playifs.game.GameSpecification;
 import br.edu.ifs.playifs.game.dto.GameDetailsDTO;
+import br.edu.ifs.playifs.game.dto.GameSummaryDTO;
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.game.model.enums.GamePhase;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
@@ -20,6 +23,8 @@ import br.edu.ifs.playifs.shared.web.dto.PageDTO;
 import br.edu.ifs.playifs.team.TeamRepository;
 import br.edu.ifs.playifs.team.model.Team;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,13 +47,16 @@ public class CompetitionService {
     private final ReportService reportService;
     private final SportRepository sportRepository; // Nova dependência
 
-    public CompetitionService(CompetitionRepository repository, TeamRepository teamRepository, GameGroupRepository groupRepository, GameRepository gameRepository, ReportService reportService, SportRepository sportRepository) {
+    private final GameService gameService;
+
+    public CompetitionService(CompetitionRepository repository, TeamRepository teamRepository, GameGroupRepository groupRepository, GameRepository gameRepository, GameService gameService, ReportService reportService, SportRepository sportRepository) {
         this.repository = repository;
         this.teamRepository = teamRepository;
         this.groupRepository = groupRepository;
         this.gameRepository = gameRepository;
         this.reportService = reportService;
-        this.sportRepository = sportRepository; // Inicialização da nova dependência
+        this.sportRepository = sportRepository;
+        this.gameService = gameService;
     }
 
     @Transactional(readOnly = true)
@@ -177,22 +185,27 @@ public class CompetitionService {
     public List<GameDetailsDTO> generateEliminationStage(Long competitionId, Long sportId) {
         Competition competition = repository.findById(competitionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada."));
+
         List<Game> allEliminationGames = gameRepository.findAllEliminationGamesByCompetitionAndSport(competitionId, sportId);
+
         boolean hasPendingGames = allEliminationGames.stream()
                 .anyMatch(game -> game.getStatus() == GameStatus.SCHEDULED);
         if (hasPendingGames) {
             throw new BusinessException("Existem jogos da fase eliminatória atual que ainda não foram finalizados.");
         }
+
         boolean tournamentIsFinished = allEliminationGames.stream()
                 .anyMatch(game -> game.getPhase() == GamePhase.FINAL && game.getStatus() != GameStatus.SCHEDULED);
         if (tournamentIsFinished) {
             throw new BusinessException("Este torneio já foi finalizado e não pode gerar novas fases.");
         }
+
         List<Game> newGames = new ArrayList<>();
         GamePhase lastPlayedPhase = allEliminationGames.stream()
                 .map(Game::getPhase)
                 .max(Comparator.comparing(Enum::ordinal))
                 .orElse(null);
+
         if (lastPlayedPhase == null) {
             List<Team> teamsForNextRound = getTeamsFromGroupStage(competition, sportId);
             if (teamsForNextRound.size() < 2) {
@@ -200,11 +213,15 @@ public class CompetitionService {
             }
             GamePhase nextPhase = getPhaseFor(teamsForNextRound.size());
             newGames.addAll(generateKnockoutRound(teamsForNextRound, nextPhase));
+
         } else if (lastPlayedPhase == GamePhase.SEMI_FINALS) {
             List<Game> semiFinalGames = allEliminationGames.stream()
                     .filter(g -> g.getPhase() == GamePhase.SEMI_FINALS).toList();
-            List<Team> winners = semiFinalGames.stream().map(this::getWinner).toList();
-            List<Team> losers = semiFinalGames.stream().map(this::getLoser).toList();
+
+            // Proteção para garantir que os jogos "bye" (W.O.) também sejam contados como vencedores
+            List<Team> winners = semiFinalGames.stream().map(this::getWinner).filter(Objects::nonNull).toList();
+            List<Team> losers = semiFinalGames.stream().map(this::getLoser).filter(Objects::nonNull).toList();
+
             if (winners.size() == 2) {
                 newGames.add(createEliminationGame(winners.get(0), winners.get(1), GamePhase.FINAL));
             }
@@ -214,24 +231,31 @@ public class CompetitionService {
         } else {
             List<Team> winners = allEliminationGames.stream()
                     .filter(game -> game.getPhase() == lastPlayedPhase)
-                    .map(this::getWinner)
+                    .map(this::getWinner) // getWinner lida com 'WO' e 'FINISHED'
+                    .filter(Objects::nonNull) // Garantir que não há nulos
                     .toList();
-            List<Team> initialQualifiedTeams = getTeamsFromGroupStage(competition, sportId);
-            int byesInFirstRound = getNextPowerOfTwo(initialQualifiedTeams.size()) - initialQualifiedTeams.size();
-            List<Team> teamsForNextRound = new ArrayList<>();
-            if (getPhaseFor(initialQualifiedTeams.size()) == lastPlayedPhase) {
-                teamsForNextRound.addAll(initialQualifiedTeams.subList(0, byesInFirstRound));
-            }
-            teamsForNextRound.addAll(winners);
+            List<Team> teamsForNextRound = new ArrayList<>(winners);
+
             if (teamsForNextRound.size() < 2) {
-                throw new BusinessException("Não há equipas suficientes para gerar a próxima fase.");
+                throw new BusinessException("O torneio foi concluído. Não há novas fases para gerar.");
             }
+
+            // 3. Determinar a próxima fase com base no n.º de vencedores
             GamePhase nextPhase = getPhaseFor(teamsForNextRound.size());
+
+            // 4. Verificação de segurança para impedir a recriação da mesma fase
+            if (nextPhase == lastPlayedPhase) {
+                throw new BusinessException("Não foi possível avançar. A fase " + nextPhase + " já foi jogada e os vencedores não são suficientes para a próxima fase.");
+            }
+
             newGames.addAll(generateKnockoutRound(teamsForNextRound, nextPhase));
+
         }
+
         if (newGames.isEmpty()) {
             throw new BusinessException("Nenhuma nova fase a ser gerada no momento. O torneio pode ter sido concluído.");
         }
+
         gameRepository.saveAll(newGames);
         return newGames.stream().map(GameDetailsDTO::new).toList();
     }
@@ -242,10 +266,21 @@ public class CompetitionService {
         if (groups.isEmpty()) {
             throw new ResourceNotFoundException("Fase de grupos não encontrada ou ainda não gerada para esta competição/desporto.");
         }
+
         List<GroupStandingsReportDTO> standingsReports = groups.stream()
                 .map(group -> reportService.getGroupStandings(group.getId()))
                 .collect(Collectors.toList());
-        return new GroupStageViewDTO(standingsReports);
+
+        List<GameSummaryDTO> games = gameService.findAll(
+                null, // 1. teamId
+                competitionId, // 2. competitionId
+                sportId, // 3. sportId
+                null, // 4. status (DEVE SER NULL)
+                GamePhase.GROUP_STAGE, // 5. phase (DEVE SER GROUP_STAGE)
+                Pageable.unpaged() // 6. pageable
+        ).getContent();
+
+        return new GroupStageViewDTO(standingsReports, games);
     }
 
     @Transactional(readOnly = true)
@@ -286,7 +321,10 @@ public class CompetitionService {
             List<TeamStanding> standings = group.getTeams().stream()
                     .map(TeamStanding::new)
                     .collect(Collectors.toCollection(ArrayList::new));
-            for (Game game : group.getGames()) {
+            List<Game> groupStageGames = group.getGames().stream()
+                    .filter(game -> game.getPhase() == GamePhase.GROUP_STAGE)
+                    .toList();
+            for (Game game : groupStageGames) {
                 if (game.getStatus() == GameStatus.FINISHED || game.getStatus() == GameStatus.WO) {
                     TeamStanding standingA = standings.stream().filter(s -> s.getTeam().equals(game.getTeamA())).findFirst().get();
                     TeamStanding standingB = standings.stream().filter(s -> s.getTeam().equals(game.getTeamB())).findFirst().get();
@@ -308,17 +346,39 @@ public class CompetitionService {
     private List<Game> generateKnockoutRound(List<Team> teams, GamePhase phase) {
         int numTeams = teams.size();
         List<Team> teamsToPlay = new ArrayList<>(teams);
+        List<Game> games = new ArrayList<>(); // ✅ Inicializa a lista aqui
+
         int byes = getNextPowerOfTwo(numTeams) - numTeams;
+        List<Team> teamsWithBye = new ArrayList<>(); // ✅ Lista para guardar os byes
+
         if (byes > 0 && numTeams > 2) {
-            List<Team> teamsWithBye = new ArrayList<>(teams.subList(0, byes));
+            // A sua lógica original pega os 'byes'
+            // do topo da lista (os melhores classificados)
+            teamsWithBye.addAll(teams.subList(0, byes));
             teamsToPlay.removeAll(teamsWithBye);
         }
-        List<Game> games = new ArrayList<>();
+
+        // 1. (Lógica antiga) Criar jogos reais
         for (int i = 0; i < teamsToPlay.size() / 2; i++) {
             Team teamA = teamsToPlay.get(i);
             Team teamB = teamsToPlay.get(teamsToPlay.size() - 1 - i);
             games.add(createEliminationGame(teamA, teamB, phase));
         }
+
+        // 2. ✅ NOVA LÓGICA: Criar jogos "fantasma" para os Byes
+        for (Team teamWithBye : teamsWithBye) {
+            // Cria um jogo com TeamB nulo
+            Game byeGame = createEliminationGame(teamWithBye, null, phase);
+
+            // Um "bye" é um jogo instantaneamente "terminado" por W.O.
+            // (Usamos WO pois o seu código já o reconhece em getTeamsFromGroupStage)
+            byeGame.setStatus(GameStatus.WO);
+            byeGame.setScoreTeamA(1); // Resultado simbólico (W)
+            byeGame.setScoreTeamB(0); // Resultado simbólico (O)
+
+            games.add(byeGame);
+        }
+
         return games;
     }
 
@@ -403,6 +463,9 @@ public class CompetitionService {
         game.setStatus(GameStatus.SCHEDULED);
         game.setTeamA(teamA);
         game.setTeamB(teamB);
+        if (teamA != null) {
+            game.setGroup(teamA.getGameGroup());
+        }
         return game;
     }
 

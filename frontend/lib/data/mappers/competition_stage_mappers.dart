@@ -36,10 +36,11 @@ extension GroupStandingsReportDTOToEntity on GroupStandingsReportDTO {
 }
 
 /// Extension to map GroupStageViewDTO to GroupStageView entity.
-extension GroupStageViewDTOToEntity on GroupStageViewDTO {
-  /// Converts DTO to entity.
+extension GroupStageViewToEntity on GroupStageViewDTO {
+  /// Converte o DTO para a Entidade de Domínio.
   GroupStageView toEntity() => GroupStageView(
     groups: groups.map((dto) => dto.toEntity()).toList(),
+    games: games.map((dto) => dto.toEntity()).toList(), // ✅ NOVO MAPEAMENTO
   );
 }
 

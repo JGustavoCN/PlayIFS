@@ -31,11 +31,9 @@ public class ControllerExceptionHandler {
     public ResponseEntity<CustomError> dataIntegrityViolation(DataIntegrityViolationException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
         String errorMessage = "Violação de integridade de dados.";
-
         if (e.getMostSpecificCause().getMessage().contains("PUBLIC.CONSTRAINT_INDEX_D ON PUBLIC.TB_USER(REGISTRATION")) {
             errorMessage = "A matrícula informada já está em uso por outro usuário.";
         }
-
         logger.warn("Violação de integridade de dados: {} em {}", e.getMostSpecificCause().getMessage(), request.getRequestURI());
         CustomError err = new CustomError(Instant.now(), status.value(), errorMessage, request.getRequestURI());
         return ResponseEntity.status(status).body(err);

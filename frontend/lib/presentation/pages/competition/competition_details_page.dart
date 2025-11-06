@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// CORREÇÃO: Adicionar o import principal do flutter_riverpod para ter acesso ao StateProvider.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +8,6 @@ import 'package:playifs_frontend/presentation/pages/competition/widgets/competit
 import 'package:playifs_frontend/presentation/providers/competition/competition_details_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/competition_form_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/competition_form_state.dart';
-import 'package:playifs_frontend/presentation/providers/profile/profile_provider.dart';
 import 'package:playifs_frontend/presentation/widgets/app_scaffold.dart';
 import 'package:playifs_frontend/presentation/widgets/error_display.dart';
 
@@ -29,7 +27,7 @@ class CompetitionDetailsPage extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Competição apagada com sucesso!')),
           );
-          context.goNamed(AppRoutes.competitions);
+          context.pushNamed(AppRoutes.competitions);
         },
       );
     });
@@ -61,69 +59,72 @@ class CompetitionDetailsPage extends ConsumerWidget {
           error: error,
           onRetry: () => ref.invalidate(competitionDetailsNotifierProvider(competitionId)),
         ),
-        data: (competition) => Padding(
+        data: (competition) => ListView(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                // CORREÇÃO: Usar o nome correto do provider: 'profileProvider'
-                'DEBUG - Roles: ${ref.watch(profileNotifierProvider).value?.roles}',
-                style: TextStyle(backgroundColor: Colors.yellow.shade200, color: Colors.black),
+          children: [
+            Text(competition.name, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text('Nível: ${competition.level}'),
+            Text('Status: ${competition.status ?? 'Não informado'}'),
+            const Divider(height: 32),
+            ListTile(
+              leading: const Icon(Icons.person_pin_outlined),
+              title: const Text('Gerir Técnicos Designados'),
+              onTap: () => context.pushNamed(
+                AppRoutes.designatedCoaches,
+                pathParameters: {'id': competitionId.toString()},
               ),
-              Text(competition.name, style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text('Nível: ${competition.level}'),
-              Text('Status: ${competition.status ?? 'Não informado'}'),
-              const Divider(height: 32),
-              ListTile(
-                leading: const Icon(Icons.person_pin_outlined),
-                title: const Text('Gerir Técnicos Designados'),
-                onTap: () => context.pushNamed(
-                  AppRoutes.designatedCoaches,
-                  pathParameters: {'id': competitionId.toString()},
+            ),
+            ListTile(
+              leading: const Icon(Icons.groups_outlined),
+              title: const Text('Ver Equipas Inscritas'),
+              onTap: () => context.pushNamed(
+                'teams', // Assumindo que a rota 'teams' é um nome válido de GoRouter
+                queryParameters: {'competitionId': competitionId.toString()},
+              ),
+            ),
+            // ✅ NOVO: Botão de Listagem Geral de Jogos
+            ListTile(
+              leading: const Icon(Icons.sports_soccer_outlined),
+              title: const Text('Ver Lista de Jogos (Todos)'),
+              onTap: () => context.pushNamed(
+                AppRoutes.games, // Assumindo que AppRoutes.games é uma rota nomeada válida (ou '/home/games')
+                // Opcional: Pré-filtrar pela competição atual
+                queryParameters: {'competitionId': competitionId.toString()},
+              ),
+            ),
+            const Divider(height: 32),
+            Text(
+              'Fases do Torneio',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            if (competition.associatedSports.isNotEmpty)
+              DropdownButtonFormField<int>(
+                initialValue: selectedSportId,
+                items: competition.associatedSports
+                    .map((SportSummary sport) => DropdownMenuItem<int>(
+                  value: sport.id,
+                  child: Text(sport.name),
+                ))
+                    .toList(),
+                onChanged: (int? newValue) {
+                  ref.read(_selectedSportIdProvider.notifier).state = newValue;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Selecionar Desporto',
+                  border: OutlineInputBorder(),
                 ),
+              )
+            else
+              const Text('Nenhum desporto associado a esta competição.'),
+            const SizedBox(height: 16),
+            if (selectedSportId != null)
+              CompetitionStages(
+                competitionId: competitionId,
+                sportId: selectedSportId,
               ),
-              ListTile(
-                leading: const Icon(Icons.groups_outlined),
-                title: const Text('Ver Equipas Inscritas'),
-                onTap: () => context.push('${AppRoutes.teams}?competitionId=$competitionId'),
-              ),
-              const Divider(height: 32),
-              Text(
-                'Fases do Torneio',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              if (competition.associatedSports.isNotEmpty)
-                DropdownButtonFormField<int>(
-                  initialValue: selectedSportId,
-                  items: competition.associatedSports
-                      .map((SportSummary sport) => DropdownMenuItem<int>(
-                    value: sport.id,
-                    child: Text(sport.name),
-                  ))
-                      .toList(),
-                  onChanged: (int? newValue) {
-                    ref.read(_selectedSportIdProvider.notifier).state = newValue;
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Selecionar Desporto',
-                    border: OutlineInputBorder(),
-                  ),
-                )
-              else
-                const Text('Nenhum desporto associado a esta competição.'),
-              const SizedBox(height: 16),
-              if (selectedSportId != null)
-                Expanded(
-                  child: CompetitionStages(
-                    competitionId: competitionId,
-                    sportId: selectedSportId,
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );

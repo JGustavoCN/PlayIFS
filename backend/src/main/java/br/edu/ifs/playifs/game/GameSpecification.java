@@ -1,8 +1,10 @@
 package br.edu.ifs.playifs.game;
 
+import br.edu.ifs.playifs.competition.model.GameGroup; // Importar se já não estiver
 import br.edu.ifs.playifs.game.model.Game;
 import br.edu.ifs.playifs.game.model.enums.GamePhase;
 import br.edu.ifs.playifs.game.model.enums.GameStatus;
+import jakarta.persistence.criteria.Join; // Importar
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -11,7 +13,6 @@ public final class GameSpecification {
     public static Specification<Game> hasTeam(Long teamId) {
         return (root, query, cb) -> {
             if (teamId == null) return cb.conjunction();
-            // Junta as duas condições com um OR para encontrar o jogo se a equipe for A ou B
             return cb.or(
                     cb.equal(root.join("teamA", JoinType.LEFT).get("id"), teamId),
                     cb.equal(root.join("teamB", JoinType.LEFT).get("id"), teamId)
@@ -22,9 +23,15 @@ public final class GameSpecification {
     public static Specification<Game> inCompetition(Long competitionId) {
         return (root, query, cb) -> {
             if (competitionId == null) return cb.conjunction();
-            // Acessa a competição através da teamA. Assume que teamA sempre existirá.
-            // Para garantir, fazemos um LEFT JOIN.
+            // Filtra por teamA.competition.id (como já estava)
             return cb.equal(root.join("teamA", JoinType.LEFT).join("competition", JoinType.LEFT).get("id"), competitionId);
+        };
+    }
+
+    public static Specification<Game> hasSport(Long sportId) {
+        return (root, query, cb) -> {
+            if (sportId == null) return cb.conjunction();
+            return cb.equal(root.join("teamA", JoinType.LEFT).join("sport", JoinType.LEFT).get("id"), sportId);
         };
     }
 
