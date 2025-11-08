@@ -6,8 +6,11 @@ part of 'elimination_bracket_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(EliminationBracketNotifier)
-const eliminationBracketNotifierProvider = EliminationBracketNotifierFamily._();
+const eliminationBracketProvider = EliminationBracketNotifierFamily._();
 
 final class EliminationBracketNotifierProvider
     extends
@@ -17,8 +20,8 @@ final class EliminationBracketNotifierProvider
     required StageProvidersParams super.argument,
   }) : super(
          retry: null,
-         name: r'eliminationBracketNotifierProvider',
-         isAutoDispose: true,
+         name: r'eliminationBracketProvider',
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -28,7 +31,7 @@ final class EliminationBracketNotifierProvider
 
   @override
   String toString() {
-    return r'eliminationBracketNotifierProvider'
+    return r'eliminationBracketProvider'
         ''
         '($argument)';
   }
@@ -50,7 +53,7 @@ final class EliminationBracketNotifierProvider
 }
 
 String _$eliminationBracketNotifierHash() =>
-    r'b4b95685e295468f3fe4ef53f1da12dba249bd12';
+    r'9ea1ad544facc640ff6eabd300b35dfa408b52c9';
 
 final class EliminationBracketNotifierFamily extends $Family
     with
@@ -64,17 +67,17 @@ final class EliminationBracketNotifierFamily extends $Family
   const EliminationBracketNotifierFamily._()
     : super(
         retry: null,
-        name: r'eliminationBracketNotifierProvider',
+        name: r'eliminationBracketProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   EliminationBracketNotifierProvider call(StageProvidersParams params) =>
       EliminationBracketNotifierProvider._(argument: params, from: this);
 
   @override
-  String toString() => r'eliminationBracketNotifierProvider';
+  String toString() => r'eliminationBracketProvider';
 }
 
 abstract class _$EliminationBracketNotifier
@@ -100,6 +103,3 @@ abstract class _$EliminationBracketNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

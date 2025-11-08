@@ -22,7 +22,7 @@ class _SportSearchBarState extends ConsumerState<SportSearchBar> {
 
   void _submitSearch(String query) {
     // Aciona o método de busca no nosso notifier.
-    ref.read(sportsNotifierProvider.notifier).searchByName(query);
+    ref.read(sportsProvider.notifier).searchByName(query);
   }
 
   @override

@@ -24,7 +24,7 @@ class _GameWoFormWidgetState extends ConsumerState<GameWoFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final actionState = ref.watch(gameActionNotifierProvider);
+    final actionState = ref.watch(gameActionProvider);
 
     // ✅ CORREÇÃO 1: Usa maybeWhen para verificar o estado 'loading'
     final isUpdating = actionState.maybeWhen(
@@ -76,7 +76,7 @@ class _GameWoFormWidgetState extends ConsumerState<GameWoFormWidget> {
           actionState.maybeWhen(
             failure: (error) => ErrorDisplay(
               error: error,
-              onRetry: () => ref.read(gameActionNotifierProvider.notifier).reset(),
+              onRetry: () => ref.read(gameActionProvider.notifier).reset(),
             ),
             orElse: () => const SizedBox.shrink(),
           ),
@@ -101,7 +101,7 @@ class _GameWoFormWidgetState extends ConsumerState<GameWoFormWidget> {
     if (_selectedWinnerId != null) {
       final input = GameWoInput(winnerTeamId: _selectedWinnerId!);
       ref
-          .read(gameActionNotifierProvider.notifier)
+          .read(gameActionProvider.notifier)
           .registerWo(widget.game.id, input);
       Navigator.of(context).pop();
     }

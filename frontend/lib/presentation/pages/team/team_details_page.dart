@@ -58,14 +58,14 @@ class _TeamDetailsPageState extends ConsumerState<TeamDetailsPage> {
     );
 
     if (confirmed == true) {
-      await ref.read(teamDetailsNotifierProvider(widget.teamId).notifier).removeAthletes(_selectedAthleteIds.toList());
+      await ref.read(teamDetailsProvider(widget.teamId).notifier).removeAthletes(_selectedAthleteIds.toList());
       _exitAthleteSelectionMode();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final teamDetailsAsync = ref.watch(teamDetailsNotifierProvider(widget.teamId));
+    final teamDetailsAsync = ref.watch(teamDetailsProvider(widget.teamId));
 
     return AppScaffold(
       title: 'Detalhes da Equipa',
@@ -91,7 +91,7 @@ class _TeamDetailsPageState extends ConsumerState<TeamDetailsPage> {
                 );
 
                 if (confirmed == true && context.mounted) {
-                  await ref.read(teamDetailsNotifierProvider(widget.teamId).notifier).deleteTeam();
+                  await ref.read(teamDetailsProvider(widget.teamId).notifier).deleteTeam();
                   if (context.mounted) context.goNamed(AppRoutes.teams);
                 }
               }
@@ -174,7 +174,7 @@ class _TeamDetailsPageState extends ConsumerState<TeamDetailsPage> {
                       color: Theme.of(context).colorScheme.error,
                       onPressed: () async {
                         // A remoção individual continua a funcionar.
-                        await ref.read(teamDetailsNotifierProvider(widget.teamId).notifier).removeSingleAthlete(athlete.id);
+                        await ref.read(teamDetailsProvider(widget.teamId).notifier).removeSingleAthlete(athlete.id);
                       },
                     )
                         : null,
@@ -191,7 +191,7 @@ class _TeamDetailsPageState extends ConsumerState<TeamDetailsPage> {
                         AppRoutes.athleteSelection,
                       );
                       if (selectedIds != null && selectedIds.isNotEmpty && context.mounted) {
-                        await ref.read(teamDetailsNotifierProvider(widget.teamId).notifier).addAthletes(selectedIds);
+                        await ref.read(teamDetailsProvider(widget.teamId).notifier).addAthletes(selectedIds);
                       }
                     },
                     child: const Text('Adicionar Atletas'),
@@ -216,7 +216,7 @@ class _TeamDetailsPageState extends ConsumerState<TeamDetailsPage> {
         ),
         error: (error, stack) => ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(teamDetailsNotifierProvider(widget.teamId)),
+          onRetry: () => ref.invalidate(teamDetailsProvider(widget.teamId)),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),

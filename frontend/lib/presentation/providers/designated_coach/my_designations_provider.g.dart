@@ -6,6 +6,9 @@ part of 'my_designations_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(MyDesignations)
 const myDesignationsProvider = MyDesignationsProvider._();
 
@@ -31,7 +34,7 @@ final class MyDesignationsProvider
   MyDesignations create() => MyDesignations();
 }
 
-String _$myDesignationsHash() => r'0eff72676e6c69a0b49eb0fa8280035506de5571';
+String _$myDesignationsHash() => r'3247567bfbb8f18e0ade0d7878a5237554f0ffd3';
 
 abstract class _$MyDesignations
     extends $AsyncNotifier<List<DesignatedCoachSummary>> {
@@ -60,6 +63,3 @@ abstract class _$MyDesignations
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

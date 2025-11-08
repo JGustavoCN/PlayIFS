@@ -13,9 +13,9 @@ class DesignatedCoachDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final detailsState = ref.watch(designatedCoachDetailsNotifierProvider(designationId));
+    final detailsState = ref.watch(designatedCoachDetailsProvider(designationId));
     // ✅ 2. OBSERVAR O ESTADO DO PERFIL DO UTILIZADOR LOGADO
-    final profileState = ref.watch(profileNotifierProvider);
+    final profileState = ref.watch(profileProvider);
 
     return AppScaffold(
       title: 'Detalhes da Vaga',
@@ -35,7 +35,7 @@ class DesignatedCoachDetailsPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(designatedCoachDetailsNotifierProvider(designationId)),
+          onRetry: () => ref.invalidate(designatedCoachDetailsProvider(designationId)),
         ),
         data: (details) {
           // Extrai o ID do atleta logado de forma segura.
@@ -78,7 +78,7 @@ class DesignatedCoachDetailsPage extends ConsumerWidget {
                       // Se a página do formulário retornar 'true', invalidamos o estado atual
                       // para buscar os novos dados (que agora incluem a equipa criada).
                       if (success == true) {
-                        ref.invalidate(designatedCoachDetailsNotifierProvider(designationId));
+                        ref.invalidate(designatedCoachDetailsProvider(designationId));
                       }
                     },
                   ),

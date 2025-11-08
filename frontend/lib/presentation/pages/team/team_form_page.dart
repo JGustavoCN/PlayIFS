@@ -63,7 +63,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final profile = ref.read(profileNotifierProvider).value;
+    final profile = ref.read(profileProvider).value;
     final athleteDetails = profile?.athleteDetails;
     if (athleteDetails == null) {
       if (mounted) {
@@ -83,7 +83,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
       return;
     }
 
-    await ref.read(teamFormNotifierProvider(initialTeam: widget.team).notifier).submit(
+    await ref.read(teamFormProvider(initialTeam: widget.team).notifier).submit(
       teamName: _nameController.text,
       initialTeam: widget.team,
       competitionId: widget.competitionId,
@@ -97,7 +97,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<void>>(
-      teamFormNotifierProvider(initialTeam: widget.team),
+      teamFormProvider(initialTeam: widget.team),
           (previous, next) {
         next.whenOrNull(
           data: (_) {
@@ -129,7 +129,7 @@ class _TeamFormPageState extends ConsumerState<TeamFormPage> {
       },
     );
 
-    final formActionState = ref.watch(teamFormNotifierProvider(initialTeam: widget.team));
+    final formActionState = ref.watch(teamFormProvider(initialTeam: widget.team));
     final isEditing = widget.team != null;
     final isFormValid = (_nameController.text.trim().isNotEmpty) && (isEditing || _selectedAthleteIds.isNotEmpty);
 

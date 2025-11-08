@@ -42,7 +42,7 @@ class TeamDetailsNotifier extends _$TeamDetailsNotifier {
       success: (updatedTeam) {
         state = AsyncData(updatedTeam);
         // ✅ CORREÇÃO: Usando o nome gerado corretamente: 'teamsNotifierProvider'.
-        ref.invalidate(teamsNotifierProvider);
+        ref.invalidate(teamsProvider);
       },
       failure: (error) => state = AsyncError(error, StackTrace.current),
     );
@@ -59,7 +59,7 @@ class TeamDetailsNotifier extends _$TeamDetailsNotifier {
       success: (_) {
         ref.invalidateSelf();
         // ✅ CORREÇÃO: Usando o nome gerado corretamente: 'teamsNotifierProvider'.
-        ref.invalidate(teamsNotifierProvider);
+        ref.invalidate(teamsProvider);
       },
       failure: (error) => state = AsyncError(error, StackTrace.current),
     );
@@ -74,7 +74,7 @@ class TeamDetailsNotifier extends _$TeamDetailsNotifier {
     result.when(
       success: (_) {
         // ✅ CORREÇÃO: Usando o nome gerado corretamente: 'teamsNotifierProvider'.
-        ref.invalidate(teamsNotifierProvider);
+        ref.invalidate(teamsProvider);
       },
       failure: (error) => state = AsyncError(error, StackTrace.current),
     );
@@ -90,7 +90,7 @@ class TeamDetailsNotifier extends _$TeamDetailsNotifier {
       success: (_) {
         ref.invalidateSelf();
         // ✅ CORREÇÃO: Usando o nome gerado corretamente: 'teamsNotifierProvider'.
-        ref.invalidate(teamsNotifierProvider);
+        ref.invalidate(teamsProvider);
       },
       failure: (error) => state = AsyncError(error, StackTrace.current),
     );

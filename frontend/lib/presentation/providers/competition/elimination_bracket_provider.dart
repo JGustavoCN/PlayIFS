@@ -8,7 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'elimination_bracket_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true) // ✅ mantém o provider ativo (corrige 404 em loop)
 class EliminationBracketNotifier extends _$EliminationBracketNotifier {
   @override
   Future<EliminationBracket> build(StageProvidersParams params) async {
@@ -20,7 +20,6 @@ class EliminationBracketNotifier extends _$EliminationBracketNotifier {
 
     return switch (result) {
       Success(data: final bracket) => bracket,
-    // CORREÇÃO: A propriedade é 'error', não 'exception'.
       Failure(error: final e) => throw e,
     };
   }
@@ -28,7 +27,8 @@ class EliminationBracketNotifier extends _$EliminationBracketNotifier {
   Future<void> generateEliminationStage() async {
     final params = this.params;
     final useCase = locator<GenerateEliminationStageUseCase>();
-    state = const AsyncValue.loading();
+    state = const AsyncLoading();
+
     final result = await useCase.execute(
       competitionId: params.competitionId,
       sportId: params.sportId,
@@ -36,8 +36,8 @@ class EliminationBracketNotifier extends _$EliminationBracketNotifier {
 
     result.when(
       success: (_) => ref.invalidateSelf(),
-      // 'when' usa o nome do parâmetro, então 'error' aqui também.
-      failure: (error) => state = AsyncValue.error(error, StackTrace.current),
+      failure: (error) =>
+      state = AsyncValue.error(error, StackTrace.current),
     );
   }
 }

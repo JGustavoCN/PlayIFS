@@ -7,7 +7,5 @@ class BatchRescheduleGamesUseCase {
   BatchRescheduleGamesUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<List<GameDetails>>> execute(GameRescheduleBatchInput input) {
-    return _repository.batchReschedule(input);
-  }
+  Future<Result<List<GameDetails>>> execute(GameRescheduleBatchInput input) => _repository.batchReschedule(input);
 }

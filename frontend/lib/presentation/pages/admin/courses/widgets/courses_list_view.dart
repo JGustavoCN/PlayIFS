@@ -36,7 +36,7 @@ class _CoursesListViewState extends ConsumerState<CoursesListView> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      ref.read(coursesNotifierProvider.notifier).loadNextPage();
+      ref.read(coursesProvider.notifier).loadNextPage();
     }
   }
 
@@ -44,7 +44,7 @@ class _CoursesListViewState extends ConsumerState<CoursesListView> {
   Widget build(BuildContext context) {
     final courses = widget.coursesPage.content;
     final isLoadingNextPage = ref.watch(
-      coursesNotifierProvider.select((state) => state.isLoading && state.hasValue),
+      coursesProvider.select((state) => state.isLoading && state.hasValue),
     );
 
     if (courses.isEmpty) {

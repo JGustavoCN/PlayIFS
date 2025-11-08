@@ -31,7 +31,7 @@ class CompetitionFormNotifier extends _$CompetitionFormNotifier {
     final result = await _insertUseCase.execute(input);
     state = result.when(
       success: (competition) {
-        ref.invalidate(competitionsNotifierProvider);
+        ref.invalidate(competitionsProvider);
         return CompetitionFormState.success(competition);
       },
       failure: (error) => CompetitionFormState.failure(error),
@@ -44,8 +44,8 @@ class CompetitionFormNotifier extends _$CompetitionFormNotifier {
     state = result.when(
       success: (competition) {
         // CORREÇÃO: Nomes dos providers em camelCase.
-        ref.invalidate(competitionsNotifierProvider);
-        ref.invalidate(competitionDetailsNotifierProvider(id));
+        ref.invalidate(competitionsProvider);
+        ref.invalidate(competitionDetailsProvider(id));
         return CompetitionFormState.success(competition);
       },
       failure: (error) => CompetitionFormState.failure(error),
@@ -57,7 +57,7 @@ class CompetitionFormNotifier extends _$CompetitionFormNotifier {
     final result = await _deleteUseCase.execute(id);
     state = result.when(
       success: (_) {
-        ref.invalidate(competitionsNotifierProvider);
+        ref.invalidate(competitionsProvider);
         return const CompetitionFormState.deleteSuccess();
       },
       failure: (error) => CompetitionFormState.failure(error),

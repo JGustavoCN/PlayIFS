@@ -19,8 +19,8 @@ class GameActionButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final actionNotifier = ref.read(gameActionNotifierProvider.notifier);
-    final actionState = ref.watch(gameActionNotifierProvider);
+    final actionNotifier = ref.read(gameActionProvider.notifier);
+    final actionState = ref.watch(gameActionProvider);
 
     // ✅ CORREÇÃO 1: Substitui 'isLoading' (usa maybeWhen)
     final isUpdating = actionState.maybeWhen(

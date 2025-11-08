@@ -14,8 +14,7 @@ class FindAllGamesUseCase {
     int? sportId,
     String? status,
     String? phase,
-  }) {
-    return _repository.findAll(
+  }) => _repository.findAll(
       page: page,
       teamId: teamId,
       competitionId: competitionId,
@@ -23,5 +22,4 @@ class FindAllGamesUseCase {
       status: status,
       phase: phase,
     );
-  }
 }

@@ -34,14 +34,14 @@ class _CourseSearchBarState extends ConsumerState<CourseSearchBar> {
     filters.removeWhere(
             (key, value) => value == null || (value is String && value.isEmpty));
 
-    ref.read(coursesNotifierProvider.notifier).searchWithFilters(filters);
+    ref.read(coursesProvider.notifier).searchWithFilters(filters);
   }
 
   @override
   Widget build(BuildContext context) {
     // ✅ CORREÇÃO: Usando o nome correto do provider.
-    final appConfigState = ref.watch(appConfigNotifierProvider);
-    final campusesState = ref.watch(campusesNotifierProvider);
+    final appConfigState = ref.watch(appConfigProvider);
+    final campusesState = ref.watch(campusesProvider);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),

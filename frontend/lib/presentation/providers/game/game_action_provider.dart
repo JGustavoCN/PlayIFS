@@ -48,8 +48,8 @@ class GameActionNotifier extends _$GameActionNotifier {
   void reset() => state = const GameActionState.initial();
 
   Future<void> _invalidateDependencies(int gameId) async {
-    ref.invalidate(gameDetailsNotifierProvider(gameId));
-    ref.invalidate(gamesListNotifierProvider);
+    ref.invalidate(gameDetailsProvider(gameId));
+    ref.invalidate(gamesListProvider);
   }
 
   Future<void> reschedule(int gameId, GameUpdateInput input) async {
@@ -69,7 +69,7 @@ class GameActionNotifier extends _$GameActionNotifier {
     final result = await _deleteUseCase.execute(gameId);
     state = result.when(
       success: (_) {
-        ref.invalidate(gamesListNotifierProvider);
+        ref.invalidate(gamesListProvider);
         return const GameActionState.deleteSuccess();
       },
       failure: (error) => GameActionState.failure(error),
@@ -81,7 +81,7 @@ class GameActionNotifier extends _$GameActionNotifier {
     final result = await _batchDeleteUseCase.execute(ids);
     state = result.when(
       success: (_) {
-        ref.invalidate(gamesListNotifierProvider);
+        ref.invalidate(gamesListProvider);
         return const GameActionState.deleteSuccess();
       },
       failure: (error) => GameActionState.failure(error),
@@ -105,9 +105,9 @@ class GameActionNotifier extends _$GameActionNotifier {
     final result = await _batchUpdateResultsUseCase.execute(input);
     state = result.when(
       success: (games) {
-        ref.invalidate(gamesListNotifierProvider);
+        ref.invalidate(gamesListProvider);
         for (final game in games) {
-          ref.invalidate(gameDetailsNotifierProvider(game.id));
+          ref.invalidate(gameDetailsProvider(game.id));
         }
         return const GameActionState.initial();
       },
@@ -144,9 +144,9 @@ class GameActionNotifier extends _$GameActionNotifier {
     final result = await _batchRescheduleUseCase.execute(input);
     state = result.when(
       success: (games) {
-        ref.invalidate(gamesListNotifierProvider);
+        ref.invalidate(gamesListProvider);
         for (final game in games) {
-          ref.invalidate(gameDetailsNotifierProvider(game.id));
+          ref.invalidate(gameDetailsProvider(game.id));
         }
         return const GameActionState.initial();
       },

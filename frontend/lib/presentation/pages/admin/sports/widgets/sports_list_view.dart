@@ -37,7 +37,7 @@ class _SportsListViewState extends ConsumerState<SportsListView> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       // Quando o utilizador chega perto do fim da lista, carrega a próxima página.
-      ref.read(sportsNotifierProvider.notifier).loadNextPage();
+      ref.read(sportsProvider.notifier).loadNextPage();
     }
   }
 
@@ -45,7 +45,7 @@ class _SportsListViewState extends ConsumerState<SportsListView> {
   Widget build(BuildContext context) {
     final sports = widget.sportsPage.content;
     final isLoadingNextPage = ref.watch(
-      sportsNotifierProvider.select((state) => state.isLoading && state.hasValue),
+      sportsProvider.select((state) => state.isLoading && state.hasValue),
     );
 
     if (sports.isEmpty) {

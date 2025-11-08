@@ -14,7 +14,7 @@ class CampusesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final campusesState = ref.watch(campusesNotifierProvider);
+    final campusesState = ref.watch(campusesProvider);
 
     return AppScaffold(
       title: 'Gestão de Campi',
@@ -26,7 +26,7 @@ class CampusesPage extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stackTrace) => ErrorDisplay(
                 error: error,
-                onRetry: () => ref.invalidate(campusesNotifierProvider),
+                onRetry: () => ref.invalidate(campusesProvider),
               ),
               data: (campusesPage) => CampusesListView(campusesPage: campusesPage),
             ),

@@ -15,7 +15,7 @@ class MyDesignations extends _$MyDesignations {
 
   @override
   Future<List<DesignatedCoachSummary>> build() async {
-    final profile = await ref.watch(profileNotifierProvider.future);
+    final profile = await ref.watch(profileProvider.future);
     final athleteName = profile.athleteDetails?.fullName;
 
     if (athleteName == null) {

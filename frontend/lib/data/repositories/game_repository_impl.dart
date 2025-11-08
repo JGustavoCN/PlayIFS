@@ -3,8 +3,6 @@ import 'package:playifs_frontend/data/datasources/playifs_api_service.dart';
 import 'package:playifs_frontend/data/mappers/game_mappers.dart';
 import 'package:playifs_frontend/data/mappers/id_batch_mappers.dart';
 import 'package:playifs_frontend/data/mappers/page_mappers.dart';
-import 'package:playifs_frontend/data/mappers/team_mappers.dart';
-import 'package:playifs_frontend/data/models/game/game_details_dto.dart';
 import 'package:playifs_frontend/data/repositories/base_repository.dart';
 import 'package:playifs_frontend/domain/entities/game/game_details.dart';
 import 'package:playifs_frontend/domain/entities/game/game_reschedule_batch_input.dart';

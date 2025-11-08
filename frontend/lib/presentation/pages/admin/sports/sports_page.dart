@@ -14,7 +14,7 @@ class SportsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sportsState = ref.watch(sportsNotifierProvider);
+    final sportsState = ref.watch(sportsProvider);
 
     return AppScaffold(
       title: 'Gestão de Desportos',
@@ -26,7 +26,7 @@ class SportsPage extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stackTrace) => ErrorDisplay(
                 error: error,
-                onRetry: () => ref.invalidate(sportsNotifierProvider),
+                onRetry: () => ref.invalidate(sportsProvider),
               ),
               data: (sportsPage) => SportsListView(sportsPage: sportsPage),
             ),

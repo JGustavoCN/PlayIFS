@@ -30,7 +30,7 @@ class _RescheduleFormWidgetState extends ConsumerState<RescheduleFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final actionState = ref.watch(gameActionNotifierProvider);
+    final actionState = ref.watch(gameActionProvider);
 
     final isUpdating = actionState.maybeWhen(
       loading: () => true,
@@ -59,7 +59,7 @@ class _RescheduleFormWidgetState extends ConsumerState<RescheduleFormWidget> {
           actionState.maybeWhen(
             failure: (error) => ErrorDisplay(
               error: error,
-              onRetry: () => ref.read(gameActionNotifierProvider.notifier).reset(),
+              onRetry: () => ref.read(gameActionProvider.notifier).reset(),
             ),
             orElse: () => const SizedBox.shrink(),
           ),
@@ -116,7 +116,7 @@ class _RescheduleFormWidgetState extends ConsumerState<RescheduleFormWidget> {
     );
 
     // Ação assíncrona
-    await ref.read(gameActionNotifierProvider.notifier).reschedule(widget.gameId, input);
+    await ref.read(gameActionProvider.notifier).reschedule(widget.gameId, input);
 
     // ✅ CORREÇÃO FINAL: Verifica se o widget ainda está montado antes de fechar.
     if (!mounted) return;

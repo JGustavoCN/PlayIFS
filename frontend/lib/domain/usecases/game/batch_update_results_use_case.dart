@@ -7,7 +7,5 @@ class BatchUpdateResultsUseCase {
   BatchUpdateResultsUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<List<GameDetails>>> execute(GameResultBatchInput input) {
-    return _repository.batchUpdateResults(input);
-  }
+  Future<Result<List<GameDetails>>> execute(GameResultBatchInput input) => _repository.batchUpdateResults(input);
 }

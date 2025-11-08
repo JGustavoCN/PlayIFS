@@ -6,9 +6,11 @@ part of 'designated_coach_details_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(DesignatedCoachDetailsNotifier)
-const designatedCoachDetailsNotifierProvider =
-    DesignatedCoachDetailsNotifierFamily._();
+const designatedCoachDetailsProvider = DesignatedCoachDetailsNotifierFamily._();
 
 final class DesignatedCoachDetailsNotifierProvider
     extends
@@ -21,7 +23,7 @@ final class DesignatedCoachDetailsNotifierProvider
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'designatedCoachDetailsNotifierProvider',
+         name: r'designatedCoachDetailsProvider',
          isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -32,7 +34,7 @@ final class DesignatedCoachDetailsNotifierProvider
 
   @override
   String toString() {
-    return r'designatedCoachDetailsNotifierProvider'
+    return r'designatedCoachDetailsProvider'
         ''
         '($argument)';
   }
@@ -68,7 +70,7 @@ final class DesignatedCoachDetailsNotifierFamily extends $Family
   const DesignatedCoachDetailsNotifierFamily._()
     : super(
         retry: null,
-        name: r'designatedCoachDetailsNotifierProvider',
+        name: r'designatedCoachDetailsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: false,
@@ -81,7 +83,7 @@ final class DesignatedCoachDetailsNotifierFamily extends $Family
       );
 
   @override
-  String toString() => r'designatedCoachDetailsNotifierProvider';
+  String toString() => r'designatedCoachDetailsProvider';
 }
 
 abstract class _$DesignatedCoachDetailsNotifier
@@ -111,6 +113,3 @@ abstract class _$DesignatedCoachDetailsNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

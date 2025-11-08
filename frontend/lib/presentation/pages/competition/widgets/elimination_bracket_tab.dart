@@ -1,66 +1,76 @@
-// Ficheiro: lib/presentation/pages/competition/widgets/elimination_bracket_tab.dart
-// (Validação contra analysis_options.yaml: OK)
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:playifs_frontend/core/network/exceptions.dart';
 import 'package:playifs_frontend/core/routing/app_routes.dart';
+import 'package:playifs_frontend/domain/entities/competition/elimination_bracket.dart';
+import 'package:playifs_frontend/domain/entities/game/game_details.dart';
+import 'package:playifs_frontend/domain/entities/game/game_phase.dart';
 import 'package:playifs_frontend/presentation/pages/competition/widgets/generate_stage_button.dart';
 import 'package:playifs_frontend/presentation/providers/competition/elimination_bracket_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/stage_providers_params.dart';
 import 'package:playifs_frontend/presentation/providers/profile/profile_provider.dart';
 import 'package:playifs_frontend/presentation/widgets/error_display.dart';
-import 'package:playifs_frontend/domain/entities/competition/elimination_bracket.dart';
-import 'package:playifs_frontend/domain/entities/game/game_details.dart';
-import 'package:playifs_frontend/domain/entities/game/game_phase.dart';
 
-class EliminationBracketTab extends ConsumerWidget {
+class EliminationBracketTab extends ConsumerStatefulWidget {
   const EliminationBracketTab({super.key, required this.params});
 
   final StageProvidersParams params;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileNotifierProvider);
+  ConsumerState<EliminationBracketTab> createState() =>
+      _EliminationBracketTabState();
+}
+
+class _EliminationBracketTabState extends ConsumerState<EliminationBracketTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final profileState = ref.watch(profileProvider);
     final isCoordinator =
         profileState.value?.roles.contains('ROLE_COORDINATOR') ?? false;
 
-    final bracketState = ref.watch(eliminationBracketNotifierProvider(params));
+    final asyncBracket = ref.watch(eliminationBracketProvider(widget.params));
 
-    return bracketState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) {
-        // (Lógica de erro mantida igual)
+    return asyncBracket.when(
+      loading: () {
+        final previous = ref.read(eliminationBracketProvider(widget.params));
+        if (previous.hasValue && previous.value != null) {
+          return _EliminationBracketView(
+            bracket: previous.value!,
+            tournamentFinished: false,
+          );
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+      error: (error, _) {
         if (error is ApiException && error.statusCode == 404) {
           if (isCoordinator) {
             return Center(
-              child: GenerateStageButton(
-                label: 'Gerar/Avançar Fase Eliminatória',
-                onPressed: () => _confirmAndGenerateBracket(context, ref),
-              ),
-            );
-          } else {
-            return const Center(
-              child: Text('O mata-mata ainda não foi gerado pelo coordenador.'),
+              child: GenerateStageButton.elimination(params: widget.params),
             );
           }
+          return const Center(
+            child: Text('O mata-mata ainda não foi gerado pelo coordenador.'),
+          );
         }
+
         return ErrorDisplay(
           error: error,
           onRetry: () =>
-              ref.invalidate(eliminationBracketNotifierProvider(params)),
+              ref.invalidate(eliminationBracketProvider(widget.params)),
         );
       },
       data: (bracket) {
         if (bracket.rounds.isEmpty) {
-          // (Lógica de dados vazios mantida igual)
           if (isCoordinator) {
             return Center(
-              child: GenerateStageButton(
-                label: 'Gerar/Avançar Fase Eliminatória',
-                onPressed: () => _confirmAndGenerateBracket(context, ref),
-              ),
+              child: GenerateStageButton.elimination(params: widget.params),
             );
           }
           return const Center(
@@ -68,80 +78,38 @@ class EliminationBracketTab extends ConsumerWidget {
           );
         }
 
-        // ✅ NOVO: Lógica para verificar se o torneio terminou
-        // (Problema 2 e 3)
         final finalGames = bracket.rounds[GamePhase.FINAL] ?? [];
-        bool tournamentFinished = false;
         GameDetails? finalGame;
+        bool finished = false;
 
         if (finalGames.isNotEmpty) {
           finalGame = finalGames.first;
-          tournamentFinished = finalGame.status == 'FINISHED';
+          finished = finalGame.status == 'FINISHED';
         }
 
         return Column(
-          // ✅ CORREÇÃO DE LAYOUT: (Resolve o erro RenderFlex)
-          //    Força a coluna a ter o tamanho mínimo
-          //    dos seus filhos (não expandir).
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ❌ REMOVIDO: Expanded(child: _EliminationBracketView(...))
             _EliminationBracketView(
               bracket: bracket,
               finalGame: finalGame,
-              tournamentFinished: tournamentFinished,
+              tournamentFinished: finished,
             ),
-
-            // ✅ CORREÇÃO: Botão só aparece se for coordenador
-            //    E o torneio AINDA NÃO terminou.
-            if (isCoordinator && !tournamentFinished)
+            if (isCoordinator && !finished)
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: GenerateStageButton(
-                  label: 'Avançar Fase',
-                  onPressed: () => _confirmAndGenerateBracket(context, ref),
-                ),
+                child: GenerateStageButton.elimination(params: widget.params),
               ),
           ],
         );
       },
     );
   }
-
-  // (Método _confirmAndGenerateBracket permanece idêntico)
-  Future<void> _confirmAndGenerateBracket(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar Ação'),
-        content: const Text(
-          'Isto irá gerar ou avançar para a próxima fase do mata-mata. Confirma?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref
-          .read(eliminationBracketNotifierProvider(params).notifier)
-          .generateEliminationStage();
-    }
-  }
 }
 
-// --- Widgets de Visualização ---
+// ----------------------
+// VISUALIZAÇÃO
+// ----------------------
 
 class _EliminationBracketView extends StatelessWidget {
   const _EliminationBracketView({
@@ -159,7 +127,6 @@ class _EliminationBracketView extends StatelessWidget {
     final sortedPhases = bracket.rounds.keys.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
 
-    // ✅ NOVO: Lógica para encontrar o vencedor (Problema 2)
     String? winnerName;
     if (tournamentFinished && finalGame != null) {
       if ((finalGame!.scoreTeamA ?? 0) > (finalGame!.scoreTeamB ?? 0)) {
@@ -176,13 +143,12 @@ class _EliminationBracketView extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Mapeia as colunas de fases (Oitavas, Quartas, etc.)
-            ...sortedPhases.map((phase) {
-              final games = bracket.rounds[phase]!;
-              return _BracketRoundColumn(phase: phase, games: games);
-            }).toList(),
-
-            // ✅ NOVO: Adiciona a coluna do Vencedor
+            ...sortedPhases.map(
+                  (phase) => _BracketRoundColumn(
+                phase: phase,
+                games: bracket.rounds[phase]!,
+              ),
+            ),
             if (winnerName != null) _WinnerColumn(winnerName: winnerName),
           ],
         ),
@@ -206,24 +172,16 @@ class _BracketRoundColumn extends StatelessWidget {
       width: 200,
       margin: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        // ✅ CORREÇÃO DE LAYOUT: (Resolve o erro RenderFlex)
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(title, style: textTheme.titleMedium),
           const SizedBox(height: 16),
-
-          // ❌ REMOVIDO: Expanded(child: ListView.separated(...))
-
-          // ✅ NOVO: Substituído por um Column estático.
           Column(
             children: games
-                .map(
-                  (game) => Padding(
-                    // Adiciona espaçamento (o antigo separator)
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: _BracketGameCard(game: game),
-                  ),
-                )
+                .map((g) => Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: _BracketGameCard(game: g),
+            ))
                 .toList(),
           ),
         ],
@@ -232,86 +190,59 @@ class _BracketRoundColumn extends StatelessWidget {
   }
 }
 
-// (Widget _BracketGameCard permanece 100% igual)
 class _BracketGameCard extends StatelessWidget {
   const _BracketGameCard({required this.game});
 
-  final GameDetails game; // A entidade correta (tem teamA e teamB como objetos)
+  final GameDetails game;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isBye = game.teamB == null;
 
-    // ✅ LÓGICA DE BYE: Verifica se teamB é nulo
-    final bool isBye = game.teamB == null;
-
-    Widget buildTeamRow(
-      String? teamName,
-      int? score, {
-      bool isByeOpponent = false,
-    }) {
-      final bool isWinner =
-          score != null && score > 0; // Para o vencedor do "bye"
-
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              // Se for "bye", mostra "BYE", senão, "A definir"
-              isByeOpponent ? 'BYE' : (teamName ?? 'A definir'),
-              style: textTheme.bodyMedium?.copyWith(
-                // Estilo para o "BYE" (ex: itálico)
-                fontStyle: isByeOpponent ? FontStyle.italic : FontStyle.normal,
-                color: isByeOpponent
-                    ? colorScheme.onSurfaceVariant
-                    : (isWinner ? colorScheme.primary : colorScheme.onSurface),
-                fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
-              ),
-              overflow: TextOverflow.ellipsis,
+    Widget teamRow(String? name, int? score, {bool bye = false}) => Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            bye ? 'BYE' : (name ?? 'A definir'),
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontStyle: bye ? FontStyle.italic : FontStyle.normal,
+              color: bye
+                  ? colorScheme.onSurfaceVariant
+                  : colorScheme.onSurface,
             ),
           ),
-          Text(
-            // Se for "bye", o resultado é W.O. (W-0)
-            isBye ? (isByeOpponent ? '0' : 'W') : (score?.toString() ?? '-'),
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: isWinner ? colorScheme.primary : null,
-            ),
+        ),
+        Text(
+          isBye ? (bye ? '0' : 'W') : (score?.toString() ?? '-'),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
 
     return Card(
       elevation: 2,
-
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: InkWell(
-        // Use InkWell para ter o efeito de clique
         onTap: () => context.pushNamed(
           AppRoutes.gameDetails,
           pathParameters: {'id': game.id.toString()},
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              // Linha Team A (Vencedor por W.O.)
-              buildTeamRow(game.teamA?.name, game.scoreTeamA),
-
+              teamRow(game.teamA?.name, game.scoreTeamA),
               const Divider(height: 16),
-
-              // Linha Team B (O "BYE")
-              buildTeamRow(
-                game.teamB?.name,
-                game.scoreTeamB,
-                isByeOpponent: isBye,
-              ),
+              teamRow(game.teamB?.name, game.scoreTeamB, bye: isBye),
             ],
           ),
         ),
@@ -320,7 +251,6 @@ class _BracketGameCard extends StatelessWidget {
   }
 }
 
-// ✅ NOVO: Widget para exibir o vencedor
 class _WinnerColumn extends StatelessWidget {
   const _WinnerColumn({required this.winnerName});
 
@@ -328,8 +258,8 @@ class _WinnerColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Container(
       width: 200,
@@ -337,7 +267,7 @@ class _WinnerColumn extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('VENCEDOR', style: textTheme.titleMedium),
+          Text('VENCEDOR', style: theme.textTheme.titleMedium),
           const SizedBox(height: 16),
           Card(
             elevation: 4,
@@ -347,7 +277,7 @@ class _WinnerColumn extends StatelessWidget {
               side: BorderSide(color: colorScheme.primary, width: 2),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -356,11 +286,11 @@ class _WinnerColumn extends StatelessWidget {
                   Expanded(
                     child: Text(
                       winnerName,
-                      style: textTheme.titleMedium?.copyWith(
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         color: colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -373,7 +303,7 @@ class _WinnerColumn extends StatelessWidget {
   }
 }
 
-// (Extensão StringExtension permanece igual)
-extension StringExtension on String {
-  String capitalize() => "${this[0].toUpperCase()}${substring(1)}";
+extension StringX on String {
+  String capitalize() =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
 }

@@ -22,7 +22,7 @@ class _CampusSearchBarState extends ConsumerState<CampusSearchBar> {
 
   void _submitSearch(String query) {
     // Aciona o método de busca no notifier de campi.
-    ref.read(campusesNotifierProvider.notifier).searchByName(query);
+    ref.read(campusesProvider.notifier).searchByName(query);
   }
 
   @override

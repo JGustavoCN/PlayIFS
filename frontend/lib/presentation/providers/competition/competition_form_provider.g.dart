@@ -6,8 +6,11 @@ part of 'competition_form_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(CompetitionFormNotifier)
-const competitionFormNotifierProvider = CompetitionFormNotifierProvider._();
+const competitionFormProvider = CompetitionFormNotifierProvider._();
 
 final class CompetitionFormNotifierProvider
     extends $NotifierProvider<CompetitionFormNotifier, CompetitionFormState> {
@@ -16,7 +19,7 @@ final class CompetitionFormNotifierProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'competitionFormNotifierProvider',
+        name: r'competitionFormProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -39,7 +42,7 @@ final class CompetitionFormNotifierProvider
 }
 
 String _$competitionFormNotifierHash() =>
-    r'485d2ee3132cc80d7a1aecdfe3731ecef22c29bf';
+    r'8bdc746b5f7423327a46b43e80c7e0ffd2f8aa94';
 
 abstract class _$CompetitionFormNotifier
     extends $Notifier<CompetitionFormState> {
@@ -60,6 +63,3 @@ abstract class _$CompetitionFormNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

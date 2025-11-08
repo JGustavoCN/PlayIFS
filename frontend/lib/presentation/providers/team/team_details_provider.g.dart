@@ -6,8 +6,11 @@ part of 'team_details_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(TeamDetailsNotifier)
-const teamDetailsNotifierProvider = TeamDetailsNotifierFamily._();
+const teamDetailsProvider = TeamDetailsNotifierFamily._();
 
 final class TeamDetailsNotifierProvider
     extends $AsyncNotifierProvider<TeamDetailsNotifier, TeamDetails> {
@@ -16,7 +19,7 @@ final class TeamDetailsNotifierProvider
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'teamDetailsNotifierProvider',
+         name: r'teamDetailsProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -27,7 +30,7 @@ final class TeamDetailsNotifierProvider
 
   @override
   String toString() {
-    return r'teamDetailsNotifierProvider'
+    return r'teamDetailsProvider'
         ''
         '($argument)';
   }
@@ -48,7 +51,7 @@ final class TeamDetailsNotifierProvider
 }
 
 String _$teamDetailsNotifierHash() =>
-    r'aa89a3a1d597bd8a7f68f72043a714d01e378f45';
+    r'58fb3fc52097fadf0c430017676691e277a0e9dd';
 
 final class TeamDetailsNotifierFamily extends $Family
     with
@@ -62,7 +65,7 @@ final class TeamDetailsNotifierFamily extends $Family
   const TeamDetailsNotifierFamily._()
     : super(
         retry: null,
-        name: r'teamDetailsNotifierProvider',
+        name: r'teamDetailsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -72,7 +75,7 @@ final class TeamDetailsNotifierFamily extends $Family
       TeamDetailsNotifierProvider._(argument: teamId, from: this);
 
   @override
-  String toString() => r'teamDetailsNotifierProvider';
+  String toString() => r'teamDetailsProvider';
 }
 
 abstract class _$TeamDetailsNotifier extends $AsyncNotifier<TeamDetails> {
@@ -96,6 +99,3 @@ abstract class _$TeamDetailsNotifier extends $AsyncNotifier<TeamDetails> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

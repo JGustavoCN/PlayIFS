@@ -21,9 +21,7 @@ class TeamFormNotifier extends _$TeamFormNotifier {
   final UpdateTeamUseCase _updateTeamUseCase = locator<UpdateTeamUseCase>();
 
   @override
-  AsyncValue<void> build({TeamDetails? initialTeam}) {
-    return const AsyncData(null);
-  }
+  AsyncValue<void> build({TeamDetails? initialTeam}) => const AsyncData(null);
 
   Future<void> submit({
     required String teamName,
@@ -44,9 +42,9 @@ class TeamFormNotifier extends _$TeamFormNotifier {
 
     state = result.when(
       success: (_) {
-        ref.invalidate(teamsNotifierProvider);
+        ref.invalidate(teamsProvider);
         if (isEditing) {
-          ref.invalidate(teamDetailsNotifierProvider(initialTeam.id));
+          ref.invalidate(teamDetailsProvider(initialTeam.id));
         }
         return const AsyncData(null);
       },

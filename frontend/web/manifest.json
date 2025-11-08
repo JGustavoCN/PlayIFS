@@ -1,11 +1,11 @@
 {
-    "name": "frontend",
-    "short_name": "frontend",
+    "name": "PlayIFS",
+    "short_name": "PlayIFS",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Frontend para o projeto PlayIFS",
+    "description": "Sistema de Gerenciamento de Competições do IFS.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

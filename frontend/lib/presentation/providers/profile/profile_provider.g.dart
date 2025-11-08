@@ -6,8 +6,11 @@ part of 'profile_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(ProfileNotifier)
-const profileNotifierProvider = ProfileNotifierProvider._();
+const profileProvider = ProfileNotifierProvider._();
 
 final class ProfileNotifierProvider
     extends $AsyncNotifierProvider<ProfileNotifier, Profile> {
@@ -16,7 +19,7 @@ final class ProfileNotifierProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'profileNotifierProvider',
+        name: r'profileProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -50,6 +53,3 @@ abstract class _$ProfileNotifier extends $AsyncNotifier<Profile> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -6,8 +6,11 @@ part of 'teams_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(TeamsNotifier)
-const teamsNotifierProvider = TeamsNotifierFamily._();
+const teamsProvider = TeamsNotifierFamily._();
 
 final class TeamsNotifierProvider
     extends $AsyncNotifierProvider<TeamsNotifier, Page<TeamSummary>> {
@@ -16,7 +19,7 @@ final class TeamsNotifierProvider
     required int? super.argument,
   }) : super(
          retry: null,
-         name: r'teamsNotifierProvider',
+         name: r'teamsProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -27,7 +30,7 @@ final class TeamsNotifierProvider
 
   @override
   String toString() {
-    return r'teamsNotifierProvider'
+    return r'teamsProvider'
         ''
         '($argument)';
   }
@@ -61,7 +64,7 @@ final class TeamsNotifierFamily extends $Family
   const TeamsNotifierFamily._()
     : super(
         retry: null,
-        name: r'teamsNotifierProvider',
+        name: r'teamsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -71,7 +74,7 @@ final class TeamsNotifierFamily extends $Family
       TeamsNotifierProvider._(argument: competitionId, from: this);
 
   @override
-  String toString() => r'teamsNotifierProvider';
+  String toString() => r'teamsProvider';
 }
 
 abstract class _$TeamsNotifier extends $AsyncNotifier<Page<TeamSummary>> {
@@ -96,6 +99,3 @@ abstract class _$TeamsNotifier extends $AsyncNotifier<Page<TeamSummary>> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

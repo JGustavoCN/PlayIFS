@@ -14,7 +14,7 @@ class CompetitionListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final competitionsState = ref.watch(competitionsNotifierProvider);
+    final competitionsState = ref.watch(competitionsProvider);
 
     return AppScaffold(
       title: 'Gestão de Competições',
@@ -22,7 +22,7 @@ class CompetitionListPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(competitionsNotifierProvider),
+          onRetry: () => ref.invalidate(competitionsProvider),
         ),
         data: (pageData) => _CompetitionListView(page: pageData),
       ),

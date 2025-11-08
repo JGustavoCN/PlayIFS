@@ -32,7 +32,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
     if (!_isSelectionMode && _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       // ✅ MELHORIA: Tratamento de erro explícito para a paginação.
       try {
-        ref.read(teamsNotifierProvider(competitionId: widget.competitionId).notifier).fetchNextPage();
+        ref.read(teamsProvider(competitionId: widget.competitionId).notifier).fetchNextPage();
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -90,7 +90,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
 
     if (confirmed == true && mounted) {
       try {
-        await ref.read(teamsNotifierProvider(competitionId: widget.competitionId).notifier).batchDeleteTeams(_selectedTeamIds.toList());
+        await ref.read(teamsProvider(competitionId: widget.competitionId).notifier).batchDeleteTeams(_selectedTeamIds.toList());
         _exitSelectionMode();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -103,7 +103,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(teamsNotifierProvider(competitionId: widget.competitionId).notifier).search(name: query);
+      ref.read(teamsProvider(competitionId: widget.competitionId).notifier).search(name: query);
     });
   }
 
@@ -138,7 +138,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final teamsAsync = ref.watch(teamsNotifierProvider(competitionId: widget.competitionId));
+    final teamsAsync = ref.watch(teamsProvider(competitionId: widget.competitionId));
 
     return Scaffold(
       appBar: _buildAppBar(context),
@@ -148,7 +148,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
             return const Center(child: Text('Nenhuma equipa encontrada.'));
           }
           return RefreshIndicator(
-            onRefresh: () => ref.refresh(teamsNotifierProvider(competitionId: widget.competitionId).future),
+            onRefresh: () => ref.refresh(teamsProvider(competitionId: widget.competitionId).future),
             child: ListView.builder(
               controller: _scrollController,
               itemCount: page.content.length,
@@ -178,7 +178,7 @@ class _TeamsListPageState extends ConsumerState<TeamsListPage> {
         error: (error, stackTrace) => ErrorDisplay(
           error: error,
           // ✅ MELHORIA: Corrigida a invalidação do provider de família.
-          onRetry: () => ref.invalidate(teamsNotifierProvider(competitionId: widget.competitionId)),
+          onRetry: () => ref.invalidate(teamsProvider(competitionId: widget.competitionId)),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),

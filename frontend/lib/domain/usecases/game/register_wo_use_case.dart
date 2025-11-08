@@ -7,7 +7,5 @@ class RegisterWoUseCase {
   RegisterWoUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<GameDetails>> execute(int gameId, GameWoInput input) {
-    return _repository.registerWo(gameId, input);
-  }
+  Future<Result<GameDetails>> execute(int gameId, GameWoInput input) => _repository.registerWo(gameId, input);
 }

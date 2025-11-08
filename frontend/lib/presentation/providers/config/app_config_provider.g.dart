@@ -6,12 +6,15 @@ part of 'app_config_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 /// Provider que busca e armazena em cache as configurações da aplicação.
 ///
 /// Utiliza um [AsyncNotifier] porque os dados são carregados uma única vez
 /// e permanecem constantes durante a sessão do usuário.
+
 @ProviderFor(AppConfigNotifier)
-const appConfigNotifierProvider = AppConfigNotifierProvider._();
+const appConfigProvider = AppConfigNotifierProvider._();
 
 /// Provider que busca e armazena em cache as configurações da aplicação.
 ///
@@ -28,7 +31,7 @@ final class AppConfigNotifierProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'appConfigNotifierProvider',
+        name: r'appConfigProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -43,6 +46,11 @@ final class AppConfigNotifierProvider
 }
 
 String _$appConfigNotifierHash() => r'e4ec473fe55f2d0a4db4cbc1826d152056c06c57';
+
+/// Provider que busca e armazena em cache as configurações da aplicação.
+///
+/// Utiliza um [AsyncNotifier] porque os dados são carregados uma única vez
+/// e permanecem constantes durante a sessão do usuário.
 
 abstract class _$AppConfigNotifier extends $AsyncNotifier<AppConfig> {
   FutureOr<AppConfig> build();
@@ -62,6 +70,3 @@ abstract class _$AppConfigNotifier extends $AsyncNotifier<AppConfig> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

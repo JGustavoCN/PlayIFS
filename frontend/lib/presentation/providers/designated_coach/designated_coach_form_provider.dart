@@ -35,7 +35,7 @@ class DesignatedCoachFormNotifier extends _$DesignatedCoachFormNotifier {
     final result = await _defineUseCase.execute(input);
     state = result.when(
       success: (_) {
-        ref.invalidate(designatedCoachesNotifierProvider(input.competitionId));
+        ref.invalidate(designatedCoachesProvider(input.competitionId));
         return const DesignatedCoachFormState.success();
       },
       failure: (error) => DesignatedCoachFormState.failure(error),
@@ -48,7 +48,7 @@ class DesignatedCoachFormNotifier extends _$DesignatedCoachFormNotifier {
     final result = await _updateUseCase.execute(input);
     state = result.when(
       success: (_) {
-        ref.invalidate(designatedCoachesNotifierProvider(input.competitionId));
+        ref.invalidate(designatedCoachesProvider(input.competitionId));
         return const DesignatedCoachFormState.success();
       },
       failure: (error) => DesignatedCoachFormState.failure(error),
@@ -61,7 +61,7 @@ class DesignatedCoachFormNotifier extends _$DesignatedCoachFormNotifier {
     final result = await _batchUpsertUseCase.execute(batch);
     state = result.when(
       success: (_) {
-        ref.invalidate(designatedCoachesNotifierProvider(competitionId));
+        ref.invalidate(designatedCoachesProvider(competitionId));
         return const DesignatedCoachFormState.success();
       },
       failure: (error) => DesignatedCoachFormState.failure(error),
@@ -74,7 +74,7 @@ class DesignatedCoachFormNotifier extends _$DesignatedCoachFormNotifier {
     final result = await _batchRemoveUseCase.execute([designationId]);
     state = result.when(
       success: (_) {
-        ref.invalidate(designatedCoachesNotifierProvider(competitionId));
+        ref.invalidate(designatedCoachesProvider(competitionId));
         return const DesignatedCoachFormState.success();
       },
       failure: (error) => DesignatedCoachFormState.failure(error),

@@ -48,11 +48,11 @@ class DesignatedCoachListPage extends ConsumerWidget {
 
     if (confirm ?? false) {
       // Usar 'ref.read' dentro de callbacks assíncronos
-      final notifier = ref.read(designatedCoachFormNotifierProvider.notifier);
+      final notifier = ref.read(designatedCoachFormProvider.notifier);
       await notifier.removeById(coach.id, competitionId);
 
       // Ler o estado final após a operação para mostrar o feedback correto.
-      final state = ref.read(designatedCoachFormNotifierProvider);
+      final state = ref.read(designatedCoachFormProvider);
       if (context.mounted) {
         state.whenOrNull(
           success: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +100,7 @@ class DesignatedCoachListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final designatedCoachesState = ref.watch(designatedCoachesNotifierProvider(competitionId));
+    final designatedCoachesState = ref.watch(designatedCoachesProvider(competitionId));
 
     return AppScaffold(
       title: 'Técnicos Designados',
@@ -117,7 +117,7 @@ class DesignatedCoachListPage extends ConsumerWidget {
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                ref.read(designatedCoachesNotifierProvider(competitionId).notifier).searchByName(value);
+                ref.read(designatedCoachesProvider(competitionId).notifier).searchByName(value);
               },
             ),
           ),
@@ -127,7 +127,7 @@ class DesignatedCoachListPage extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => ErrorDisplay(
                 error: error,
-                onRetry: () => ref.invalidate(designatedCoachesNotifierProvider(competitionId)),
+                onRetry: () => ref.invalidate(designatedCoachesProvider(competitionId)),
               ),
               data: (page) {
                 final coaches = page.content;

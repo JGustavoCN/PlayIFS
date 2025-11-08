@@ -36,7 +36,7 @@ class _CompetitionFormPageState extends ConsumerState<CompetitionFormPage> {
     super.initState();
     if (_isEditMode) {
       final details =
-      ref.read(competitionDetailsNotifierProvider(widget.competitionId!));
+      ref.read(competitionDetailsProvider(widget.competitionId!));
       details.whenData((competition) {
         _nameController.text = competition.name;
         setState(() {
@@ -68,7 +68,7 @@ class _CompetitionFormPageState extends ConsumerState<CompetitionFormPage> {
         sportIds: _selectedSportIds.toList(),
       );
 
-      final notifier = ref.read(competitionFormNotifierProvider.notifier);
+      final notifier = ref.read(competitionFormProvider.notifier);
       if (_isEditMode) {
         await notifier.update(widget.competitionId!, input);
       } else {
@@ -79,7 +79,7 @@ class _CompetitionFormPageState extends ConsumerState<CompetitionFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<CompetitionFormState>(competitionFormNotifierProvider,
+    ref.listen<CompetitionFormState>(competitionFormProvider,
             (previous, next) {
           next.whenOrNull(
             success: (competition) {
@@ -116,10 +116,10 @@ class _CompetitionFormPageState extends ConsumerState<CompetitionFormPage> {
           );
         });
 
-    final formState = ref.watch(competitionFormNotifierProvider);
-    final levelsState = ref.watch(appConfigNotifierProvider);
+    final formState = ref.watch(competitionFormProvider);
+    final levelsState = ref.watch(appConfigProvider);
     // NOVO: Observar o provider de desportos.
-    final sportsState = ref.watch(sportsNotifierProvider);
+    final sportsState = ref.watch(sportsProvider);
 
     return AppScaffold(
       title: _isEditMode ? 'Editar Competição' : 'Nova Competição',
@@ -179,7 +179,7 @@ class _CompetitionFormPageState extends ConsumerState<CompetitionFormPage> {
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (e, s) => ErrorDisplay(
                         error: e,
-                        onRetry: () => ref.invalidate(sportsNotifierProvider)),
+                        onRetry: () => ref.invalidate(sportsProvider)),
                     data: (sportsPage) => Container(
                       decoration: BoxDecoration(
                         border: Border.all(

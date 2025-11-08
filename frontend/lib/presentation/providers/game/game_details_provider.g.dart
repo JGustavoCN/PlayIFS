@@ -6,8 +6,11 @@ part of 'game_details_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(GameDetailsNotifier)
-const gameDetailsNotifierProvider = GameDetailsNotifierFamily._();
+const gameDetailsProvider = GameDetailsNotifierFamily._();
 
 final class GameDetailsNotifierProvider
     extends $AsyncNotifierProvider<GameDetailsNotifier, GameDetails> {
@@ -16,7 +19,7 @@ final class GameDetailsNotifierProvider
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'gameDetailsNotifierProvider',
+         name: r'gameDetailsProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -27,7 +30,7 @@ final class GameDetailsNotifierProvider
 
   @override
   String toString() {
-    return r'gameDetailsNotifierProvider'
+    return r'gameDetailsProvider'
         ''
         '($argument)';
   }
@@ -62,7 +65,7 @@ final class GameDetailsNotifierFamily extends $Family
   const GameDetailsNotifierFamily._()
     : super(
         retry: null,
-        name: r'gameDetailsNotifierProvider',
+        name: r'gameDetailsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -72,7 +75,7 @@ final class GameDetailsNotifierFamily extends $Family
       GameDetailsNotifierProvider._(argument: gameId, from: this);
 
   @override
-  String toString() => r'gameDetailsNotifierProvider';
+  String toString() => r'gameDetailsProvider';
 }
 
 abstract class _$GameDetailsNotifier extends $AsyncNotifier<GameDetails> {
@@ -96,6 +99,3 @@ abstract class _$GameDetailsNotifier extends $AsyncNotifier<GameDetails> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

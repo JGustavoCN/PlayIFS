@@ -113,7 +113,7 @@ class __EditAthleteFormState extends ConsumerState<_EditAthleteForm> {
         await ref.read(authProvider.notifier).logout();
       } else {
         if (isEditingSelf) {
-          final _ = await ref.refresh(profileNotifierProvider.future);
+          final _ = await ref.refresh(profileProvider.future);
         }
 
         scaffoldMessenger.showSnackBar(

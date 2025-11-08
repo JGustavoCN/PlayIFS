@@ -6,8 +6,11 @@ part of 'designated_coaches_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(DesignatedCoachesNotifier)
-const designatedCoachesNotifierProvider = DesignatedCoachesNotifierFamily._();
+const designatedCoachesProvider = DesignatedCoachesNotifierFamily._();
 
 final class DesignatedCoachesNotifierProvider
     extends
@@ -20,7 +23,7 @@ final class DesignatedCoachesNotifierProvider
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'designatedCoachesNotifierProvider',
+         name: r'designatedCoachesProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -31,7 +34,7 @@ final class DesignatedCoachesNotifierProvider
 
   @override
   String toString() {
-    return r'designatedCoachesNotifierProvider'
+    return r'designatedCoachesProvider'
         ''
         '($argument)';
   }
@@ -67,7 +70,7 @@ final class DesignatedCoachesNotifierFamily extends $Family
   const DesignatedCoachesNotifierFamily._()
     : super(
         retry: null,
-        name: r'designatedCoachesNotifierProvider',
+        name: r'designatedCoachesProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -77,7 +80,7 @@ final class DesignatedCoachesNotifierFamily extends $Family
       DesignatedCoachesNotifierProvider._(argument: competitionId, from: this);
 
   @override
-  String toString() => r'designatedCoachesNotifierProvider';
+  String toString() => r'designatedCoachesProvider';
 }
 
 abstract class _$DesignatedCoachesNotifier
@@ -110,6 +113,3 @@ abstract class _$DesignatedCoachesNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

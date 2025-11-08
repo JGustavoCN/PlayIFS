@@ -10,7 +10,7 @@ class ThemeToggleButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // O botão observa o estado do tema para saber qual ícone mostrar.
-    final themeMode = ref.watch(themeNotifierProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return IconButton(
       icon: Icon(
@@ -24,7 +24,7 @@ class ThemeToggleButton extends ConsumerWidget {
       onPressed: () {
         // Ao ser pressionado, ele chama o método do notifier para trocar o tema.
         // Usamos 'read' porque estamos numa função de callback.
-        ref.read(themeNotifierProvider.notifier).toggleTheme();
+        ref.read(themeProvider.notifier).toggleTheme();
       },
       tooltip: 'Mudar Tema',
     );

@@ -15,7 +15,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileNotifierProvider);
+    final profileState = ref.watch(profileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +33,7 @@ class HomePage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(child: Text('Erro: $error')),
         data: (profile) => RefreshIndicator(
-          onRefresh: () => ref.refresh(profileNotifierProvider.future),
+          onRefresh: () => ref.refresh(profileProvider.future),
           child: ListView(
             padding: const EdgeInsets.all(16.0),
             children: [

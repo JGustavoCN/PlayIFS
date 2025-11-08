@@ -6,8 +6,11 @@ part of 'competition_details_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(CompetitionDetailsNotifier)
-const competitionDetailsNotifierProvider = CompetitionDetailsNotifierFamily._();
+const competitionDetailsProvider = CompetitionDetailsNotifierFamily._();
 
 final class CompetitionDetailsNotifierProvider
     extends
@@ -17,7 +20,7 @@ final class CompetitionDetailsNotifierProvider
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'competitionDetailsNotifierProvider',
+         name: r'competitionDetailsProvider',
          isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -28,7 +31,7 @@ final class CompetitionDetailsNotifierProvider
 
   @override
   String toString() {
-    return r'competitionDetailsNotifierProvider'
+    return r'competitionDetailsProvider'
         ''
         '($argument)';
   }
@@ -64,7 +67,7 @@ final class CompetitionDetailsNotifierFamily extends $Family
   const CompetitionDetailsNotifierFamily._()
     : super(
         retry: null,
-        name: r'competitionDetailsNotifierProvider',
+        name: r'competitionDetailsProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: false,
@@ -74,7 +77,7 @@ final class CompetitionDetailsNotifierFamily extends $Family
       CompetitionDetailsNotifierProvider._(argument: competitionId, from: this);
 
   @override
-  String toString() => r'competitionDetailsNotifierProvider';
+  String toString() => r'competitionDetailsProvider';
 }
 
 abstract class _$CompetitionDetailsNotifier
@@ -100,6 +103,3 @@ abstract class _$CompetitionDetailsNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

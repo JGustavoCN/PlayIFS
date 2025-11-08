@@ -20,12 +20,12 @@ class GameBatchResultsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final actionState = ref.watch(gameActionNotifierProvider);
-    final gamesListState = ref.watch(gamesListNotifierProvider);
+    final actionState = ref.watch(gameActionProvider);
+    final gamesListState = ref.watch(gamesListProvider);
 
     final batchItems = ref.watch(batchResultItemsProvider);
 
-    ref.listen<GameActionState>(gameActionNotifierProvider, (previous, next) {
+    ref.listen<GameActionState>(gameActionProvider, (previous, next) {
       next.whenOrNull(
         success: (_) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -41,7 +41,7 @@ class GameBatchResultsPage extends ConsumerWidget {
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
-          ref.read(gameActionNotifierProvider.notifier).reset();
+          ref.read(gameActionProvider.notifier).reset();
         },
       );
     });
@@ -54,7 +54,7 @@ class GameBatchResultsPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(gamesListNotifierProvider),
+          onRetry: () => ref.invalidate(gamesListProvider),
         ),
         data: (page) {
           final scheduledGames = page.content.where((g) => g.status.name == 'SCHEDULED').toList();
@@ -88,6 +88,6 @@ class GameBatchResultsPage extends ConsumerWidget {
 
   void _submit(WidgetRef ref, List<GameResultItem> batchItems) {
     final input = GameResultBatchInput(results: batchItems);
-    ref.read(gameActionNotifierProvider.notifier).batchUpdateResults(input);
+    ref.read(gameActionProvider.notifier).batchUpdateResults(input);
   }
 }

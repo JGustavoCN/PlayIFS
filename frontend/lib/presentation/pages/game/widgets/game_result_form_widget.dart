@@ -46,7 +46,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<GameActionState>(gameActionNotifierProvider, (previous, next) {
+    ref.listen<GameActionState>(gameActionProvider, (previous, next) {
       next.maybeWhen(
         success: (_) {
           if (mounted) Navigator.of(context).pop();
@@ -61,7 +61,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
           } else {
             if (mounted) Navigator.of(context).pop();
           }
-          ref.read(gameActionNotifierProvider.notifier).reset();
+          ref.read(gameActionProvider.notifier).reset();
         },
         orElse: () {
           if (_fieldErrors.isNotEmpty) {
@@ -73,7 +73,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
       );
     });
 
-    final actionState = ref.watch(gameActionNotifierProvider);
+    final actionState = ref.watch(gameActionProvider);
 
     final isUpdating = actionState.maybeWhen(
       loading: () => true,
@@ -123,7 +123,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
                   return ErrorDisplay(
                     error: error,
                     onRetry: () =>
-                        ref.read(gameActionNotifierProvider.notifier).reset(),
+                        ref.read(gameActionProvider.notifier).reset(),
                   );
                 }
                 return const SizedBox.shrink();
@@ -135,7 +135,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
               ErrorDisplay(
                 error: _fieldErrors['form']!,
                 onRetry: () =>
-                    ref.read(gameActionNotifierProvider.notifier).reset(),
+                    ref.read(gameActionProvider.notifier).reset(),
               ),
             ],
             const SizedBox(height: 20),
@@ -185,7 +185,7 @@ class _GameResultFormWidgetState extends ConsumerState<GameResultFormWidget> {
       );
 
       await ref
-          .read(gameActionNotifierProvider.notifier)
+          .read(gameActionProvider.notifier)
           .updateResult(widget.game.id, input);
 
       if (!mounted) return;

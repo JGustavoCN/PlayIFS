@@ -52,7 +52,7 @@ class _DesignatedCoachFormState extends ConsumerState<DesignatedCoachForm> {
         courseId: _selectedCourseId!,
         coachId: _selectedCoachId!,
       );
-      final notifier = ref.read(designatedCoachFormNotifierProvider.notifier);
+      final notifier = ref.read(designatedCoachFormProvider.notifier);
       final success = _isEditMode
           ? await notifier.update(input)
           : await notifier.define(input);
@@ -71,7 +71,7 @@ class _DesignatedCoachFormState extends ConsumerState<DesignatedCoachForm> {
   @override
   Widget build(BuildContext context) {
     // Ouve o estado do formulário para mostrar erros.
-    ref.listen(designatedCoachFormNotifierProvider, (_, state) {
+    ref.listen(designatedCoachFormProvider, (_, state) {
       state.whenOrNull(
         failure: (error) => showDialog(
           context: context,
@@ -86,9 +86,9 @@ class _DesignatedCoachFormState extends ConsumerState<DesignatedCoachForm> {
       );
     });
 
-    final formState = ref.watch(designatedCoachFormNotifierProvider);
-    final sportsState = ref.watch(sportsNotifierProvider);
-    final coursesState = ref.watch(coursesNotifierProvider);
+    final formState = ref.watch(designatedCoachFormProvider);
+    final sportsState = ref.watch(sportsProvider);
+    final coursesState = ref.watch(coursesProvider);
     final athletesState = ref.watch(athleteListProvider);
 
     return Padding(

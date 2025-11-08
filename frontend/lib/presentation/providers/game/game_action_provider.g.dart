@@ -6,8 +6,11 @@ part of 'game_action_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(GameActionNotifier)
-const gameActionNotifierProvider = GameActionNotifierProvider._();
+const gameActionProvider = GameActionNotifierProvider._();
 
 final class GameActionNotifierProvider
     extends $NotifierProvider<GameActionNotifier, GameActionState> {
@@ -16,7 +19,7 @@ final class GameActionNotifierProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'gameActionNotifierProvider',
+        name: r'gameActionProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -39,7 +42,7 @@ final class GameActionNotifierProvider
 }
 
 String _$gameActionNotifierHash() =>
-    r'b4cd41ca29085470c7e4cd4466d7542c3c9b4962';
+    r'ddf84b12e65cba69513e5d664ad7ab3417d56ae0';
 
 abstract class _$GameActionNotifier extends $Notifier<GameActionState> {
   GameActionState build();
@@ -59,6 +62,3 @@ abstract class _$GameActionNotifier extends $Notifier<GameActionState> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

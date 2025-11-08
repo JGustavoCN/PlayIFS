@@ -6,8 +6,11 @@ part of 'team_form_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(TeamFormNotifier)
-const teamFormNotifierProvider = TeamFormNotifierFamily._();
+const teamFormProvider = TeamFormNotifierFamily._();
 
 final class TeamFormNotifierProvider
     extends $NotifierProvider<TeamFormNotifier, AsyncValue<void>> {
@@ -16,7 +19,7 @@ final class TeamFormNotifierProvider
     required TeamDetails? super.argument,
   }) : super(
          retry: null,
-         name: r'teamFormNotifierProvider',
+         name: r'teamFormProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
@@ -27,7 +30,7 @@ final class TeamFormNotifierProvider
 
   @override
   String toString() {
-    return r'teamFormNotifierProvider'
+    return r'teamFormProvider'
         ''
         '($argument)';
   }
@@ -55,7 +58,7 @@ final class TeamFormNotifierProvider
   }
 }
 
-String _$teamFormNotifierHash() => r'df45ed53debb8fb2353090d5e3e7a7c2ae8a04eb';
+String _$teamFormNotifierHash() => r'bfe5213a6334c3d6fcb42fb0165a19d6c2321c5d';
 
 final class TeamFormNotifierFamily extends $Family
     with
@@ -69,7 +72,7 @@ final class TeamFormNotifierFamily extends $Family
   const TeamFormNotifierFamily._()
     : super(
         retry: null,
-        name: r'teamFormNotifierProvider',
+        name: r'teamFormProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
@@ -79,7 +82,7 @@ final class TeamFormNotifierFamily extends $Family
       TeamFormNotifierProvider._(argument: initialTeam, from: this);
 
   @override
-  String toString() => r'teamFormNotifierProvider';
+  String toString() => r'teamFormProvider';
 }
 
 abstract class _$TeamFormNotifier extends $Notifier<AsyncValue<void>> {
@@ -103,6 +106,3 @@ abstract class _$TeamFormNotifier extends $Notifier<AsyncValue<void>> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

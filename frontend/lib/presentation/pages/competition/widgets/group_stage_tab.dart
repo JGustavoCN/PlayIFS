@@ -9,81 +9,68 @@ import 'package:playifs_frontend/presentation/providers/competition/stage_provid
 import 'package:playifs_frontend/presentation/providers/profile/profile_provider.dart';
 import 'package:playifs_frontend/presentation/widgets/error_display.dart';
 
-class GroupStageTab extends ConsumerWidget {
+class GroupStageTab extends ConsumerStatefulWidget {
   const GroupStageTab({super.key, required this.params});
 
   final StageProvidersParams params;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileNotifierProvider);
+  ConsumerState<GroupStageTab> createState() => _GroupStageTabState();
+}
+
+class _GroupStageTabState extends ConsumerState<GroupStageTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final profileState = ref.watch(profileProvider);
     final isCoordinator =
         profileState.value?.roles.contains('ROLE_COORDINATOR') ?? false;
 
-    final groupStageState = ref.watch(groupStageViewNotifierProvider(params));
+    final asyncGroupStage = ref.watch(groupStageViewProvider(widget.params));
 
-    return groupStageState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) {
+    return asyncGroupStage.when(
+      loading: () {
+        final previous = ref.read(groupStageViewProvider(widget.params));
+        if (previous.hasValue && previous.value != null) {
+          return _GroupStageView(groupStage: previous.value!);
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+      error: (error, _) {
         if (error is ApiException && error.statusCode == 404) {
           if (isCoordinator) {
             return Center(
-              child: GenerateStageButton(
-                label: 'Gerar Fase de Grupos',
-                onPressed: () => _confirmAndGenerateGroups(context, ref),
-              ),
-            );
-          } else {
-            return const Center(
-              child: Text(
-                'A fase de grupos ainda não foi gerada pelo coordenador.',
-              ),
+              child: GenerateStageButton.group(params: widget.params),
             );
           }
+          return const Center(
+            child: Text('A fase de grupos ainda não foi gerada pelo coordenador.'),
+          );
         }
+
         return ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(groupStageViewNotifierProvider(params)),
+          onRetry: () => ref.invalidate(groupStageViewProvider(widget.params)),
         );
       },
       data: (groupStage) {
         if (groupStage.groups.isEmpty) {
+          if (isCoordinator) {
+            return Center(
+              child: GenerateStageButton.group(params: widget.params),
+            );
+          }
           return const Center(child: Text('Nenhum grupo para exibir.'));
         }
+
         return _GroupStageView(groupStage: groupStage);
       },
     );
-  }
-
-  Future<void> _confirmAndGenerateGroups(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar Ação'),
-        content: const Text(
-          'Tem a certeza de que deseja gerar a fase de grupos? Esta ação não pode ser desfeita.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Gerar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await ref
-          .read(groupStageViewNotifierProvider(params).notifier)
-          .generateGroupStage();
-    }
   }
 }
 
@@ -94,33 +81,29 @@ class _GroupStageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView.builder(
-    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-    itemCount: groupStage.groups.length,
-    physics: const NeverScrollableScrollPhysics(),
-    shrinkWrap: true,
-    itemBuilder: (context, index) {
-      final groupReport = groupStage.groups[index];
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      itemCount: groupStage.groups.length,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        final groupReport = groupStage.groups[index];
+        final teamNames = groupReport.standings.map((s) => s.teamName).toSet();
 
-      final teamNamesInGroup = groupReport.standings
-          .map((s) => s.teamName)
-          .toSet();
+        final gamesForGroup = groupStage.games
+            .where((g) =>
+        teamNames.contains(g.teamAName) ||
+            teamNames.contains(g.teamBName))
+            .toList()
+          ..sort((a, b) {
+            if (a.dateTime == null && b.dateTime == null) return 0;
+            if (a.dateTime == null) return 1;
+            if (b.dateTime == null) return -1;
+            return a.dateTime!.compareTo(b.dateTime!);
+          });
 
-      final gamesForGroup = groupStage.games
-          .where(
-            (game) =>
-                teamNamesInGroup.contains(game.teamAName) ||
-                teamNamesInGroup.contains(game.teamBName),
-          )
-          .toList();
-
-      gamesForGroup.sort((a, b) {
-        if (a.dateTime == null && b.dateTime == null) return 0;
-        if (a.dateTime == null) return 1;
-        if (b.dateTime == null) return -1;
-        return a.dateTime!.compareTo(b.dateTime!);
-      });
-
-      return GroupDetailsCard(groupReport: groupReport, games: gamesForGroup);
-    },
-  );
+        return GroupDetailsCard(
+          groupReport: groupReport,
+          games: gamesForGroup,
+        );
+      },
+    );
 }

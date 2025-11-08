@@ -7,7 +7,5 @@ class RescheduleGameUseCase {
   RescheduleGameUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<GameDetails>> execute(int gameId, GameUpdateInput input) {
-    return _repository.reschedule(gameId, input);
-  }
+  Future<Result<GameDetails>> execute(int gameId, GameUpdateInput input) => _repository.reschedule(gameId, input);
 }

@@ -12,7 +12,7 @@ class EditDesignatedCoachPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final detailsState = ref.watch(designatedCoachDetailsNotifierProvider(designationId));
+    final detailsState = ref.watch(designatedCoachDetailsProvider(designationId));
 
     return AppScaffold(
       title: 'Editar Designação',

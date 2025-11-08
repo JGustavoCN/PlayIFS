@@ -18,10 +18,10 @@ class GameDetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gameDetailsState = ref.watch(gameDetailsNotifierProvider(gameId));
-    final isCoordinator = ref.watch(profileNotifierProvider).value?.roles.contains('ROLE_COORDINATOR') ?? false;
+    final gameDetailsState = ref.watch(gameDetailsProvider(gameId));
+    final isCoordinator = ref.watch(profileProvider).value?.roles.contains('ROLE_COORDINATOR') ?? false;
 
-    ref.listen(gameActionNotifierProvider, (previous, next) {
+    ref.listen(gameActionProvider, (previous, next) {
       next.whenOrNull(
         loading: () {
         },
@@ -47,7 +47,7 @@ class GameDetailsPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => ErrorDisplay(
           error: error,
-          onRetry: () => ref.invalidate(gameDetailsNotifierProvider(gameId)),
+          onRetry: () => ref.invalidate(gameDetailsProvider(gameId)),
         ),
         data: (game) => _GameDetailsView(
           game: game,

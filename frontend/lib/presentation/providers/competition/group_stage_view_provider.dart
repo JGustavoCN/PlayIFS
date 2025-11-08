@@ -8,7 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'group_stage_view_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true) // ✅ impede o descarte automático (corrige o loop de 404)
 class GroupStageViewNotifier extends _$GroupStageViewNotifier {
   @override
   Future<GroupStageView> build(StageProvidersParams params) async {
@@ -20,7 +20,6 @@ class GroupStageViewNotifier extends _$GroupStageViewNotifier {
 
     return switch (result) {
       Success(data: final view) => view,
-    // CORREÇÃO: A propriedade é 'error', não 'exception'.
       Failure(error: final e) => throw e,
     };
   }
@@ -28,16 +27,17 @@ class GroupStageViewNotifier extends _$GroupStageViewNotifier {
   Future<void> generateGroupStage() async {
     final params = this.params;
     final useCase = locator<GenerateGroupStageUseCase>();
-    state = const AsyncValue.loading();
+    state = const AsyncLoading();
+
     final result = await useCase.execute(
       competitionId: params.competitionId,
       sportId: params.sportId,
     );
 
     result.when(
-      success: (_) => ref.invalidateSelf(),
-      // 'when' usa o nome do parâmetro, então 'error' aqui também.
-      failure: (error) => state = AsyncValue.error(error, StackTrace.current),
+      success: (_) => ref.invalidateSelf(), // recarrega a fase após gerar
+      failure: (error) =>
+      state = AsyncValue.error(error, StackTrace.current),
     );
   }
 }

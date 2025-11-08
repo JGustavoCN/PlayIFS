@@ -6,7 +6,5 @@ class UndoWoUseCase {
   UndoWoUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<GameDetails>> execute(int gameId) {
-    return _repository.undoWo(gameId);
-  }
+  Future<Result<GameDetails>> execute(int gameId) => _repository.undoWo(gameId);
 }

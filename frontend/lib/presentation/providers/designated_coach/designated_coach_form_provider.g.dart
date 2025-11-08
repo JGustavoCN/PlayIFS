@@ -6,9 +6,11 @@ part of 'designated_coach_form_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(DesignatedCoachFormNotifier)
-const designatedCoachFormNotifierProvider =
-    DesignatedCoachFormNotifierProvider._();
+const designatedCoachFormProvider = DesignatedCoachFormNotifierProvider._();
 
 final class DesignatedCoachFormNotifierProvider
     extends
@@ -21,7 +23,7 @@ final class DesignatedCoachFormNotifierProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'designatedCoachFormNotifierProvider',
+        name: r'designatedCoachFormProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -44,7 +46,7 @@ final class DesignatedCoachFormNotifierProvider
 }
 
 String _$designatedCoachFormNotifierHash() =>
-    r'e660dce1a50dc00ecf018d6e4cfce846b2d5953a';
+    r'6b251570fed61528f0659ea1aa0afe310d58ccc2';
 
 abstract class _$DesignatedCoachFormNotifier
     extends $Notifier<DesignatedCoachFormState> {
@@ -66,6 +68,3 @@ abstract class _$DesignatedCoachFormNotifier
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

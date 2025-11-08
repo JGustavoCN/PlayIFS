@@ -1,15 +1,21 @@
-// Ficheiro: lib/presentation/pages/competition/widgets/competition_stages.dart
-// (Validação contra analysis_options.yaml: OK)
-
+// lib/presentation/pages/competition/widgets/competition_stages.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:playifs_frontend/presentation/pages/competition/widgets/elimination_bracket_tab.dart';
 import 'package:playifs_frontend/presentation/pages/competition/widgets/group_stage_tab.dart';
+import 'package:playifs_frontend/presentation/providers/competition/elimination_bracket_provider.dart';
+import 'package:playifs_frontend/presentation/providers/competition/group_stage_view_provider.dart';
 import 'package:playifs_frontend/presentation/providers/competition/stage_providers_params.dart';
 
+/// Provider interno para guardar o índice da aba selecionada.
 final _selectedTabIndexProvider = StateProvider<int>((ref) => 0);
 
+/// Widget que encapsula as duas fases de uma competição:
+/// - Fase de Grupos
+/// - Fase Eliminatória (Mata-mata)
+///
+/// Compatível com Riverpod 3.x e sem dependência do pacote "legacy".
 class CompetitionStages extends ConsumerStatefulWidget {
   const CompetitionStages({
     super.key,
@@ -25,17 +31,13 @@ class CompetitionStages extends ConsumerStatefulWidget {
 }
 
 class _CompetitionStagesState extends ConsumerState<CompetitionStages>
-    with SingleTickerProviderStateMixin { // ✅ Mixin para o vsync
-
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 2, // Número de tabs
-      vsync: this, // 'this' agora é um TickerProvider
-    );
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -51,38 +53,45 @@ class _CompetitionStagesState extends ConsumerState<CompetitionStages>
       sportId: widget.sportId,
     );
 
-    final tabs = [
-      const Tab(text: 'FASE DE GRUPOS'),
-      const Tab(text: 'FASE ELIMINATÓRIA'),
-    ];
+    // 🔹 Pré-carrega as duas fases (mantém em cache no Riverpod)
+    ref.read(groupStageViewProvider(params).future);
+    ref.read(eliminationBracketProvider(params).future);
 
     final selectedIndex = ref.watch(_selectedTabIndexProvider);
 
-    // Atualiza o TabController se o provider mudar
-    _tabController.index = selectedIndex;
+    // Sincroniza o TabController com o índice atual
+    if (_tabController.index != selectedIndex) {
+      _tabController.index = selectedIndex;
+    }
 
+    final tabs = const [
+      Tab(text: 'FASE DE GRUPOS'),
+      Tab(text: 'FASE ELIMINATÓRIA'),
+    ];
+
+    // ✅ Usa Flexible(fit: FlexFit.loose) para evitar erro de layout
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TabBar(
-          tabs: tabs,
           controller: _tabController,
+          tabs: tabs,
           onTap: (index) {
             ref.read(_selectedTabIndexProvider.notifier).state = index;
           },
         ),
         const SizedBox(height: 16),
 
-        // Renderização condicional (usando IndexedStack)
-        IndexedStack(
-          index: selectedIndex,
-          children: [
-            // Índice 0: Fase de Grupos
-            GroupStageTab(params: params),
-
-            // Índice 1: Fase Eliminatória
-            EliminationBracketTab(params: params),
-          ],
+        Flexible(
+          fit: FlexFit.loose,
+          child: IndexedStack(
+            index: selectedIndex,
+            children: [
+              GroupStageTab(params: params),
+              EliminationBracketTab(params: params),
+            ],
+          ),
         ),
       ],
     );

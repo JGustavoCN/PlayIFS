@@ -7,7 +7,5 @@ class UpdateGameResultUseCase {
   UpdateGameResultUseCase(this._repository);
   final GameRepository _repository;
 
-  Future<Result<GameDetails>> execute(int gameId, GameResultInput input) {
-    return _repository.updateResult(gameId, input);
-  }
+  Future<Result<GameDetails>> execute(int gameId, GameResultInput input) => _repository.updateResult(gameId, input);
 }

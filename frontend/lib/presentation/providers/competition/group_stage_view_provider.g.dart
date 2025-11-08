@@ -6,8 +6,11 @@ part of 'group_stage_view_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(GroupStageViewNotifier)
-const groupStageViewNotifierProvider = GroupStageViewNotifierFamily._();
+const groupStageViewProvider = GroupStageViewNotifierFamily._();
 
 final class GroupStageViewNotifierProvider
     extends $AsyncNotifierProvider<GroupStageViewNotifier, GroupStageView> {
@@ -16,8 +19,8 @@ final class GroupStageViewNotifierProvider
     required StageProvidersParams super.argument,
   }) : super(
          retry: null,
-         name: r'groupStageViewNotifierProvider',
-         isAutoDispose: true,
+         name: r'groupStageViewProvider',
+         isAutoDispose: false,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
@@ -27,7 +30,7 @@ final class GroupStageViewNotifierProvider
 
   @override
   String toString() {
-    return r'groupStageViewNotifierProvider'
+    return r'groupStageViewProvider'
         ''
         '($argument)';
   }
@@ -49,7 +52,7 @@ final class GroupStageViewNotifierProvider
 }
 
 String _$groupStageViewNotifierHash() =>
-    r'12bac1bd36792577721a64874ac0e4b8f38271e4';
+    r'0d01f7cfd4bcd21e86d4dc637dde26f5e4df1583';
 
 final class GroupStageViewNotifierFamily extends $Family
     with
@@ -63,17 +66,17 @@ final class GroupStageViewNotifierFamily extends $Family
   const GroupStageViewNotifierFamily._()
     : super(
         retry: null,
-        name: r'groupStageViewNotifierProvider',
+        name: r'groupStageViewProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
-        isAutoDispose: true,
+        isAutoDispose: false,
       );
 
   GroupStageViewNotifierProvider call(StageProvidersParams params) =>
       GroupStageViewNotifierProvider._(argument: params, from: this);
 
   @override
-  String toString() => r'groupStageViewNotifierProvider';
+  String toString() => r'groupStageViewProvider';
 }
 
 abstract class _$GroupStageViewNotifier extends $AsyncNotifier<GroupStageView> {
@@ -97,6 +100,3 @@ abstract class _$GroupStageViewNotifier extends $AsyncNotifier<GroupStageView> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

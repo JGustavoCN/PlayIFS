@@ -11,14 +11,14 @@ class GamesListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gamesState = ref.watch(gamesListNotifierProvider);
-    final notifier = ref.read(gamesListNotifierProvider.notifier);
+    final gamesState = ref.watch(gamesListProvider);
+    final notifier = ref.read(gamesListProvider.notifier);
 
     return gamesState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => ErrorDisplay(
         error: error,
-        onRetry: () => ref.invalidate(gamesListNotifierProvider),
+        onRetry: () => ref.invalidate(gamesListProvider),
       ),
       data: (page) {
         if (page.content.isEmpty) {

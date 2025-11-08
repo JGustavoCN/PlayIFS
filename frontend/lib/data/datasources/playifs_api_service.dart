@@ -33,7 +33,6 @@ import 'package:playifs_frontend/data/models/team/team_input_dto.dart';
 import 'package:playifs_frontend/data/models/team/team_summary_dto.dart';
 import 'package:playifs_frontend/data/models/team/team_update_dto.dart';
 import 'package:playifs_frontend/data/models/user/profile_dto.dart';
-import 'package:playifs_frontend/domain/entities/game/game_summary.dart';
 import 'package:retrofit/retrofit.dart';
 
 import '../models/game/game_reschedule_batch_dto.dart';

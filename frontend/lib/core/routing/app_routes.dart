@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:playifs_frontend/presentation/providers/auth/auth_state.dart';
@@ -21,14 +22,17 @@ import '../../presentation/pages/designated_coach/designated_coach_details_page.
 import '../../presentation/pages/designated_coach/designated_coach_list_page.dart';
 import '../../presentation/pages/designated_coach/edit_designated_coach_page.dart';
 import '../../presentation/pages/designated_coach/my_designations_page.dart';
+// ✅ 1. IMPORTS PARA AS NOVAS PÁGINAS
+import '../../presentation/pages/game/game_batch_reschedule_page.dart';
+import '../../presentation/pages/game/game_batch_results_page.dart';
+import '../../presentation/pages/game/game_details_page.dart';
+import '../../presentation/pages/game/games_list_page.dart';
 import '../../presentation/pages/home/home_page.dart';
 import '../../presentation/pages/splash/splash_page.dart';
 import '../../presentation/pages/team/team_details_page.dart';
 import '../../presentation/pages/team/team_form_page.dart';
 import '../../presentation/pages/team/teams_list_page.dart';
 import '../../presentation/providers/auth/auth_provider.dart';
-import '../../presentation/pages/game/games_list_page.dart';
-import '../../presentation/pages/game/game_details_page.dart';
 
 part 'app_routes.g.dart';
 
@@ -37,41 +41,33 @@ class AppRoutes {
   static const String login = '/login';
   static const String home = '/home';
   static const String athletes = '/athletes';
-
-  // ✅ 1. ADICIONAR AS NOVAS CONSTANTES
   static const String register = '/register';
   static const String createAthlete = '/athletes/new';
   static const String editAthlete = '/athletes/:id/edit';
   static const String batchCreateAthlete = '/athletes/batch-create';
-
-  // ✅ 1. ADICIONAR AS NOVAS CONSTANTES DE ROTA ADMINISTRATIVAS
   static const String sports = '/admin/sports';
   static const String campuses = '/admin/campuses';
   static const String courses = '/admin/courses';
-
-  // ✅ 1. ADICIONAR AS NOVAS CONSTANTES DE ROTA PARA COMPETIÇÕES
   static const String competitions = '/admin/competitions';
   static const String competitionDetails = '/competitions/:id';
   static const String createCompetition = '/competitions/new';
   static const String editCompetition = '/competitions/:id/edit';
-
   static const String designatedCoaches = '/competitions/:id/coaches';
   static const String designatedCoachDetails = '/designated-coaches/:id';
   static const String editDesignatedCoach = '/designated-coaches/:id/edit';
   static const String myDesignations = '/my-designations';
-
-
   static const String teams = '/teams';
   static const String teamCreate = '/teams/new';
   static const String teamDetails = '/teams/:teamId';
   static const String teamEdit = '/teams/:teamId/edit';
   static const String athleteSelection = '/athlete-selection';
-
   static const String games = '/games';
   static const String gameDetails = '/games/:id';
-
+  static const String gameBatchResults = '/games/batch-results';
+  static const String gameBatchReschedule = '/games/batch-reschedule';
 }
 
+// O seu GoRouterRefreshNotifier (está correto)
 class GoRouterRefreshNotifier extends ChangeNotifier {
   GoRouterRefreshNotifier(this._ref) {
     _ref.listen(
@@ -81,13 +77,6 @@ class GoRouterRefreshNotifier extends ChangeNotifier {
   }
 
   final Ref _ref;
-
-  @override
-  void dispose() {
-    // A subscrição é fechada automaticamente pelo provider,
-    // mas ter o dispose é uma boa prática.
-    super.dispose();
-  }
 }
 
 final goRouterRefreshNotifierProvider = Provider.autoDispose(
@@ -103,37 +92,53 @@ GoRouter goRouter(Ref ref) {
     refreshListenable: refreshNotifier,
     routes: [
       GoRoute(
-        path: AppRoutes.games,
+        path: AppRoutes.games, // "/games"
         name: AppRoutes.games,
         builder: (context, state) {
-          // Permite filtrar a lista de jogos, por exemplo: /games?competitionId=1
-          final competitionIdString = state.uri.queryParameters['competitionId'];
+          final competitionIdString =
+          state.uri.queryParameters['competitionId'];
           final teamIdString = state.uri.queryParameters['teamId'];
+          final sportIdString = state.uri.queryParameters['sportId'];
 
           final competitionId = competitionIdString != null
               ? int.tryParse(competitionIdString)
               : null;
-          final teamId = teamIdString != null
-              ? int.tryParse(teamIdString)
-              : null;
+          final teamId =
+          teamIdString != null ? int.tryParse(teamIdString) : null;
+          final sportId =
+          sportIdString != null ? int.tryParse(sportIdString) : null;
 
-          // Assumindo que sua página de lista de jogos aceita estes filtros
           return GamesListPage(
             competitionId: competitionId,
             teamId: teamId,
+            sportId: sportId,
           );
         },
+        routes: [
+          // Rotas específicas (batch) PRIMEIRO
+          GoRoute(
+            path: 'batch-results', // Relativo: /games/batch-results
+            name: AppRoutes.gameBatchResults,
+            builder: (context, state) => const GameBatchResultsPage(),
+          ),
+          GoRoute(
+            path: 'batch-reschedule', // Relativo: /games/batch-reschedule
+            name: AppRoutes.gameBatchReschedule,
+            builder: (context, state) => const GameBatchReschedulePage(),
+          ),
+          // Rota dinâmica (:id) DEPOIS
+          GoRoute(
+            path: ':id', // Relativo: /games/:id
+            name: AppRoutes.gameDetails,
+            builder: (context, state) {
+              final gameId = int.parse(state.pathParameters['id']!);
+              return GameDetailsPage(gameId: gameId);
+            },
+          ),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.gameDetails,
-        name: AppRoutes.gameDetails,
-        builder: (context, state) {
-          // Extrai o 'id' da URL (ex: /games/10)
-          final gameId = int.parse(state.pathParameters['id']!);
-          // Assumindo que sua página de detalhes se chama GameDetailsPage
-          return GameDetailsPage(gameId: gameId);
-        },
-      ),
+
+      // --- Restante das suas rotas (corretas) ---
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashPage(),
@@ -153,8 +158,6 @@ GoRouter goRouter(Ref ref) {
         name: AppRoutes.athletes,
         builder: (context, state) => const AthletePage(),
       ),
-
-      // ✅ 2. ADICIONAR AS NOVAS ROTAS
       GoRoute(
         path: AppRoutes.register,
         name: AppRoutes.register,
@@ -164,7 +167,6 @@ GoRouter goRouter(Ref ref) {
         path: AppRoutes.editAthlete,
         name: AppRoutes.editAthlete,
         builder: (context, state) {
-          // Extrai o parâmetro 'id' da rota.
           final athleteId = int.parse(state.pathParameters['id']!);
           return EditAthletePage(athleteId: athleteId);
         },
@@ -194,7 +196,6 @@ GoRouter goRouter(Ref ref) {
         name: AppRoutes.courses,
         builder: (context, state) => const CoursesPage(),
       ),
-      // ✅ 2. ADICIONAR AS NOVAS ROTAS DE COMPETIÇÃO
       GoRoute(
         path: AppRoutes.createCompetition,
         name: AppRoutes.createCompetition,
@@ -221,7 +222,6 @@ GoRouter goRouter(Ref ref) {
           return CompetitionDetailsPage(competitionId: id);
         },
       ),
-
       GoRoute(
         path: AppRoutes.designatedCoaches,
         name: AppRoutes.designatedCoaches,
@@ -243,7 +243,6 @@ GoRouter goRouter(Ref ref) {
         name: AppRoutes.editDesignatedCoach,
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
-          // Nota: A página de edição precisará de buscar os detalhes para passar ao formulário.
           return EditDesignatedCoachPage(designationId: id);
         },
       ),
@@ -255,7 +254,6 @@ GoRouter goRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.athleteSelection,
         name: AppRoutes.athleteSelection,
-        // Usamos um PageBuilder para uma transição de baixo para cima (modal).
         pageBuilder: (context, state) => const MaterialPage(
           child: AthleteSelectionPage(),
           fullscreenDialog: true,
@@ -265,17 +263,16 @@ GoRouter goRouter(Ref ref) {
         path: AppRoutes.teams,
         name: AppRoutes.teams,
         builder: (context, state) {
-          // ✅ 1. Extrai o 'competitionId' dos parâmetros da query da URL.
-          final competitionIdString = state.uri.queryParameters['competitionId'];
+          final competitionIdString =
+          state.uri.queryParameters['competitionId'];
           final competitionId = competitionIdString != null
               ? int.tryParse(competitionIdString)
               : null;
-
-          // ✅ 2. Passa o ID para o construtor da página.
           return TeamsListPage(competitionId: competitionId);
-        },        routes: [
+        },
+        routes: [
           GoRoute(
-            path: 'new', // Caminho relativo a /teams
+            path: 'new', // Path relativo
             name: AppRoutes.teamCreate,
             builder: (context, state) {
               final contextData = state.extra as Map<String, int>? ?? {};
@@ -283,10 +280,11 @@ GoRouter goRouter(Ref ref) {
                 competitionId: contextData['competitionId'],
                 sportId: contextData['sportId'],
                 courseId: contextData['courseId'],
-            );},
+              );
+            },
           ),
           GoRoute(
-            path: ':teamId', // Caminho relativo: /teams/:teamId
+            path: ':teamId', // Path relativo
             name: AppRoutes.teamDetails,
             builder: (context, state) {
               final teamId = int.parse(state.pathParameters['teamId']!);
@@ -294,10 +292,9 @@ GoRouter goRouter(Ref ref) {
             },
             routes: [
               GoRoute(
-                path: 'edit', // Caminho relativo: /teams/:teamId/edit
+                path: 'edit', // Path relativo
                 name: AppRoutes.teamEdit,
                 builder: (context, state) {
-                  // Veja o Destaque Arquitetural abaixo sobre o uso de 'extra'
                   final team = state.extra as TeamDetails?;
                   return TeamFormPage(team: team);
                 },
@@ -307,26 +304,30 @@ GoRouter goRouter(Ref ref) {
         ],
       ),
     ],
+
+    // A sua lógica de Redirect (está correta)
     redirect: (BuildContext context, GoRouterState state) {
       final authState = ref.read(authProvider);
+      final location = state.matchedLocation;
 
-      if (authState.isLoading || !authState.hasValue) return null;
+      if (authState.isLoading || !authState.hasValue) {
+        return null;
+      }
+
+      if (location == AppRoutes.splash) {
+        FlutterNativeSplash.remove();
+      }
 
       return authState.value!.when(
         initial: () => null,
         loading: () => null,
-          failure: (_) {
-            final location = state.matchedLocation;
-            // Se o utilizador já está numa rota pública, permite que ele permaneça.
-            if (location == AppRoutes.login || location == AppRoutes.register) {
-              return null;
-            }
-            // Se tentar aceder a qualquer outra rota, redireciona para o login.
-            return AppRoutes.login;
-          },
+        failure: (_) {
+          if (location == AppRoutes.login || location == AppRoutes.register) {
+            return null;
+          }
+          return AppRoutes.login;
+        },
         authenticated: (profile) {
-          final location = state.matchedLocation;
-          // Se o utilizador autenticado estiver em 'login', 'splash' ou 'register', redireciona para 'home'.
           if (location == AppRoutes.login ||
               location == AppRoutes.splash ||
               location == AppRoutes.register) {
@@ -335,8 +336,6 @@ GoRouter goRouter(Ref ref) {
           return null;
         },
         unauthenticated: () {
-          final location = state.matchedLocation;
-          // Permite que o utilizador não autenticado aceda apenas a 'login' e 'register'.
           if (location != AppRoutes.login && location != AppRoutes.register) {
             return AppRoutes.login;
           }
